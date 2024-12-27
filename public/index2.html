@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg"
+        color="#111">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+        }
+        .container {
+            height: 100%; /* 更改为100%以确保容器填满视口 */
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+            display: flex; /* 使用flexbox居中内容 */
+            justify-content: center;
+            align-items: center;
+        }
+        .login-wrapper {
+            background-color: #fff;
+            width: 358px;
+            height: auto; /* 更改为auto以适应内容高度 */
+            border-radius: 15px;
+            padding: 30px 50px; /* 增加上下内边距 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+        }
+        .header {
+            font-size: 38px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px; /* 添加下边距 */
+        }
+        .input-item {
+            display: block;
+            width: 100%;
+            margin-bottom: 20px;
+            border: 0;
+            padding: 10px;
+            border-bottom: 1px solid rgb(128, 125, 125);
+            font-size: 15px;
+            outline: none;
+        }
+        .input-item::placeholder { /* 修正伪类选择器 */
+            text-transform: uppercase;
+        }
+        .btn {
+            
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            margin-top: 20px; /* 调整上边距 */
+            background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);
+            color: #fff;
+            cursor: pointer; /* 添加光标样式 */
+            border: none; /* 移除边框 */
+            border-radius: 5px; /* 添加圆角 */
+        }
+        .msg {
+            text-align: center; /* 更改为居中对齐 */
+            margin-top: 20px; /* 添加上边距 */
+        }
+        a {
+            text-decoration: none;
+            color: #abc1ee;
+        }
+        p {
+            color: #abc1ee;
+            margin-bottom: 10px; /* 添加下边距 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-wrapper">
+            <div class="header">注册</div>
+            <div class="form-wrapper">
+                <input type="text" name="username" id="name" placeholder="请输入账号名" class="input-item">
+                <input type="text" name="username2" id="name2" placeholder="请输入昵称" class="input-item">
+                <input type="password" name="passworda" id="passworda" placeholder="请输入密码" class="input-item">
+                <input type="password" name="passwordb" id="passwordb" placeholder="请再次输入密码"class="input-item">
+                <div class="btn" onclick="sign()">注册</div>
+            </div>
+            <div class="msg">
+                已有账号？
+                <a href="index.html">点击登录</a>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function sign(){
+        const n = document.getElementById("name").value;
+        const n2 = document.getElementById("name2").value;
+        if(n2==""){
+            n2 == "";
+        }
+        const pa = document.getElementById("passworda").value;
+        const pb = document.getElementById("passwordb").value;
+        fetch('/python-signin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: n, passworda: pa , passwordb: pb,nameb: n2})
+            })
+            .then(response => response.text())
+            .then(text => {
+                console.log(text); // 打印响应文本
+                return JSON.parse(text); // 解析为 JSON
+            })
+            .then(data => {
+                //document.getElementById('mssg').textContent = data;
+                //alert(data.msg);
+                if(data.code==0){
+                    alert(data.msg);
+                    window.location.href = 'index.html';
+                }else{
+                    alert(data.msg);
+                }
+            })
+            .catch(error => {
+                
+            });
+    }
+    
+</script>
+</html>

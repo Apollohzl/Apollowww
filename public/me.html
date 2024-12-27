@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+
+
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg"
+        color="#111">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh; /* 使整个页面占满视口高度 */
+            background-color: rgb(167, 167, 167); /* 页面背景色 */
+            
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar button {
+            width: 100%;
+            padding: 10px;
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
+            border: none;
+            cursor: pointer;
+            margin-bottom: 5px;
+            transition: background 0.3s;
+            border-radius: 7px;
+        }
+        .sidebar button:hover {
+            background-color: #d4d3d3;
+        }
+        .bot {
+            color: white;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #ffffff;
+            overflow-y: auto; /* 允许垂直滚动 */
+            border-radius: 10px;
+        }
+        .section {
+            display: none;
+            
+        }
+    </style>
+
+    <!--coco's style-->
+    <style>
+        form {
+            padding: 12px 30px;
+            background: #fff;
+            margin-bottom: 30px;
+            line-height: 2em;
+            position: relative;
+        }
+        h2 {
+            border-bottom: 1px solid #e8e6e6;
+            position: relative;
+        }
+        .avatar-container {
+            position: relative;
+            width: 100%;
+            padding-left: 80px;
+            margin-bottom: 32px;
+            line-height: 100px;
+        }
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #dcdcdc;
+            cursor: pointer;
+            background-position: 50%;
+            background-repeat: no-repeat;
+            background-size: cover;
+            overflow: hidden;
+            background-image: url('https://cdn-community.codemao.cn/community_frontend/community_default_avatar/avatar_300x300_08.jpg');
+        }
+        .r-setting--setting_form .r-setting--form_item .r-setting--head_icon {
+            position: relative; /* 确保后代元素定位相对于此元素 */
+        }
+
+        .r-setting--setting_form .r-setting--form_item .r-setting--head_icon:hover {
+            content: "\4FEE\6539\5934\50CF"; /* 使用 Unicode 字符 */
+            display: none; /* 默认不显示 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .4);
+            color: #fff;
+            text-align: center;
+            padding-top: 37px;
+            transition: display 0.3s ease; /* 添加过渡效果 */
+        }
+
+        /* 鼠标悬停时显示伪元素 */
+        .r-setting--setting_form .r-setting--form_item .r-setting--head_icon:hover:after {
+            display: block; /* 悬停时显示 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <br>
+    <br>
+    <button id="homeb" class="bot" onclick="showSection('home')">资料</button>
+    <button id="aboutb" class="bot"" onclick="showSection('about')">关于我们</button>
+</div>
+
+<div class="content">
+
+
+    <div id="home" class="section">
+        <form>
+            <h2>基本信息
+                <button style="background: #fec433;width: 100px;height: 32px;color: #fff;font-size: 14px;border-radius: 4px;position: absolute; right: 30px;" type="submit">保存</button>
+            </h2>
+            <div class="avatar-container">
+                <label>头像:</label>
+                <div class="avatar r-setting--head_icon" role="img" aria-label="用户头像"></div>
+            </div>
+        </form>
+    </div>
+
+
+    <div id="about" class="section">
+        <h2>关于我们</h2>
+        <p>这是关于我们的内容。</p>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionId) {
+        // 隐藏所有部分
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // 显示所选部分
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
+        }
+        const bo = document.querySelectorAll('.bot');
+        i = sectionId+"b";
+        bo.forEach(sectio => {
+            sectio.style.color = 'black';
+        });
+        document.getElementById(i).style = "color: #fec433;";
+    }
+
+    // 默认显示首页
+    showSection('home');
+</script>
+
+</body>
+</html>

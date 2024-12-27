@@ -1,0 +1,30 @@
+[
+    {
+        "name": "admin",
+        "name2": "黄梓林",
+        "password": "111111",
+        "headpicture": "picture/headpicture/Apollo.jpg",
+        "write":"随便写点什么吧~（50字符以内；注意避免暴露个人敏感信息，如手机/qq号等）"
+    },
+    {
+        "name": "Apollo",
+        "name2": "Apollo",
+        "password": "hzl07680",
+        "headpicture": "picture/headpicture/Apollo.jpg",
+        "write":"随便写点什么吧~（50字符以内；注意避免暴露个人敏感信息，如手机/qq号等）"
+    },
+    {
+        "name": "admi",
+        "name2": "admi",
+        "password": "000000",
+        "headpicture": "",
+        "write":"随便写点什么吧~（50字符以内；注意避免暴露个人敏感信息，如手机/qq号等）"
+    },
+    {
+        "name": "newpeople",
+        "name2": "newpeople",
+        "password": "111111",
+        "headpicture": "",
+        "write":"随便写点什么吧~（50字符以内；注意避免暴露个人敏感信息，如手机/qq号等）"
+    }
+]

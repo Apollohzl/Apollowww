@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://i.cdncf.xyz/0225a4c3a4e3e96a67ccd1de6239d329.jpg"
+        color="#111">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片论坛</title>
+    <style id="aboutimghead">
+        .profile-pic {
+            position: absolute; /* 绝对定位 */
+            top: 5px;         /* 距离顶部20像素 */
+            right:890px;       /* 距离右侧20像素 */
+            width: 60px;       /* 图片宽度 */
+            height: 60px;      /* 图片高度 */
+            border-radius: 50%; /* 圆形 */
+            overflow: hidden;   /* 超出部分隐藏 */
+            border: 2px solid white; /* 白色边框 */
+        }
+        .profile-pic img {
+            width: 100%;       /* 图片宽度填满 */
+            height: auto;      /* 自适应高度 */
+        }
+    </style>
+
+    <script>
+        function getxlong(){
+            let x = window.innerWidth;
+            
+            x = x-70;
+            console.log(x);
+            document.getElementById("aboutimghead").innerHTML = `
+            .profile-pic {
+                position: absolute;
+                top: 5px;         
+                right:${x}px;      
+                width: 60px;      
+                height: 60px;     
+                border-radius: 50%; 
+                overflow: hidden;   
+                border: 2px solid white; 
+            }
+            .profile-pic img {
+                width: 100%;       
+                height: auto;      
+            }`;
+        }
+        window.onload = getxlong();
+        window.addEventListener('resize',getxlong);
+    </script>
+
+
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(to bottom right, #f0f8ff, #e6e6fa); /* 渐变背景 */
+        }
+
+        .container {
+            width: 80%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .box {
+            width: 200px;
+            margin: 10px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 8px; /* 圆角边框 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+            transition: transform 0.2s; /* 平滑过渡效果 */
+        }
+
+        .box:hover {
+            transform: scale(1.05); /* 悬停放大效果 */
+        }
+
+        .box img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px 8px 0 0; /* 圆角上边 */
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            height: auto;
+            border-radius: 8px; /* 圆角 */
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px; /* 圆角按钮 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 按钮阴影 */
+            z-index: 1000;
+        }
+
+        .back-button {
+            margin: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px; /* 圆角按钮 */
+            background-color: #4caf50; /* 背景色 */
+            color: white; /* 字体颜色 */
+            transition: background-color 0.3s; /* 背景色平滑过渡 */
+            z-index: 9000;
+        }
+
+        .back-button:hover {
+            background-color: #45a049; /* 悬停效果 */
+            z-index: 9000;
+        }
+
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href = 'bilibili.html';">返回主页</button>
+    
+    <div class="container" id="imageContainer"></div>
+    
+    <div class="lightbox" id="lightbox">
+        <button class="close-btn" onclick="closeLightbox()">关闭</button>
+        <img id="lightboxImage" src="" alt="放大图">
+    </div>
+    <div class="profile-pic">
+        <img src="/picture/headpicture/Apollo.jpg" alt="无头像" id="headpicture">
+    </div>
+
+    <script>
+        async function loadImages() {
+            const response = await fetch('/readimages');
+            const images = await response.json();
+    
+            const container = document.getElementById('imageContainer');
+            images.forEach(image => {
+                const box = document.createElement('div');
+                box.className = 'box';
+                box.innerHTML = `<img src="${image}" alt="图片">`;
+                
+                box.onclick = () => openLightbox(image);
+                container.appendChild(box);
+            });
+        }
+    
+        function openLightbox(image) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            lightboxImage.src = image;
+            lightbox.style.display = 'flex'; // 显示放大图
+        }
+    
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.style.display = 'none'; // 隐藏放大图
+        }
+    
+        function getURL(p){
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(p);
+        }
+    
+        window.onload = function() {
+            loadImages(); // 调用加载图片的函数
+    
+            const headpicturesrc = getURL('src');
+            if(headpicturesrc){
+                document.getElementById("headpicture").src = headpicturesrc;
+            } else {
+                document.getElementById("headpicture").src = "/picture/headpicture/NoHead.png";
+            }
+        }
+    </script>
+    
+</body>
+</html>

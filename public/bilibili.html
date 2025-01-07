@@ -470,21 +470,17 @@
     </script>
     <script>
         async function ChangBackPicture() {
-            const response = await fetch('/picture/backpicture/');
-            const images = await response.json();
-            
-            // 生成随机索引
-            const randomIndex = Math.floor(Math.random() * images.length);
-            const randomImage = images[randomIndex].replace(/\\/g, '/'); // 替换反斜杠为正斜杠
-            console.log(randomImage);
-            
+            var min = 1;
+            var max = 4;
+            var len = Math.floor(Math.random() * (max-min+1)) + min;
+            let u = `/picture/backpicture/${len}.jpg`;
             const style = document.getElementById('dynamic-style');
             // 设置新的背景图片
             style.innerHTML = `body {
                 font-family: 'MyCustomFont', sans-serif;
                 margin: 0;
                 height: 100vh;
-                background-image: url('${randomImage}');
+                background-image: url('${u}');
                 background-size: cover;
                 background-position: center;
                 background-repeat: no-repeat;

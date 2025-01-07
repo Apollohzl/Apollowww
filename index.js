@@ -1,12 +1,18 @@
+import express from "express"
+import cors from "cors"
+import fs from "fs"
+import path from "path"
+import multer from "multer"
+import { exec } from "child_process"
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { exec } = require('child_process');
 const app = express();
-const port = 3008;
 app.use(express.json());
-app.use(express.static('public'));
+app.use(cors());
+app.options("*", cors());
 
 // app.all('*', (req, res, next) => {
 //   if (req.path !== '/python-signin' 
@@ -32,7 +38,7 @@ app.use(express.static('public'));
 //   res.status(404).sendFile(path.join(__dirname, 'public/404.html')); // Serve custom 404 page for other routes
 // });
 
-app.post('/python-signup', (req, res) => {
+app.post('./python-signup', (req, res) => {
   const { input_uname, input_password } = req.body;
   exec(`python f:/py/Node登录系统/setup.py "${input_uname}" "${input_password}"`, (error, stdout, stderr) => {
     console.log(`有用户提交信息：`);
@@ -145,6 +151,6 @@ function getFilenameOfTime() {
 }
 
 // 启动服务器
-app.listen(port, '0.0.0.0', () => {
+app.listen(3008, () => {
   console.log(`Server is running at http://127.0.0.0:${port}`);
 });

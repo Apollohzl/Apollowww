@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; /* 加入 box-sizing 以提高布局的可控性 */
+        }
+        html, body {
+            height: 100%;
+            font-family: Arial, sans-serif; /* 设置默认字体 */
+        }
+        .container {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+        }
+        .login-wrapper {
+            background-color: #fff;
+            width: 358px;
+            border-radius: 15px;
+            padding: 40px 50px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* 加入阴影效果 */
+        }
+        .header {
+            font-size: 38px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px; /* 增加间距 */
+        }
+        .input-item {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 1px solid rgb(128, 125, 125);
+            font-size: 15px;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);
+            color: #fff;
+            border: none;
+            border-radius: 5px; /* 圆角按钮 */
+            cursor: pointer; /* 鼠标悬停时显示手指 */
+        }
+        .btn:hover {
+            opacity: 0.9; /* 添加悬停效果 */
+        }
+        .msg {
+            text-align: center;
+            margin-top: 20px; /* 增加间距 */
+        }
+        a {
+            text-decoration: none;
+            color: #abc1ee;
+        }
+        p {
+            color: #5ca0d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-wrapper">
+            <div class="header">登录</div>
+            <div class="form-wrapper">
+                <input type="text" name="username" id="uname" placeholder="账号名" class="input-item" required>
+                <input type="password" name="password" id="password" placeholder="密码" class="input-item" required>
+                
+                <button class="btn" onclick="checke()">登录</button>
+                
+                <p id="mssg"></p>
+            
+                <div class="msg">
+                    你没有账号？
+                    <a href="index2.html">点击注册</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function checke() {
+    const n = document.getElementById("uname").value;
+    const p = document.getElementById("password").value;
+
+    fetch('/userbook.json')  // 访问本地的 userbooks.json 文件
+        .then(response => response.json())
+        .then(data => {
+            // 使用 some() 方法，找到一个匹配的用户后就停止继续遍历
+            const found = data.some(user => {
+                if (user.name === n && user.password === p) {
+                    alert("登录成功！\n " + user.name2 + " \n欢迎回来！");
+                    window.location.href = `bilibili.html?src=${user.headpicture}`;
+                    return true; // 返回 true 以结束循环
+                }
+                return false;
+            });
+
+            // 如果没有找到匹配的用户，提示用户名或密码错误
+            if (!found) {
+                alert("用户名或密码错误！");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+        function check(){
+            window.location.href = `bilibili.html?src=/picture/headpicture/Apollo.jpg`;
+        }
+    </script>
+</body>
+</html>

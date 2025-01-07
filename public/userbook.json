@@ -26,5 +26,12 @@
         "password": "111111",
         "headpicture": "",
         "write":"随便写点什么吧~（50字符以内；注意避免暴露个人敏感信息，如手机/qq号等）"
+    },
+    {
+        "name":"650",
+        "name2":"⌬650",
+        "password":"111111",
+        "headpicture":"picture/headpicture/⌬650.jpg",
+        "write":"随便写点什么吧~（50字符以内；注意避免暴露个人敏感信息，如手机/qq号等）"
     }
 ]

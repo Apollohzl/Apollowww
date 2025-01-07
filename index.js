@@ -8,25 +8,25 @@ const port = 3008;
 app.use(express.json());
 app.use(express.static('public'));
 
-app.all('*', (req, res, next) => {
-  if (req.path !== '/python-signin' 
-    && req.path !== '/python-signup' 
-    && req.path !== '/downmsg' 
-    && req.path !== '/readimages' 
-    && req.path !== '/readbackpicture' 
-    && req.path !== '/upload'
-    && req.path !== '/readimages'
-    && req.path !== '/readimages'
-    && req.path !== '/readimages'
-    && req.path !== '/readimages'
-    && req.path !== '/readimages'
-    && req.path !== '/readimages'
-    && req.path !== '/readimages') {
+// app.all('*', (req, res, next) => {
+//   if (req.path !== '/python-signin' 
+//     && req.path !== '/python-signup' 
+//     && req.path !== '/downmsg' 
+//     && req.path !== '/readimages' 
+//     && req.path !== '/readbackpicture' 
+//     && req.path !== '/upload'
+//     && req.path !== '/readimages'
+//     && req.path !== '/readimages'
+//     && req.path !== '/readimages'
+//     && req.path !== '/readimages'
+//     && req.path !== '/readimages'
+//     && req.path !== '/readimages'
+//     && req.path !== '/readimages') {
 
-    return res.status(404).sendFile(path.join(__dirname, 'public/404.html')); // Serve your custom 404 page
-  }
-  next();
-});
+//     return res.status(404).sendFile(path.join(__dirname, 'public/404.html')); // Serve your custom 404 page
+//   }
+//   next();
+// });
 
 // app.use((req, res) => {
 //   res.status(404).sendFile(path.join(__dirname, 'public/404.html')); // Serve custom 404 page for other routes

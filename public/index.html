@@ -103,26 +103,32 @@
     </div>
     <script>
         function checke() {
-                const n = document.getElementById("uname").value;
-                const p = document.getElementById("password").value;
+    const n = document.getElementById("uname").value;
+    const p = document.getElementById("password").value;
 
-                fetch('/userbook.json')  // 访问本地的 userbooks.json 文件
-                    .then(response => response.json())
-                    .then(data => {
-                        // 假设用户数据是一个数组，检查输入的用户名和密码
-                        const result = data.map(user => {
-                            if (user.name === n && user.password === p) {
-                                alert("登录成功！\n "+user.name2+" \n欢迎回来！");
-                                window.location.href = `bilibili.html?src=${user.headpicture}`;
-                                return true;
-                            }else{
-                                alert("用户名或密码错误！");
-                            }
-                    })})
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
+    fetch('/userbook.json')  // 访问本地的 userbooks.json 文件
+        .then(response => response.json())
+        .then(data => {
+            // 使用 some() 方法，找到一个匹配的用户后就停止继续遍历
+            const found = data.some(user => {
+                if (user.name === n && user.password === p) {
+                    alert("登录成功！\n " + user.name2 + " \n欢迎回来！");
+                    window.location.href = `bilibili.html?src=${user.headpicture}`;
+                    return true; // 返回 true 以结束循环
+                }
+                return false;
+            });
+
+            // 如果没有找到匹配的用户，提示用户名或密码错误
+            if (!found) {
+                alert("用户名或密码错误！");
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
         function check(){
             window.location.href = `bilibili.html?src=/picture/headpicture/Apollo.jpg`;
         }

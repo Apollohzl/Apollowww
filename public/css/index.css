@@ -116,7 +116,7 @@ section .color:nth-child(3)
     position: relative;
     width: 400px;
     min-height: 400px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(180,247,255,0.1);
     border-radius: 10px;
     display: flex;
     justify-content: center;

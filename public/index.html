@@ -112,8 +112,9 @@
                         // 假设用户数据是一个数组，检查输入的用户名和密码
                         const result = data.map(user => {
                             if (user.name === n && user.password === p) {
-                                alert("登录成功！\n "+user.name+"欢迎回来！");
+                                alert("登录成功！\n "+user.name2+" \n欢迎回来！");
                                 window.location.href = `bilibili.html?src=${user.headpicture}`;
+                                return true;
                             }else{
                                 alert("用户名或密码错误！");
                             }

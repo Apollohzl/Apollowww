@@ -110,7 +110,7 @@
                     .then(response => response.json())
                     .then(data => {
                         // 假设用户数据是一个数组，检查输入的用户名和密码
-                        const result = users.map(user => {
+                        const result = data.map(user => {
                             if (user.name === n && user.password === p) {
                                 alert("登录成功！\n "+user.name+"欢迎回来！");
                                 window.location.href = `bilibili.html?src=${user.headpicture}`;

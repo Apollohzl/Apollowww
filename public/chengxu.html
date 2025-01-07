@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分享代码程序</title>
+    <style>
+        .code-box {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #ccc;
+            margin: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .code-box:hover {
+            transform: scale(1.05);
+        }
+
+        .code-box h2 {
+            margin-top: 0;
+        }
+
+        .code-box p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="code-container">
+        <div class="code-box" onclick="window.location.href='https://example.com/download1'">
+            <h2>代码示例1</h2>
+            <p>这是一个简单的JavaScript函数，用于生成随机整数。</p>
+        </div>
+        <div class="code-box" onclick="window.location.href='https://example.com/download2'">
+            <h2>代码示例2</h2>
+            <p>这是一个用于处理数组的实用函数。</p>
+        </div>
+        <div class="code-box" onclick="window.location.href='https://example.com/download3'">
+            <h2>代码示例3</h2>
+            <p>这是一个基于HTML和CSS的简单网页布局示例。</p>
+        </div>
+    </div>
+</body>
+</html>

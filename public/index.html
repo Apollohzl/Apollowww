@@ -106,7 +106,7 @@
                 const n = document.getElementById("uname").value;
                 const p = document.getElementById("password").value;
 
-                fetch('/userbooks.json')  // 访问本地的 userbooks.json 文件
+                fetch('/userbook.json')  // 访问本地的 userbooks.json 文件
                     .then(response => response.json())
                     .then(data => {
                         // 假设用户数据是一个数组，检查输入的用户名和密码

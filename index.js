@@ -4,7 +4,7 @@ const path = require('path');
 const multer = require('multer');
 const { exec } = require('child_process');
 const app = express();
-const port = 3000;
+const port = 3008;
 app.use(express.json());
 app.use(express.static('public'));
 

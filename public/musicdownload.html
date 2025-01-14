@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preload" href="https://hzlapollo.us.kg/ttf/XiaolaiMonoSC-without-Hangul-Regular.ttf" as="font" crossorigin>
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apollo's Music Download</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            font-family: Arial, sans-serif;
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+        }
+        .container {
+            position: relative;
+            width: calc(100% - 100px);
+            height: calc(100% - 100px);
+            margin: 200px auto;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            margin-top: 10px;
+            font-size: 24px;
+            color: white;
+        }
+        .input-box {
+            margin-top: 10px;
+            width: calc(100% - 10px);
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+        .input-box input {
+            width: calc(100% - 10px);
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .buttons {
+            margin-top: 10px;
+            width: calc(100% - 10px);
+            padding: 0 5px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+        }
+        .buttons img {
+            width: auto;
+            height: 40px;
+            border-radius: 0%;
+            cursor: pointer;
+        }
+        .error-message {
+            margin-top: 5px;
+            color: red;
+        }
+        .small-container {
+            margin-top: 10px;
+            width: calc(100% - 4px);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        .small-box {
+            width: calc(20% - 8px);
+            height: 200px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .small-box:hover {
+            transform: scale(1.05);
+        }
+        .separator {
+            border-bottom: 1px solid #ccc;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .small-box-bottom {
+            display: flex;
+            width: 100%;
+            height: 25px;
+        }
+        .small-box-bottom button {
+            width: 50%;
+            height: 100%;
+            background-color: #add8e6;
+            border: none;
+            border-right: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .small-box-bottom button:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Apollo's Music Download</div>
+        <div class="input-box">
+            <input type="text" placeholder="请输入搜索的歌曲/歌手" id="searchInput">
+        </div>
+        <div class="buttons">
+            <img src="picture/musicpicture/ximalaya.png" id="btn1">
+            <img src="picture/musicpicture/qishui.png" id="btn2">
+            <!-- <img src="picture/musicpicture/button3.png" id="btn3">
+            <img src="picture/musicpicture/button4.png" id="btn4"> -->
+        </div>
+        <div class="error-message" id="errorMessage" style="display: none;">请输入搜索的歌曲/歌曲名</div>
+        <div class="small-container" id="smallContainer">
+            <!-- 小四边形将在这里生成 -->
+        </div>
+        <p>&copy; 2024 Apollo. 保留所有权利。</p>
+        <p>因为某些原因其他音乐软件无法使用，api支持：笒鬼鬼api</p>
+    </div>
+    
+
+    <script>
+        document.querySelectorAll('.buttons img').forEach(button => {
+            button.addEventListener('click', function() {
+                const searchInput = document.getElementById('searchInput').value;
+                const errorMessage = document.getElementById('errorMessage');
+                if (!searchInput) {
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                errorMessage.style.display = 'none';
+
+                
+                if (this.id === 'btn1') {
+                    let apiUrl = "https://api.cenguigui.cn/api/music/dg_ximalayamusic.php?msg=" + searchInput + "&num=10&type=json";
+                    fetch(apiUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(`第一次请求,${apiUrl}`);
+                            console.log(data);
+                            data.data.forEach(item => {
+                                const id = item.n;
+                                console.log(id);    
+                                const cover = item.cover;
+                                const title = item.title;
+
+                                // 更新图片
+                                document.getElementById(id).src = cover;
+
+                                // 更新按钮链接
+                                let onesongurl = apiUrl+`&n=${id}`;
+                                fetch(onesongurl)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        console.log(`第2次请求,${onesongurl}`);
+                                        console.log(data);
+                                        const link = data.url;
+                                        document.querySelector(`button[id="n${id}"]`).setAttribute('onclick', `downloadAudio("${link}","${title}")`);
+                                        document.querySelector(`button[name="${id}"]`).setAttribute('onclick', `window.open("${link}")`);
+                                    })
+                                
+                                
+                            });
+                        })
+                        .catch(error => console.error('Error:', error));
+                }else if (this.id === 'btn2') {
+                    let apiUrl = "https://api.cenguigui.cn/api/qishui/?msg=" + searchInput + "&type=json";
+                    for (let n = 1; n <= 10; n++) {
+                        let onesongurl = apiUrl+`&n=${n}`;
+                        fetch(onesongurl)
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(`第${n}次请求,${onesongurl}`);
+                                console.log(data);
+                                const title = data.title;
+                                const link = data.music;
+                                const cover = data.cover;
+                                document.getElementById(n).src = cover;
+                                document.querySelector(`button[id="n${n}"]`).setAttribute('onclick', `downloadAudio("${link}","${title}")`);
+                                document.querySelector(`button[name="${n}"]`).setAttribute('onclick', `window.open("${link}")`);
+
+                                
+                            })
+                            .catch(error => console.error('Error:', error));
+                    }
+                }
+            });
+        });
+
+        function downloadAudio(url,title) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${title}.mp3`; // 可以根据需要修改文件名
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 生成10个小四边形
+        for (let i = 1; i <= 10; i++) {
+            const smallBox = document.createElement('div');
+            smallBox.className = 'small-box';
+            smallBox.innerHTML = `
+                <img src="" id="${i}" style="width: 100%; height: 70%;">
+                <div class="separator"></div>
+                <div class="small-box-bottom">
+                    <button name="${i}">在线听</button>
+                    <button id="n${i}">下载</button>
+                </div>
+            `;
+            document.getElementById('smallContainer').appendChild(smallBox);
+        }
+    </script>
+</body>
+</html>

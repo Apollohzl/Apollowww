@@ -104,7 +104,7 @@
     </div>
 </body>
 <script>
-    function sign(){
+    function signn(){
         const n = document.getElementById("name").value;
         const n2 = document.getElementById("name2").value;
         if(n2==""){
@@ -138,6 +138,34 @@
                 
             });
     }
-    
+    function sign(){
+        // 引入dotenv库并加载环境变量
+        require('dotenv').config();
+        // 从环境变量中读取配置
+        const token = process.env.GITHUB_TOKEN; // GitHub 令牌
+        const repoOwner = process.env.REPO_OWNER; // 仓库用户名
+        const repoName = process.env.REPO_NAME; // 仓库名
+        const filePath = process.env.FILE_PATH; // 文件路径
+        const branch = process.env.BRANCH || 'main'; // 分支名，如果未指定则默认为 'main'
+
+        async function readJsonFile() {
+            const url = `https://api.github.com/repos/${repoOwner}/${repoName}/${filePath}?ref=${branch}`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `token ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const content = atob(data.content); // 解码 base64 内容
+                console.log('当前文件内容:', content);
+                return JSON.parse(content); // 解析为 JSON 格式
+            } else {
+                console.error('获取文件失败:', response.statusText);
+            }
+        }
+    }
 </script>
 </html>

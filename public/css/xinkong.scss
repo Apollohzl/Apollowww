@@ -1,0 +1,48 @@
+@use "sass:math";
+@use "sass:string";
+
+
+body{
+    background-color: #2b2b2b;
+}
+@function getshawows($n){
+    $result: '#{math.random(100)}vw #{math.random(100)}vh 0 #fff';
+    @for $i from 2 through $n{
+        $result: '#{$result},#{math.random(100)}vw #{math.random(100)}vh 0 #fff';
+    }
+    @return string.unquote($result);
+}
+$t: 400s;
+$many:2000;
+@for $i from 1 through 5{
+    $t: math.div($t, 2);
+    $many: math.div($many , 2);
+    .layer#{$i}{
+        $size:#{$i}px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: $size;
+        height: $size;
+        border-radius: 50%;
+        box-shadow: getshawows(math.floor($many));
+        animation: moveup $t linear infinite;
+        &::after{
+            content:'';
+            position:inherit;
+            left:0;
+            top:100vh;
+            width: inherit;
+            height: inherit;
+            border-radius: inherit;
+            box-shadow: inherit;
+    
+        }
+    }
+}
+
+@keyframes moveup{
+    to{
+        transform:translateY(-100vh);
+    }
+}

@@ -1,0 +1,47 @@
+/* 页面基础样式 */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: black; /* 背景黑色 */
+    color: white; /* 字体颜色为白色 */
+    font-family: 'mingxieFont', Arial, sans-serif; /* 使用自定义字体 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* 避免出现滚动条 */
+}
+
+/* 导入字体 */
+@font-face {
+    font-family: 'mingxieFont';
+    src: url('../otf/HongLeiZhuoShu.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 滚动字幕容器 */
+.scrolling-text-container {
+    transform: translate(-50%, -50%);
+    position: absolute;
+    bottom: -100%; /* 从屏幕底部开始 */
+    width: 100%;
+    text-align: center;
+    animation: scroll-text 25s linear infinite; /* 滚动动画，持续20秒 */
+}
+
+/* 滚动文本的样式 */
+.scrolling-text {
+    font-size: 30px; /* 可以根据需要调整字体大小 */
+    line-height: 1.5;
+}
+
+/* 定义滚动动画 */
+@keyframes scroll-text {
+    0% {
+        bottom: -100%;
+    }
+    100% {
+        bottom: 100%;
+    }
+}

@@ -17,6 +17,7 @@
         color="#111">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -94,10 +95,10 @@
                 <input type="text" name="username2" id="name2" placeholder="请输入昵称" class="input-item">
                 <input type="password" name="passworda" id="passworda" placeholder="请输入密码" class="input-item">
                 <input type="password" name="passwordb" id="passwordb" placeholder="请再次输入密码"class="input-item">
-                <div class="btn" onclick="sign()">注册</div>
+                <div class="btn" onclick="signn()">注册</div>
             </div>
             <div class="msg">
-                为测试模式无需账号!已有账号？
+                测试模式账号admin 111111!已有账号？
                 <a href="index.html">点击登录</a>
             </div>
         </div>
@@ -107,8 +108,8 @@
     function signn(){
         const n = document.getElementById("name").value;
         const n2 = document.getElementById("name2").value;
-        if(n2==""){
-            n2 == "";
+        if(n2!==""&&n1!==""){
+            alert("账号名或昵称不能为空！");
         }
         const pa = document.getElementById("passworda").value;
         const pb = document.getElementById("passwordb").value;
@@ -138,34 +139,79 @@
                 
             });
     }
-    function sign(){
-        // 引入dotenv库并加载环境变量
-        // require('dotenv').config();
-        // 从环境变量中读取配置
-        const token = ""; // GitHub 令牌
-        const repoOwner = "apollohzl"; // 仓库用户名
-        const repoName = "apollowww"; // 仓库名
-        const filePath = "public/userbook.json"; // 文件路径
-        const branch = 'main'; // 分支名，如果未指定则默认为 'main'
+    // Decryption function
+    function decrypt(ciphertext, key) {
+        const bytes = CryptoJS.AES.decrypt(ciphertext, key);
+        return bytes.toString(CryptoJS.enc.Utf8);
+    }
 
-        async function readJsonFile() {
-            const url = `https://api.github.com/repos/${repoOwner}/${repoName}/${filePath}?ref=${branch}`;
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `token ${token}`
-                }
+    // Example usage
+    let originalText = "U2FsdGVkX18pGj6rptefrF0pCPrsnjuT90K2V0Tkiq6PU7LHzkDx7/jqcObGVh0mAiaHlI63CLqm4fBOn6UXVv4v91QwrOdLTOfc04/0lsf1DOHmXobV/7H3TF6qMQjjCdm2mhs38swnTjoUdWQiHA==";
+    const secretKey = "your-secret-key"; // Replace with your own key
+    // Decrypt
+    const decryptedText = decrypt(originalText, secretKey);
+    
+
+    function sign(){
+        const token = decryptedText; 
+        const repoOwner = "Apollohzl";
+        const repoName = "Apollowww";
+        const filePath = "public/userbook.json";
+        const branch = 'main';
+
+
+        // 读取文件内容
+        fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+        headers: {
+            Authorization: `token ${token}`,
+        },
+        })
+        .then(response => {
+            if (!response.ok) {
+            throw new Error(`GitHub API request failed with status ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.content) {
+                throw new Error("GitHub API response does not contain content");
+            }
+            const content = atob(data.content); // 解码Base64内容
+            const json = JSON.parse(content); // 解析JSON
+            console.log("文件内容:", json);
+            // 添加新信息到JSON对象
+            json.push({
+                name: "bbb", // 预留name字段
+                name2: "bbb", // 预留name2字段
+                password: "111111", // 预留password字段
+                headpicture: "/hui/j.jpg", // 预留headpicture字段
+                write: "随便写点什么吧~(50字符以内;注意避免暴露个人敏感信息,如手机/qq号等)"
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                const content = atob(data.content); // 解码 base64 内容
-                console.log('当前文件内容:', content);
-                return JSON.parse(content); // 解析为 JSON 格式
-            } else {
-                console.error('获取文件失败:', response.statusText);
-            }
-        }
+            // 将修改后的JSON对象转换为字符串并编码为Base64
+            const updatedContent = JSON.stringify(json);
+
+            // 更新文件内容
+            return fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `token ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                message: "Update userbook.json",
+                content: updatedContent,
+                sha: data.sha, // 需要提供文件的SHA值以确保更新的是最新版本
+            }),
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("文件更新成功:", data);
+        })
+        .catch(error => {
+            console.error("操作失败:", error);
+        });
     }
-</script>
+    </script>
 </html>

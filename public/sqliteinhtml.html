@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite 在线预览工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .file-input {
+            padding: 15px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .file-input:hover {
+            border-color: #999;
+        }
+        .db-info {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            display: none;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: -1px;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            background-color: #f1f1f1;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+        .tab-content {
+            display: none;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 0 5px 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SQLite 在线预览工具</h1>
+        
+        <div class="file-input" id="dropArea">
+            <p>点击或拖拽SQLite文件到此处</p>
+            <input type="file" id="fileInput" accept=".sqlite,.db,.sqlite3,.db3" style="display: none;">
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>正在加载SQLite文件，请稍候...</p>
+            <progress></progress>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div id="dbInfo" class="db-info" style="display: none;">
+            <h2>数据库信息</h2>
+            <p>文件名: <span id="fileName"></span></p>
+            <p>文件大小: <span id="fileSize"></span></p>
+            <p>表数量: <span id="tableCount"></span></p>
+            
+            <div class="tabs" id="tabs"></div>
+            
+            <div id="tabContents"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script>
+        // 初始化SQL.js
+        let SQL;
+        const initSqlJs = async () => {
+            try {
+                SQL = await initSqlJs({
+                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+                });
+                console.log("SQL.js 初始化成功");
+            } catch (err) {
+                showError("初始化SQL.js失败: " + err.message);
+            }
+        };
+
+        // 页面加载时初始化
+        window.onload = initSqlJs;
+
+        // 获取DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const dbInfo = document.getElementById('dbInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const tableCount = document.getElementById('tableCount');
+        const tabs = document.getElementById('tabs');
+        const tabContents = document.getElementById('tabContents');
+
+        // 点击事件
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 拖放事件
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#666';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#ccc';
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#ccc';
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // 文件选择事件
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+
+        // 显示错误
+        function showError(message) {
+            error.textContent = message;
+            error.style.display = 'block';
+            loading.style.display = 'none';
+            dbInfo.style.display = 'none';
+        }
+
+        // 隐藏错误
+        function hideError() {
+            error.style.display = 'none';
+        }
+
+        // 处理SQLite文件
+        async function handleFile(file) {
+            if (!SQL) {
+                showError("SQL.js 尚未初始化完成，请稍后再试");
+                return;
+            }
+
+            // 检查文件类型
+            if (!file.name.match(/\.(sqlite|db|sqlite3|db3)$/i)) {
+                showError("请选择有效的SQLite数据库文件 (.sqlite, .db)");
+                return;
+            }
+
+            hideError();
+            loading.style.display = 'block';
+            dbInfo.style.display = 'none';
+
+            try {
+                const fileBuffer = await readFileAsArrayBuffer(file);
+                const db = new SQL.Database(new Uint8Array(fileBuffer));
+
+                // 显示文件信息
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+
+                // 获取所有表
+                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
+                const tableNames = tables[0]?.values.map(row => row[0]) || [];
+                tableCount.textContent = tableNames.length;
+
+                // 清空之前的标签页
+                tabs.innerHTML = '';
+                tabContents.innerHTML = '';
+
+                // 为每个表创建标签页
+                tableNames.forEach((tableName, index) => {
+                    // 创建标签
+                    const tab = document.createElement('div');
+                    tab.className = 'tab' + (index === 0 ? ' active' : '');
+                    tab.textContent = tableName;
+                    tab.onclick = () => switchTab(index);
+                    tabs.appendChild(tab);
+
+                    // 创建内容区域
+                    const content = document.createElement('div');
+                    content.className = 'tab-content' + (index === 0 ? ' active' : '');
+                    content.id = `tab-${index}`;
+                    
+                    try {
+                        // 查询表数据
+                        const result = db.exec(`SELECT * FROM "${tableName}" LIMIT 100`);
+                        if (result.length > 0) {
+                            const columns = result[0].columns;
+                            const values = result[0].values;
+                            
+                            // 创建表格
+                            const table = document.createElement('table');
+                            
+                            // 表头
+                            const thead = document.createElement('thead');
+                            const headerRow = document.createElement('tr');
+                            columns.forEach(col => {
+                                const th = document.createElement('th');
+                                th.textContent = col;
+                                headerRow.appendChild(th);
+                            });
+                            thead.appendChild(headerRow);
+                            table.appendChild(thead);
+                            
+                            // 表体
+                            const tbody = document.createElement('tbody');
+                            values.forEach(row => {
+                                const tr = document.createElement('tr');
+                                row.forEach(cell => {
+                                    const td = document.createElement('td');
+                                    td.textContent = cell !== null ? cell.toString() : 'NULL';
+                                    tr.appendChild(td);
+                                });
+                                tbody.appendChild(tr);
+                            });
+                            table.appendChild(tbody);
+                            
+                            content.appendChild(table);
+                            
+                            // 显示行数
+                            const countResult = db.exec(`SELECT COUNT(*) FROM "${tableName}"`);
+                            const rowCount = countResult[0]?.values[0][0] || 0;
+                            const info = document.createElement('p');
+                            info.textContent = `共 ${rowCount} 行数据，显示前 ${Math.min(100, rowCount)} 行`;
+                            content.insertBefore(info, table);
+                        } else {
+                            content.textContent = '表为空或无法读取数据';
+                        }
+                    } catch (err) {
+                        content.textContent = `读取表数据时出错: ${err.message}`;
+                    }
+                    
+                    tabContents.appendChild(content);
+                });
+
+                loading.style.display = 'none';
+                dbInfo.style.display = 'block';
+            } catch (err) {
+                showError("处理SQLite文件时出错: " + err.message);
+                console.error(err);
+            }
+        }
+
+        // 切换标签页
+        function switchTab(index) {
+            // 更新标签样式
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            // 更新内容显示
+            document.querySelectorAll('.tab-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+
+        // 将文件读取为ArrayBuffer
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

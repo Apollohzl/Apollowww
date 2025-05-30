@@ -78,15 +78,239 @@
         width: 8%;
         height: 3%;
     }
+    
+    /* 加载动画样式 */
+    .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
 </style>
-<!--下载font-awesome.css图标包-->
-<!--https://www.58html.com/html/template/font-awesome.zip-->
+<!-- 引入font-awesome图标库 -->
 <link rel="stylesheet" href="https://www.58html.com/gui/css/font-awesome/css/font-awesome.css?v=9">
 <div id="lyrow">
     <div class="background">
         <h1 class="text">bilibili搜索：<a href="https://space.bilibili.com/1519941537" target="_blank">apollo小黄</a></h1>
-        <video class="vedio" src="/folder/css/movie.ogg" preload="preload" controls="controls"> </video>
+        <!-- 视频播放器元素 -->
+        <video class="vedio" id="videoPlayer" preload="auto" controls="controls"></video>
+        <!-- 加载动画 -->
+        <div class="loader" id="loader"></div>
         <h1 class="header">黄梓林的视频</h1>
-        <!-- <a class="a" href="https://space.bilibili.com/1519941537" target="_blank">apollo小黄</a> -->
     </div>
 </div>
+
+<script>
+    // 全局变量
+    let token = null;
+    let config = null;
+    /**
+     * 使用 AES-GCM 解密
+     * @param {string} ciphertext 
+     * @param {string} password 
+     * @returns {Promise<string>} 解密后的明文
+     */
+     function decrypt(ciphertext, password) {
+        try {
+            // 1. 检查 ciphertext 是否存在
+            if (!ciphertext) {
+                throw new Error("密文不能为空");
+            }
+
+            // 2. 检查 ciphertext 长度是否足够（至少24字符的IV + 至少1字符的Base64）
+            if (ciphertext.length < 25) {
+                throw new Error(`密文长度不足，至少需要25字符（IV + 密文），当前长度：${ciphertext.length}`);
+            }
+
+            // 3. 提取 IV（前24字符）
+            const ivHex = ciphertext.substring(0, 24);
+            if (!ivHex.match(/^[0-9a-fA-F]{24}$/)) {
+                throw new Error("IV 必须是24个16进制字符（0-9, a-f）");
+            }
+
+            // 4. 提取 Base64 密文
+            const ctBase64 = ciphertext.substring(24);
+            if (!ctBase64) {
+                throw new Error("Base64 密文不能为空");
+            }
+
+            // 5. 转换 IV（16进制 → Uint8Array）
+            const iv = new Uint8Array(ivHex.match(/.{2}/g).map(byte => parseInt(byte, 16)));
+
+            // 6. 转换 Base64 密文 → Uint8Array
+            let ctUint8;
+            try {
+                const ctStr = atob(ctBase64);
+                ctUint8 = new Uint8Array(ctStr.length);
+                for (let i = 0; i < ctStr.length; i++) {
+                    ctUint8[i] = ctStr.charCodeAt(i);
+                }
+            } catch (e) {
+                throw new Error("Base64 解码失败，密文可能损坏");
+            }
+
+            // 7. 解密
+            return crypto.subtle.digest("SHA-256", new TextEncoder().encode(password))
+                .then(pwHash => crypto.subtle.importKey("raw", pwHash, { name: "AES-GCM", iv }, false, ["decrypt"]))
+                .then(key => crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ctUint8))
+                .then(plainBuffer => new TextDecoder().decode(plainBuffer))
+                .catch(err => {
+                    // 捕获 Web Crypto API 的错误
+                    throw new Error(`解密失败（Crypto API）：${err.message}`);
+                });
+        } catch (err) {
+            // 捕获并增强同步阶段的错误
+            return Promise.reject(new Error(`解密失败：${err.message}`));
+        }
+    }
+
+    // 配置参数
+    const password = 'MySecretPassword123!Apollohzl';
+    const encrypted = '343b60f80add3f4700c7b841VDD3kxX3aE6s8xBUuYV/2J3QXBVkHypA3FL/Y3w9OdVDZ+zxXmFowRa+gUjVQywzNU2w1qUv9NAaR2kxVZlycFdQfhSeg8Un38TKFoMdXSdzhNsLqkFrhdUTewx5+rLYe2uJRbnOWbxsAThrSA==';
+
+    async function testDecryption() {
+        try {
+            const plaintext = await decrypt(encrypted, password);
+            token = plaintext;
+            
+            config = {
+                githubRepo: 'Apollohzl/sharetoxwx',
+                videoPath: 'output.m3u8',
+                token: token,
+                branch: 'main'
+            };
+            console.log('配置参数:', config);
+            return true; // 表示解密成功
+        } catch (error) {
+            console.error("解密失败:", error);
+            return false;
+        }
+    }
+
+    /**
+     * 从GitHub获取m3u8文件并设置视频播放
+     */
+    async function fetchM3U8FromGitHub() {
+        // 检查配置是否完整
+        if (!config || !config.githubRepo || !config.videoPath || !config.token) {
+            console.error('请配置GitHub仓库信息');
+            return;
+        }
+        
+        try {
+            // 获取DOM元素
+            const videoPlayer = document.getElementById('videoPlayer');
+            const loader = document.getElementById('loader');
+            
+            // 显示加载动画
+            loader.style.display = 'block';
+            
+            // 构建GitHub API请求URL
+            const apiUrl = `https://api.github.com/repos/${config.githubRepo}/contents/${config.videoPath}?ref=${config.branch}`;
+            
+            // 发起API请求获取m3u8文件内容
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Accept': 'application/vnd.github.v3.raw'
+                }
+            });
+            
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`GitHub API错误: ${response.status}`);
+            }
+            
+            // 获取m3u8文件内容
+            const m3u8Content = await response.text();
+            console.log('获取到的m3u8内容:', m3u8Content);
+            
+            // 根据浏览器支持情况选择播放方式
+            if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                // 浏览器原生支持HLS（如Safari）
+                videoPlayer.src = `https://raw.githubusercontent.com/${config.githubRepo}/${config.branch}/${config.videoPath}`;
+            } else if (Hls.isSupported()) {
+                console.log('HLS播放器已加载');
+                const hls = new Hls({
+                    maxBufferLength: 60,       // 最大缓冲长度（秒）
+                    maxMaxBufferLength: 600,   // 绝对最大缓冲长度
+                    maxBufferSize: 60*1000*1000, // 最大缓冲区大小（60MB）
+                    maxBufferHole: 0.5,        // 允许的最大缓冲区缺口（秒）
+                    enableWorker: true         // 使用Web Worker提升性能
+                });
+                
+                hls.loadSource(`https://raw.githubusercontent.com/${config.githubRepo}/${config.branch}/${config.videoPath}`);
+                hls.attachMedia(videoPlayer);
+                
+                // 预加载下一段
+                hls.on(Hls.Events.FRAG_BUFFERED, function() {
+                    const nextFrag = hls.levels[hls.currentLevel].fragments[hls.nextLoadPosition];
+                    if (nextFrag) {
+                        hls.loadFragment(nextFrag, hls.currentLevel);
+                    }
+                });
+            } else {
+                throw new Error('当前浏览器不支持HLS播放');
+            }
+            
+            // 视频可以播放时隐藏加载动画
+            videoPlayer.addEventListener('canplay', () => {
+                loader.style.display = 'none';
+                videoPlayer.play().catch(e => console.log('自动播放被阻止:', e));
+            });
+            
+        } catch (error) {
+            console.error('获取m3u8文件出错:', error);
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+            alert('视频加载失败: ' + error.message);
+        }
+    }
+
+    /**
+     * 动态加载hls.js库
+     */
+    function loadHlsJs() {
+        return new Promise((resolve, reject) => {
+            if (typeof Hls !== 'undefined') {
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // 页面初始化流程
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            // 1. 先解密
+            const decryptSuccess = await testDecryption();
+            if (!decryptSuccess) return;
+            
+            // 2. 加载hls.js
+            await loadHlsJs();
+            
+            // 3. 获取并播放视频
+            await fetchM3U8FromGitHub();
+        } catch (error) {
+            console.error('初始化失败:', error);
+        }
+    });
+</script>

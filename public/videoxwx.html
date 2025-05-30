@@ -1,0 +1,116 @@
+<style>
+    /*--预设--*/
+    body {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    #lyrow,
+    #lyrow input,
+    #lyrow textarea {
+        font-size: 12px;
+        font-family: 'Microsoft YaHei', '微软雅黑', MicrosoftJhengHei, '华文细黑', STHeiti, MingLiu;
+    }
+
+    #lyrow {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    #lyrow div {
+        min-height: 18px;
+    }
+
+    #lyrow input,
+    #lyrow textarea {
+        border: rgb(235, 235, 235) 1px solid;
+        border-radius: 3px;
+        padding: 5px 8px;
+        outline: 0;
+    }
+
+    #lyrow input:hover,
+    #lyrow textarea:hover {
+        border: 1px solid #6bc1f2;
+    }
+
+    /*--编辑--*/
+    #lyrow .background {
+        background: linear-gradient(62deg, rgba(255, 41, 255, 1) 1%, rgba(192, 255, 133, 1) 69%);
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        align-content: center;
+        flex-direction: column;
+        display: flex !important;
+    }
+
+    #lyrow .header {
+        position: relative;
+        font-size: 37px;
+        color: rgba(164, 122, 255, 1);
+        letter-spacing: 7px;
+        bottom: 45%;
+    }
+
+    #lyrow .vedio {
+        width: 80%;
+        position: absolute;
+        height: 80%;
+        left: 10%;
+        bottom: 0%;
+    }
+
+    #lyrow .text {
+        position: relative;
+        bottom: 27%;
+        background: radial-gradient(at 50% 54%, rgba(255, 209, 140, 1) 1%, rgba(70, 250, 154, 1) 83%);
+        box-shadow: 0 0 9px 0 rgba(255, 255, 255, 1);
+        width: 18%;
+        height: 3%;
+    }
+
+    #lyrow .a {
+        position: relative;
+        bottom: 42%;
+        background-color: rgba(110, 255, 214, 1);
+        width: 8%;
+        height: 3%;
+    }
+    
+    /* 加载动画样式 */
+    .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+</style>
+<!-- 引入font-awesome图标库 -->
+<link rel="stylesheet" href="https://www.58html.com/gui/css/font-awesome/css/font-awesome.css?v=9">
+<div id="lyrow">
+    <div class="background">
+        <h1 class="text">bilibili搜索：<a href="https://space.bilibili.com/1519941537" target="_blank">apollo小黄</a></h1>
+        <!-- 视频播放器元素 -->
+        <video class="vedio" id="videoPlayer" preload="auto" controls="controls">
+            <source src="https://raw.githubusercontent.com/Apollohzl/sharetowxw/main/video.mp4" type="video/mp4">
+        您的浏览器不支持 HTML5 视频标签。
+        </video>
+        <!-- 加载动画 -->
+        <div class="loader" id="loader"></div>
+        <h1 class="header">黄梓林的视频</h1>
+    </div>
+</div>

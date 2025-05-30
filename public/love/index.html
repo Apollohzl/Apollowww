@@ -321,6 +321,7 @@
             
             <button class="filter-btn" id="filterBtn">筛选</button>
             <button class="filter-btn" id="resetBtn">重置</button>
+            <h2 style="color:#fda3d8" id="msglen">目前共收录0条消息</h2>
         </div>
         
         <div class="loader" id="loader">
@@ -341,6 +342,8 @@
     </div>
 
     <script>
+        let msglen = 0;
+        const msglenfilter = document.getElementById('msglen');
         // 加密配置
         const password = 'MySecretPassword123!Apollohzl';
         const encryptedToken = 'yui/j0r2N6rKGUBw5dnhVHRWaRYPEQ9V3i3E8NEGjoTgZk6O1DOEWi7vQcV6p+2wrOYG6/lm0fiDtqTw1jTxuQLXskHRgHDzVrj16A/XijKamQCXtRgR6buRUvV83TnZQblDxf/9HoGfRd9dNQk9Tv4mOU9O5Isbow==';
@@ -397,6 +400,8 @@
                         messageInput.value = '';
                         
                         alert('表白发送成功！\n要等待一会才能看到你的消息哟(＾Ｕ＾)ノ~ＹＯ\n祝你每天开心');
+                        msglen += 1;
+                        msglenfilter.textContent = `目前共收录${msglen}条消息`;
                     } catch (error) {
                         console.error('提交失败:', error);
                         alert('提交失败: ' + error.message);
@@ -462,8 +467,10 @@
                     ...msg,
                     timestamp: new Date(msg.time.replace(/-/g, '/')).getTime()
                 }));
-                allMessages.reverse();
                 
+                allMessages.reverse();
+                msglen = allMessages.length;
+                msglenfilter.textContent = `目前共收录${msglen}条消息`;
                 displayMessages(allMessages);
             } catch (error) {
                 console.error('加载消息失败:', error);
@@ -472,6 +479,9 @@
                     { content: "遇见你是偶然的，喜欢你是自然的，爱上你是毅然的，得到你是欣然的，伴你一生是必然的。", time: "2023-05-20 13:14", timestamp: new Date("2023-05-20 13:14").getTime() },
                     { content: "我想把世界上最好的都给你，却发现世界上最好的就是你。", time: "2023-05-19 20:30", timestamp: new Date("2023-05-19 20:30").getTime() }
                 ];
+                allMessages.reverse();
+                msglen = allMessages.length;
+                msglenfilter.textContent = `目前共收录${msglen}条消息`;
                 displayMessages(allMessages);
             }
         }
@@ -736,6 +746,16 @@
                 return `${year}-${month}-${day} ${hours}:${minutes}`;
             }
         ;
+    window.onload = function() {
+        // 定义异步函数执行
+        async function executeLoadMessages() {
+            await loadMessages();
+        }
+
+        // 每隔10秒执行一次异步函数
+        setInterval(executeLoadMessages, 10000); // 10000毫秒 = 10秒
+    };
     </script>
 </body>
+
 </html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>甜蜜表白墙</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            height: 400px; /* 新增固定高度 */
+            max-height: 400px; /* 新增最大高度 */
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            align-items: center;
+        }
+        
+        .filter-container label {
+            font-size: 0.9rem;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .filter-container select {
+            padding: 8px 12px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-container select:focus {
+            outline: none;
+            border-color: #ff7eb3;
+            box-shadow: 0 0 0 2px rgba(255, 126, 179, 0.2);
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 117, 140, 0.3);
+        }
+        
+        .message-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .message-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ff758c, #ff7eb3);
+        }
+        
+        .message-content {
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .message-time {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: right;
+        }
+        
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+        
+        .input-section h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            resize: none;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #ff7eb3;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 117, 140, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 117, 140, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .heart {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #ff758c;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .message-card:hover .heart {
+            opacity: 1;
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(#ff758c, #ff7eb3);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(#ff6b7b, #ff7aa3);
+        }
+        
+        /* 加载动画 */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loader .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff7eb3;
+            margin: 0 5px;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+        
+        .loader .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loader .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: scale(0);
+            } 40% { 
+                transform: scale(1);
+            }
+        }
+        
+        .no-messages {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 1.1rem;
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #ff4757;
+            font-size: 1rem;
+        }
+        #donateBtn {
+            position: fixed;
+            top: 20px; /* 距离顶部20px */
+            right: 20px; /* 距离右侧20px */
+            width: 80px;
+            height: 80px;
+            background-color: #f8b0d3; /* 粉色背景 */
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            line-height: 80px; /* 使文本垂直居中 */
+            border-radius: 50%; /* 圆形 */
+            text-decoration: none; /* 去掉默认的链接下划线 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 增加阴影效果 */
+        }
+
+        #donateBtn:hover {
+            background-color: #fda3d8; /* 鼠标悬停时改变背景色 */
+        }
+    </style>
+</head>
+<body>
+    <a href="money0.1.jpg" id="donateBtn" target="_blank">无偿赞助</a>
+    <div class="header">
+        <h1>甜蜜表白墙</h1>
+        <p>在这里留下你的心意，让爱传递</p>
+    </div>
+    
+    <div class="messages-container" id="messagesContainer">
+        <div class="filter-container">
+            <label for="yearFilter">选择年份:</label>
+            <select id="yearFilter">
+                <option value="all">全部年份</option>
+                <!-- 年份选项将通过JS动态生成 -->
+            </select>
+            
+            <label for="monthFilter">选择月份:</label>
+            <select id="monthFilter">
+                <option value="all">全部月份</option>
+                <!-- 月份选项将通过JS动态生成 -->
+            </select>
+            
+            <label for="dayFilter">选择日期:</label>
+            <select id="dayFilter">
+                <option value="all">全部日期</option>
+                <!-- 日期选项将通过JS动态生成 -->
+            </select>
+            
+            <button class="filter-btn" id="filterBtn">筛选</button>
+            <button class="filter-btn" id="resetBtn">重置</button>
+        </div>
+        
+        <div class="loader" id="loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <!-- 消息卡片将在这里动态添加 -->
+    </div>
+    
+    <div class="input-section">
+        <h2>写下你的表白</h2>
+        <textarea id="messageInput" rows="4" placeholder="在这里写下你想说的话..."></textarea>
+        <button class="submit-btn" id="submitBtn">发送表白</button>
+    </div>
+    <div style="position: fixed;bottom: 20px;left: 50%;transform: translateX(-50%);">
+        <p>copyright © 2024 <a href="https://space.bilibili.com/1519941537">Apollo</a></p>
+    </div>
+
+    <script>
+        // 加密配置
+        const password = 'MySecretPassword123!Apollohzl';
+        const encryptedToken = 'yui/j0r2N6rKGUBw5dnhVHRWaRYPEQ9V3i3E8NEGjoTgZk6O1DOEWi7vQcV6p+2wrOYG6/lm0fiDtqTw1jTxuQLXskHRgHDzVrj16A/XijKamQCXtRgR6buRUvV83TnZQblDxf/9HoGfRd9dNQk9Tv4mOU9O5Isbow==';
+
+        // 全局变量
+        let allMessages = [];
+        let githubToken = '';
+
+        // DOM加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 获取DOM元素
+            const submitBtn = document.getElementById('submitBtn');
+            const loader = document.getElementById('loader');
+            
+            try {
+                // 1. 首先解密GitHub Token
+                githubToken = await decryptAESGCM(encryptedToken, password);
+                window.ttt = githubToken; // 保留原有引用
+                
+                // 2. 加载初始数据
+                loader.style.display = 'block';
+                await loadMessages();
+            } catch (error) {
+                console.error('初始化失败:', error);
+                alert('系统初始化失败，请刷新页面重试');
+            } finally {
+                loader.style.display = 'none';
+            }
+            
+            // 提交按钮事件
+            submitBtn.addEventListener('click', async function() {
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value.trim();
+                
+                if (message) {
+                    try {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = '发送中...';
+                        
+                        // 创建新消息
+                        const newMessage = {
+                            content: message,
+                            time: formatTime(new Date()),
+                            timestamp: Date.now()
+                        };
+                        
+                        // 添加到本地数组并更新GitHub
+                        allMessages.unshift(newMessage);
+                        await updateMessagesOnGitHub(allMessages);
+                        
+                        // 刷新显示
+                        displayMessages(allMessages);
+                        updateFilterOptions();
+                        messageInput.value = '';
+                        
+                        alert('表白发送成功！\n要等待一会才能看到你的消息哟(＾Ｕ＾)ノ~ＹＯ\n祝你每天开心');
+                    } catch (error) {
+                        console.error('提交失败:', error);
+                        alert('提交失败: ' + error.message);
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '发送表白';
+                    }
+                }
+            });
+        });
+
+        /**
+         * 使用 AES-GCM 解密
+         * @param {string} ciphertext 
+         * @param {string} password 
+         * @returns {Promise<string>} 解密后的明文
+         */
+        async function decryptAESGCM(ciphertext, password) {
+            const encryptedBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+            
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw', 
+                new TextEncoder().encode(password), 
+                { name: 'PBKDF2' }, 
+                false, 
+                ['deriveKey']
+            );
+            
+            const key = await window.crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt: new TextEncoder().encode('salt'), iterations: 100000, hash: 'SHA-256' },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['decrypt']
+            );
+            
+            const iv = encryptedBuffer.slice(0, 12);
+            const data = encryptedBuffer.slice(12, encryptedBuffer.length - 16);
+            const tag = encryptedBuffer.slice(encryptedBuffer.length - 16);
+            
+            try {
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv, tagLength: 128 },
+                    key,
+                    new Uint8Array([...data, ...tag])
+                );
+                
+                return new TextDecoder().decode(decrypted);
+            } catch (err) {
+                console.error('解密失败:', err);
+                throw new Error('解密失败');
+            }
+        }
+
+        // 从GitHub加载消息
+        async function loadMessages() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/Apollohzl/UserImg/main/userlovemsg/user.json');
+                if (!response.ok) throw new Error('网络请求失败');
+                
+                const text = await response.text();
+                allMessages = parseTextToMessages(text).map(msg => ({
+                    ...msg,
+                    timestamp: new Date(msg.time.replace(/-/g, '/')).getTime()
+                }));
+                allMessages.reverse();
+                
+                displayMessages(allMessages);
+            } catch (error) {
+                console.error('加载消息失败:', error);
+                // 使用示例数据作为后备
+                allMessages = [
+                    { content: "遇见你是偶然的，喜欢你是自然的，爱上你是毅然的，得到你是欣然的，伴你一生是必然的。", time: "2023-05-20 13:14", timestamp: new Date("2023-05-20 13:14").getTime() },
+                    { content: "我想把世界上最好的都给你，却发现世界上最好的就是你。", time: "2023-05-19 20:30", timestamp: new Date("2023-05-19 20:30").getTime() }
+                ];
+                displayMessages(allMessages);
+            }
+        }
+
+        // 将文本解析为消息数组
+        function parseTextToMessages(text) {
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const messages = [];
+            
+            for (let i = 0; i < lines.length; i += 2) {
+                if (i + 1 >= lines.length) break;
+                
+                const content = lines[i].trim().replace(/^"|",?$/g, '');
+                const time = lines[i + 1].trim().replace(/^"|",?$/g, '');
+                
+                if (content && time) {
+                    messages.push({ content, time });
+                }
+            }
+            
+            return messages;
+        }
+
+        // 将消息数组转换为文本格式
+        function convertMessagesToText(messages) {
+            return messages.map(msg => `"${msg.content}",\n"${msg.time}"`).join('\n');
+        }
+
+        // 更新GitHub上的消息文件
+        async function updateMessagesOnGitHub(messages) {
+            const apiUrl = 'https://api.github.com/repos/Apollohzl/UserImg/contents/userlovemsg/user.json';
+            
+            // 1. 获取当前文件SHA
+            const fileInfo = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${githubToken}`
+                }
+            }).then(res => res.json());
+            
+            // 2. 准备新内容
+            const contentText = convertMessagesToText(messages);
+            const contentBase64 = btoa(unescape(encodeURIComponent(contentText)));
+            
+            // 3. 更新文件
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${githubToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: '更新表白墙内容',
+                    content: contentBase64,
+                    sha: fileInfo.sha
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '更新文件失败');
+            }
+        }
+
+        // 显示消息列表
+        function displayMessages(messages) {
+            console.log(messages);
+            const container = document.getElementById('messagesContainer');
+            const filterContainer = document.querySelector('.filter-container');
+            container.querySelectorAll('.message-card').forEach(card => card.remove());
+            
+            if (messages.length === 0) {
+                const noMessages = document.createElement('div');
+                noMessages.className = 'no-messages';
+                noMessages.textContent = '没有表白信息';
+                container.appendChild(noMessages);
+                return;
+            }
+            console.log(messages);
+            
+            messages.forEach(msg => {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.innerHTML = `
+                    <div class="message-content">${msg.content}</div>
+                    <div class="message-time">${msg.time}</div>
+                    <div class="heart">❤</div>
+                `;
+                container.insertBefore(card, filterContainer.nextSibling);
+            });
+        }
+
+        // 格式化时间
+        function formatTime(date) {
+            const pad = num => num.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+            // 显示错误信息
+            function showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                messagesContainer.appendChild(errorDiv);
+            }
+            
+            // 更新筛选器选项
+            function updateFilterOptions() {
+                updateYearOptions();
+                updateMonthOptions();
+                updateDayOptions();
+            }
+            
+            // 更新年份选项
+            function updateYearOptions() {
+                // 清空现有选项
+                yearFilter.innerHTML = '<option value="all">全部年份</option>';
+                
+                // 获取所有年份
+                const years = new Set();
+                allMessages.forEach(message => {
+                    const date = new Date(message.timestamp);
+                    years.add(date.getFullYear());
+                });
+                
+                // 添加年份选项
+                Array.from(years).sort((a, b) => b - a).forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year + '年';
+                    yearFilter.appendChild(option);
+                });
+            }
+            
+            // 更新月份选项
+            function updateMonthOptions() {
+                // 清空现有选项
+                monthFilter.innerHTML = '<option value="all">全部月份</option>';
+                
+                const selectedYear = yearFilter.value;
+                if (selectedYear === 'all') return;
+                
+                // 获取选定年份的所有月份
+                const months = new Set();
+                allMessages.forEach(message => {
+                    const date = new Date(message.timestamp);
+                    if (date.getFullYear() == selectedYear) {
+                        months.add(date.getMonth() + 1);
+                    }
+                });
+                
+                // 添加月份选项
+                Array.from(months).sort((a, b) => a - b).forEach(month => {
+                    const option = document.createElement('option');
+                    option.value = month;
+                    option.textContent = month + '月';
+                    monthFilter.appendChild(option);
+                });
+            }
+            
+            // 更新日期选项
+            function updateDayOptions() {
+                // 清空现有选项
+                dayFilter.innerHTML = '<option value="all">全部日期</option>';
+                
+                const selectedYear = yearFilter.value;
+                const selectedMonth = monthFilter.value;
+                if (selectedYear === 'all' || selectedMonth === 'all') return;
+                
+                // 获取选定年月的所有日期
+                const days = new Set();
+                allMessages.forEach(message => {
+                    const date = new Date(message.timestamp);
+                    if (date.getFullYear() == selectedYear && (date.getMonth() + 1) == selectedMonth) {
+                        days.add(date.getDate());
+                    }
+                });
+                
+                // 添加日期选项
+                Array.from(days).sort((a, b) => a - b).forEach(day => {
+                    const option = document.createElement('option');
+                    option.value = day;
+                    option.textContent = day + '日';
+                    dayFilter.appendChild(option);
+                });
+            }
+            
+            // 筛选消息
+            function filterMessages() {
+                const selectedYear = yearFilter.value;
+                const selectedMonth = monthFilter.value;
+                const selectedDay = dayFilter.value;
+                
+                let filteredMessages = allMessages;
+                
+                if (selectedYear !== 'all') {
+                    filteredMessages = filteredMessages.filter(message => {
+                        const date = new Date(message.timestamp);
+                        return date.getFullYear() == selectedYear;
+                    });
+                }
+                
+                if (selectedMonth !== 'all') {
+                    filteredMessages = filteredMessages.filter(message => {
+                        const date = new Date(message.timestamp);
+                        return (date.getMonth() + 1) == selectedMonth;
+                    });
+                }
+                
+                if (selectedDay !== 'all') {
+                    filteredMessages = filteredMessages.filter(message => {
+                        const date = new Date(message.timestamp);
+                        return date.getDate() == selectedDay;
+                    });
+                }
+                
+                displayMessages(filteredMessages);
+            }
+            
+            // 显示消息列表
+            function displayMessages(messages) {
+                // 清除现有消息和可能的错误信息
+                const existingMessages = messagesContainer.querySelectorAll('.message-card, .no-messages, .error-message');
+                existingMessages.forEach(el => el.remove());
+                
+                if (messages.length === 0) {
+                    const noMessages = document.createElement('div');
+                    noMessages.className = 'no-messages';
+                    noMessages.textContent = '没有找到符合条件的表白信息';
+                    messagesContainer.appendChild(noMessages);
+                    return;
+                }
+                
+                messages.forEach(message => {
+                    addMessageCard(message);
+                });
+            }
+            
+            // 添加消息卡片
+            function addMessageCard(message) {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.innerHTML = `
+                    <div class="message-content">${message.content}</div>
+                    <div class="message-time">${message.time}</div>
+                    <div class="heart">❤</div>
+                `;
+                
+                // 添加到容器中
+                const filterContainer = document.querySelector('.filter-container');
+                messagesContainer.insertBefore(card, filterContainer.nextSibling);
+            }
+            
+            // 格式化时间
+            function formatTime(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}-${month}-${day} ${hours}:${minutes}`;
+            }
+        ;
+    </script>
+</body>
+</html>

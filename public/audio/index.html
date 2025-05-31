@@ -406,6 +406,15 @@
     <!-- 加载字体图标 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script>
+        window.onload = function() {
+            const audioo = document.getElementById('audio');
+            
+            // 强制开始加载（兼容性更好）
+            audioo.load();
+            
+            // 可选：设置音量初始值（避免自动播放时声音太大）
+            audioo.volume = 0.5;
+        };
         document.addEventListener('DOMContentLoaded', function() {
             // 创建星空和波形效果
             function createStars() {
@@ -693,13 +702,7 @@
             cosmicPlayer.addEventListener('mouseleave', () => {
                 cosmicPlayer.style.transform = 'rotateY(0deg) rotateX(0deg)';
             });
-            const audioo = document.getElementById('audio');
             
-            // 强制开始加载（兼容性更好）
-            audioo.load();
-            
-            // 可选：设置音量初始值（避免自动播放时声音太大）
-            audioo.volume = 0.5;
                 });
             </script>
 </head>

@@ -406,15 +406,19 @@
     <!-- 加载字体图标 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script>
-        window.onload = function() {
-            const audioo = document.getElementById('audio');
+        // 在 window 加载时立即开始预加载
+        window.addEventListener('load', function() {
+            const audio = new Audio();
+            audio.src = 'music.mp3';
+            audio.preload = 'auto';
             
-            // 强制开始加载（兼容性更好）
-            audioo.load();
+            // // 添加到 DOM（可选，如果不需显示控件）
+            // audio.style.display = 'none';
+            // document.body.appendChild(audio);
             
-            // 可选：设置音量初始值（避免自动播放时声音太大）
-            audioo.volume = 0.5;
-        };
+            // 保存引用以便后续使用
+            window.appAudio = audio;
+        });
         document.addEventListener('DOMContentLoaded', function() {
             // 创建星空和波形效果
             function createStars() {

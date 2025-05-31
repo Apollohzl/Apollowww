@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!--图标-->
-    <link rel="icon" href="audio/icon.ico" type="image/x-icon">
+    <link rel="icon" href="icon.ico" type="image/x-icon">
     <title>706小黄组音乐播放器</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
@@ -461,12 +461,12 @@
         <div class="wave-visualizer"></div>
         
         <!-- 音频元素 -->
-        <audio id="audio" src="audio/music.mp3"></audio>
+        <audio id="audio" src="music.mp3"></audio>
     </div>
 
     <!-- 版权信息 -->
     <div class="copyright">
-        &copy; Apollo小黄，施禹彤服务赞助
+        copyright &copy; Apollo小黄
     </div>
 
     <script>
@@ -527,7 +527,7 @@
             let lyricTimes = [];
             
             // 加载歌词文件
-            fetch('audio/music.lrc')
+            fetch('music.lrc')
                 .then(response => response.text())
                 .then(text => {
                     parseLRC(text);

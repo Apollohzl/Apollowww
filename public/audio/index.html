@@ -693,8 +693,15 @@
             cosmicPlayer.addEventListener('mouseleave', () => {
                 cosmicPlayer.style.transform = 'rotateY(0deg) rotateX(0deg)';
             });
-        });
-    </script>
+            const audioo = document.getElementById('audio');
+            
+            // 强制开始加载（兼容性更好）
+            audioo.load();
+            
+            // 可选：设置音量初始值（避免自动播放时声音太大）
+            audioo.volume = 0.5;
+                });
+            </script>
 </head>
 <body>
     <!-- 星空背景 -->
@@ -751,7 +758,7 @@
         <div class="wave-visualizer"></div>
         
         <!-- 音频元素 -->
-        <audio id="audio" src="music.mp3"></audio>
+        <audio id="audio" src="music.mp3"  preload="auto"></audio>
     </div>
 
     <!-- 版权信息 -->

@@ -405,70 +405,6 @@
     </style>
     <!-- 加载字体图标 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-</head>
-<body>
-    <!-- 星空背景 -->
-    <div class="stars"></div>
-    
-    <!-- 主播放器 -->
-    <div class="cosmic-player">
-        <!-- 全息投影效果 -->
-        <div class="holographic-effect"></div>
-        
-        <!-- 歌曲信息 -->
-        <div class="song-info">
-            <h1 class="song-title" id="button">晴天</h1>
-            <div class="song-artist">作者: 周杰伦</div>
-            <div class="song-performers">演唱: 黄梓林 刘培煌 文雍 佘博源 黄锐霖</div>
-        </div>
-        
-        <!-- 歌词显示区 -->
-        <div class="lyrics-portal">
-            <div class="lyrics-container" id="lyricsContainer">
-                <div class="lyrics-line previous"></div>
-                <div class="lyrics-line current"></div>
-                <div class="lyrics-line next"></div>
-            </div>
-        </div>
-        
-        <!-- 进度条 -->
-        <div class="time-rift">
-            <div class="progress-container" id="progressBar">
-                <div class="progress" id="progress">
-                    <div class="progress-handle"></div>
-                </div>
-            </div>
-            <div class="time-info">
-                <span id="currentTime">0:00</span>
-                <span id="duration">0:00</span>
-            </div>
-        </div>
-        
-        <!-- 控制按钮 -->
-        <div class="quantum-controls">
-            <button class="control-btn" id="prevBtn">
-                <i class="fas fa-step-backward"></i>
-            </button>
-            <button class="control-btn play-btn" id="playBtn">
-                <i class="fas fa-play" id="playIcon"></i>
-            </button>
-            <button class="control-btn" id="nextBtn">
-                <i class="fas fa-step-forward"></i>
-            </button>
-        </div>
-        
-        <!-- 音频波形可视化 -->
-        <div class="wave-visualizer"></div>
-        
-        <!-- 音频元素 -->
-        <audio id="audio" src="music.mp3"></audio>
-    </div>
-
-    <!-- 版权信息 -->
-    <div class="copyright">
-        copyright &copy; Apollo小黄
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 创建星空和波形效果
@@ -759,6 +695,71 @@
             });
         });
     </script>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars"></div>
+    
+    <!-- 主播放器 -->
+    <div class="cosmic-player">
+        <!-- 全息投影效果 -->
+        <div class="holographic-effect"></div>
+        
+        <!-- 歌曲信息 -->
+        <div class="song-info">
+            <h1 class="song-title" id="button">晴天</h1>
+            <div class="song-artist">作者: 周杰伦</div>
+            <div class="song-performers">演唱: 黄梓林 刘培煌 文雍 佘博源 黄锐霖</div>
+        </div>
+        
+        <!-- 歌词显示区 -->
+        <div class="lyrics-portal">
+            <div class="lyrics-container" id="lyricsContainer">
+                <div class="lyrics-line previous"></div>
+                <div class="lyrics-line current"></div>
+                <div class="lyrics-line next"></div>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="time-rift">
+            <div class="progress-container" id="progressBar">
+                <div class="progress" id="progress">
+                    <div class="progress-handle"></div>
+                </div>
+            </div>
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="quantum-controls">
+            <button class="control-btn" id="prevBtn">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="control-btn play-btn" id="playBtn">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+            <button class="control-btn" id="nextBtn">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+        
+        <!-- 音频波形可视化 -->
+        <div class="wave-visualizer"></div>
+        
+        <!-- 音频元素 -->
+        <audio id="audio" src="music.mp3"></audio>
+    </div>
+
+    <!-- 版权信息 -->
+    <div class="copyright">
+        copyright &copy; Apollo小黄
+    </div>
+
+    
     <script>
 let clickCount = 0;
 

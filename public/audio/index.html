@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--图标-->
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <title>超时空音乐播放器</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
+        
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-pink: #ff00f2;
+            --neon-purple: #8a2be2;
+            --dark-space: #0a0a20;
+            --star-light: rgba(255, 255, 255, 0.8);
+            --glow-effect: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: var(--dark-space);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: white;
+            perspective: 1000px;
+            position: relative;
+        }
+        
+        /* 星空背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: var(--star-light);
+            border-radius: 50%;
+            animation: twinkle var(--duration, 5s) infinite ease-in-out;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        /* 播放器容器 */
+        .cosmic-player {
+            width: 100%;
+            max-width: 600px;
+            min-width: 420px;
+            height: 100%;
+            background: rgba(10, 10, 32, 0.7);
+            border-radius: 25px;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+            padding: 30px;
+            transform-style: preserve-3d;
+            animation: float 8s ease-in-out infinite;
+            z-index: 10;
+            margin-bottom: 40px;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+            50% { transform: translateY(-20px) rotateX(5deg) rotateY(5deg); }
+        }
+        
+        /* 全息投影效果 */
+        .holographic-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(0, 242, 255, 0.05) 0%, 
+                rgba(138, 43, 226, 0.05) 50%, 
+                rgba(255, 0, 242, 0.05) 100%);
+            z-index: -1;
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+        }
+        
+        /* 歌曲信息 */
+        .song-info {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .song-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            color: var(--neon-blue);
+            text-shadow: var(--glow-effect);
+            letter-spacing: 2px;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple); }
+            100% { text-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-purple), 0 0 45px var(--neon-pink); }
+        }
+        
+        .song-artist, .song-performers {
+            font-size: 14px;
+            color: var(--neon-pink);
+            margin-bottom: 3px;
+            text-shadow: 0 0 5px var(--neon-pink);
+            letter-spacing: 1px;
+        }
+        
+        /* 歌词显示区 */
+        .lyrics-portal {
+            height: 200px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 242, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.2);
+        }
+        
+        .lyrics-portal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom, 
+                transparent 0%, 
+                rgba(0, 242, 255, 0.1) 50%, 
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        
+        .lyrics-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .lyrics-line {
+            text-align: center;
+            margin: 12px 0;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .lyrics-line.previous {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-30px) scale(0.8);
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+        
+        .lyrics-line.current {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neon-blue);
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple);
+        }
+        
+        .lyrics-line.next {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            transform: translateY(30px) scale(0.8);
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+        
+        /* 进度条 */
+        .time-rift {
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 242, 255, 0.3), 
+                transparent);
+            animation: progressGlow 2s linear infinite;
+            opacity: 0.5;
+        }
+        
+        @keyframes progressGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+        
+        .progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.8), 
+                transparent);
+            animation: progressSparkle 2s linear infinite;
+        }
+        
+        .progress-handle {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+        
+        .progress-container:hover .progress-handle {
+            opacity: 1;
+        }
+        
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+            letter-spacing: 1px;
+        }
+        
+        /* 控制按钮 */
+        .quantum-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin: 0 15px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right, 
+                transparent, 
+                transparent, 
+                rgba(0, 242, 255, 0.1), 
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: btnReflect 3s linear infinite;
+        }
+        
+        @keyframes btnReflect {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 242, 255, 0.2);
+            box-shadow: 0 0 15px var(--neon-blue);
+            transform: scale(1.1);
+        }
+        
+        .play-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue));
+            box-shadow: 0 0 20px var(--neon-purple);
+            z-index: 2;
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 30px var(--neon-purple);
+        }
+        
+        .control-btn i {
+            font-size: 20px;
+        }
+        
+        .play-btn i {
+            font-size: 28px;
+        }
+        
+        /* 音频波形可视化 */
+        .wave-visualizer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 30px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .wave-bar {
+            width: 4px;
+            margin: 0 2px;
+            background: linear-gradient(to top, var(--neon-blue), var(--neon-pink));
+            border-radius: 2px;
+            animation: wavePulse 1.5s ease-in-out infinite alternate;
+            animation-delay: calc(var(--i) * 0.05s);
+        }
+        
+        @keyframes wavePulse {
+            0% { height: 10%; }
+            100% { height: 100%; }
+        }
+        
+        /* 版权信息 */
+        .copyright {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            opacity: 0.7;
+            z-index: 100;
+        }
+    </style>
+    <!-- 加载字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars"></div>
+    
+    <!-- 主播放器 -->
+    <div class="cosmic-player">
+        <!-- 全息投影效果 -->
+        <div class="holographic-effect"></div>
+        
+        <!-- 歌曲信息 -->
+        <div class="song-info">
+            <h1 class="song-title" id="button">晴天</h1>
+            <div class="song-artist">作者: 周杰伦</div>
+            <div class="song-performers">演唱: 黄梓林 刘培煌 文雍 佘博源 黄锐霖</div>
+        </div>
+        
+        <!-- 歌词显示区 -->
+        <div class="lyrics-portal">
+            <div class="lyrics-container" id="lyricsContainer">
+                <div class="lyrics-line previous"></div>
+                <div class="lyrics-line current"></div>
+                <div class="lyrics-line next"></div>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="time-rift">
+            <div class="progress-container" id="progressBar">
+                <div class="progress" id="progress">
+                    <div class="progress-handle"></div>
+                </div>
+            </div>
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="quantum-controls">
+            <button class="control-btn" id="prevBtn">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="control-btn play-btn" id="playBtn">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+            <button class="control-btn" id="nextBtn">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+        
+        <!-- 音频波形可视化 -->
+        <div class="wave-visualizer"></div>
+        
+        <!-- 音频元素 -->
+        <audio id="audio" src="music.mp3"></audio>
+    </div>
+
+    <!-- 版权信息 -->
+    <div class="copyright">
+        &copy; Apollo小黄，施禹彤服务赞助
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建星空和波形效果
+            function createStars() {
+                const starsContainer = document.querySelector('.stars');
+                const starCount = 100;
+                
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // 随机大小 (1-3px)
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    
+                    // 随机位置
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    
+                    // 随机闪烁时间
+                    star.style.setProperty('--duration', `${Math.random() * 4 + 3}s`);
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            function createWaveBars() {
+                const visualizer = document.querySelector('.wave-visualizer');
+                const barCount = 30;
+                
+                for (let i = 0; i < barCount; i++) {
+                    const bar = document.createElement('div');
+                    bar.classList.add('wave-bar');
+                    bar.style.setProperty('--i', i);
+                    visualizer.appendChild(bar);
+                }
+            }
+            
+            createStars();
+            createWaveBars();
+            
+            const audio = document.getElementById('audio');
+            const playBtn = document.getElementById('playBtn');
+            const playIcon = document.getElementById('playIcon');
+            const progressBar = document.getElementById('progressBar');
+            const progress = document.getElementById('progress');
+            const currentTimeEl = document.getElementById('currentTime');
+            const durationEl = document.getElementById('duration');
+            const lyricsContainer = document.getElementById('lyricsContainer');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const cosmicPlayer = document.querySelector('.cosmic-player');
+            
+            let lyrics = [];
+            let lyricTimes = [];
+            
+            // 加载歌词文件
+            fetch('music.lrc')
+                .then(response => response.text())
+                .then(text => {
+                    parseLRC(text);
+                })
+                .catch(error => {
+                    console.error('Error loading lyrics:', error);
+                    document.querySelector('.lyrics-line.current').textContent = '♪ 音乐正在播放 ♪';
+                });
+            
+            // 解析LRC歌词文件
+            function parseLRC(lrcText) {
+                const lines = lrcText.split('\n');
+                const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})?\]/;
+                
+                lines.forEach(line => {
+                    const matches = timeRegex.exec(line);
+                    if (matches) {
+                        const minutes = parseFloat(matches[1]);
+                        const seconds = parseFloat(matches[2]);
+                        const milliseconds = matches[3] ? parseFloat(matches[3]) / 100 : 0;
+                        const time = minutes * 60 + seconds + milliseconds;
+                        
+                        const text = line.replace(timeRegex, '').trim();
+                        if (text) {
+                            lyricTimes.push(time);
+                            lyrics.push(text);
+                        }
+                    }
+                });
+            }
+            
+            // 更新歌词显示
+            function updateLyrics(currentTime) {
+                if (lyrics.length === 0) {
+                    // 如果没有歌词，显示动态效果
+                    const beatText = ['♪', '♫', '♬', '♩'][Math.floor(currentTime % 4)];
+                    document.querySelector('.lyrics-line.current').textContent = `${beatText} 音乐正在播放 ${beatText}`;
+                    return;
+                }
+                
+                let currentIndex = -1;
+                
+                // 找到当前播放的歌词行
+                for (let i = 0; i < lyricTimes.length; i++) {
+                    if (currentTime >= lyricTimes[i]) {
+                        currentIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (currentIndex === -1) {
+                    // 还没到第一句歌词
+                    document.querySelector('.lyrics-line.previous').textContent = '';
+                    document.querySelector('.lyrics-line.current').textContent = '...';
+                    document.querySelector('.lyrics-line.next').textContent = lyrics[0] || '';
+                } else if (currentIndex === lyrics.length - 1) {
+                    // 最后一句歌词
+                    document.querySelector('.lyrics-line.previous').textContent = lyrics[currentIndex - 1] || '';
+                    document.querySelector('.lyrics-line.current').textContent = lyrics[currentIndex];
+                    document.querySelector('.lyrics-line.next').textContent = '';
+                } else {
+                    // 中间的歌词
+                    document.querySelector('.lyrics-line.previous').textContent = currentIndex > 0 ? lyrics[currentIndex - 1] : '';
+                    document.querySelector('.lyrics-line.current').textContent = lyrics[currentIndex];
+                    document.querySelector('.lyrics-line.next').textContent = lyrics[currentIndex + 1];
+                }
+            }
+            
+            // 播放/暂停
+            function togglePlay() {
+                if (audio.paused) {
+                    audio.play();
+                    playIcon.classList.replace('fa-play', 'fa-pause');
+                    cosmicPlayer.style.animation = 'float 8s ease-in-out infinite, pulseGlow 2s ease-in-out infinite alternate';
+                } else {
+                    audio.pause();
+                    playIcon.classList.replace('fa-pause', 'fa-play');
+                    cosmicPlayer.style.animation = 'float 8s ease-in-out infinite';
+                }
+            }
+            
+            // 更新进度条
+            function updateProgress() {
+                const { currentTime, duration } = audio;
+                const progressPercent = (currentTime / duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+                
+                // 更新时间显示
+                currentTimeEl.textContent = formatTime(currentTime);
+                if (duration) {
+                    durationEl.textContent = formatTime(duration);
+                }
+                
+                // 更新歌词
+                updateLyrics(currentTime);
+                
+                // 动态波形效果
+                animateWaveBars();
+            }
+            
+            // 设置进度
+            function setProgress(e) {
+                const width = this.clientWidth;
+                const clickX = e.offsetX;
+                const duration = audio.duration;
+                audio.currentTime = (clickX / width) * duration;
+            }
+            
+            // 格式化时间
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+            
+            // 动态波形效果
+            function animateWaveBars() {
+                const bars = document.querySelectorAll('.wave-bar');
+                if (audio.paused) return;
+                
+                bars.forEach((bar, i) => {
+                    // 随机高度变化模拟音频波形
+                    const randomHeight = Math.random() * 100;
+                    bar.style.height = `${randomHeight}%`;
+                    
+                    // 根据播放状态调整颜色
+                    const hue = 200 + Math.sin(Date.now() / 1000 + i) * 60;
+                    bar.style.background = `linear-gradient(to top, hsl(${hue}, 100%, 50%), hsl(${hue + 60}, 100%, 50%))`;
+                });
+                
+                requestAnimationFrame(animateWaveBars);
+            }
+            
+            // 事件监听
+            playBtn.addEventListener('click', togglePlay);
+            progressBar.addEventListener('click', setProgress);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', () => {
+                playIcon.classList.replace('fa-pause', 'fa-play');
+                cosmicPlayer.style.animation = 'float 8s ease-in-out infinite';
+            });
+            
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.textContent = formatTime(audio.duration);
+            });
+            
+            // 上一首/下一首按钮（示例功能）
+            prevBtn.addEventListener('click', () => {
+                audio.currentTime = Math.max(0, audio.currentTime - 5); // 后退5秒
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                audio.currentTime = Math.min(audio.duration, audio.currentTime + 5); // 前进5秒
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlay();
+                } else if (e.code === 'ArrowLeft') {
+                    audio.currentTime = Math.max(0, audio.currentTime - 5);
+                } else if (e.code === 'ArrowRight') {
+                    audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+                }
+            });
+            
+            // 鼠标悬浮3D效果
+            cosmicPlayer.addEventListener('mousemove', (e) => {
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+                cosmicPlayer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            });
+            
+            cosmicPlayer.addEventListener('mouseleave', () => {
+                cosmicPlayer.style.transform = 'rotateY(0deg) rotateX(0deg)';
+            });
+        });
+    </script>
+    <script>
+let clickCount = 0;
+
+document.getElementById('button').addEventListener('click', function() {
+  clickCount++; // 每次点击按钮，计数加1
+
+  if (clickCount % 2 !== 0) {
+    // 第奇数次点击，放大（全屏）
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
+      document.documentElement.webkitRequestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+      document.documentElement.msRequestFullscreen();
+    }
+  } else {
+    // 第偶数次点击，取消全屏
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) { // Firefox
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { // IE/Edge
+      document.msExitFullscreen();
+    }
+  }
+});
+    </script>
+</body>
+</html>

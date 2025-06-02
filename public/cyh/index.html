@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可我只是海 - 音乐播放器</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
+        
+        :root {
+            --neon-pink: #eee6ee;
+            --neon-rose: #ff1493;
+            --neon-purple: #3af0e7;
+            --dark-space: #1a001a;
+            --star-light: rgba(252, 252, 252, 0.8);
+            --glow-effect: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-purple);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: white;
+            perspective: 1000px;
+            position: relative;
+        }
+        
+        /* 星星背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #30b9f0;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: var(--star-light);
+            border-radius: 50%;
+            animation: twinkle var(--duration, 5s) infinite ease-in-out;
+            /* 修改星星大小 - 设置固定或随机大小 */
+            width: 30px;  /* 固定大小 */
+            height: 30px; /* 固定大小 */
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        /* 播放器主体 */
+        .cosmic-player {
+            width:100%;
+            height: 100%;
+            max-width: 00px;
+            min-width: 420px;
+            background: #2dcad1;
+            border-radius: 25px;
+            box-shadow: 0 0 30px #8b8b8b;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.705);
+            overflow: hidden;
+            position: relative;
+            padding: 30px;
+            transform-style: preserve-3d;
+            animation: float 8s ease-in-out infinite;
+            z-index: 10;
+            margin-bottom: 40px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .cosmic-player * {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+            50% { transform: translateY(-20px) rotateX(5deg) rotateY(5deg); }
+        }
+        
+        /* 全息效果 */
+        .holographic-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                    rgba(255, 0, 242, 0.05) 0%, 
+                    rgba(255, 20, 147, 0.05) 50%, 
+                    rgba(255, 105, 180, 0.05) 100%);
+            z-index: -1;
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+        }
+        
+        /* 歌曲信息 */
+        .song-info {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .song-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            color: var(--neon-pink);
+            text-shadow: var(--glow-effect);
+            letter-spacing: 2px;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-purple); }
+            100% { text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-purple), 0 0 45px var(--neon-rose); }
+        }
+        
+        .song-artist, .song-performers {
+            font-size: 14px;
+            color: var(--neon-rose);
+            margin-bottom: 3px;
+            text-shadow: 0 0 5px var(--neon-rose);
+            letter-spacing: 1px;
+        }
+        
+        /* 歌词显示 */
+        .lyrics-portal {
+            height: 200px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #68d666;
+            box-shadow: inset 0 0 20px#68d666bb;
+        }
+        
+        .lyrics-portal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom, 
+                transparent 0%, 
+                rgba(255, 0, 242, 0.1) 50%, 
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        
+        .lyrics-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .lyrics-line {
+            text-align: center;
+            margin: 12px 0;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            text-shadow: 0 0 5px rgba(255, 192, 203, 0.5);
+        }
+        
+        .lyrics-line.previous {
+            font-size: 16px;
+            color: rgba(255, 192, 203, 0.4);
+            transform: translateY(-30px) scale(0.8);
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+        
+        .lyrics-line.current {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neon-pink);
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-purple);
+        }
+        
+        .lyrics-line.next {
+            font-size: 16px;
+            color: rgba(255, 192, 203, 0.4);
+            transform: translateY(30px) scale(0.8);
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+        
+        /* 进度条 */
+        .time-rift {
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 192, 203, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                    transparent, 
+                    rgba(255, 0, 242, 0.3), 
+                    transparent);
+            animation: progressGlow 2s linear infinite;
+            opacity: 0.5;
+        }
+        
+        @keyframes progressGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-rose), var(--neon-pink));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+        
+        .progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                    rgba(255, 255, 255, 0.8), 
+                    transparent);
+            animation: progressSparkle 2s linear infinite;
+        }
+        
+        .progress-handle {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-rose);
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+        
+        .progress-container:hover .progress-handle {
+            opacity: 1;
+        }
+        
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+            letter-spacing: 1px;
+        }
+        
+        /* 控制按钮 */
+        .quantum-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin: 0 15px;
+            transition: all 0.3s;
+            background: rgba(255, 192, 203, 0.1);
+            border: 1px solid rgba(255, 0, 242, 0.3);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right, 
+                transparent, 
+                transparent, 
+                rgba(255, 0, 242, 0.1), 
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: btnReflect 3s linear infinite;
+        }
+        
+        @keyframes btnReflect {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 0, 242, 0.2);
+            box-shadow: 0 0 15px var(--neon-pink);
+            transform: scale(1.1);
+        }
+        
+        .play-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--neon-rose), var(--neon-pink));
+            box-shadow: 0 0 20px var(--neon-purple);
+            z-index: 2;
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 30px var(--neon-purple);
+        }
+        
+        .control-btn i {
+            font-size: 20px;
+        }
+        
+        .play-btn i {
+            font-size: 28px;
+        }
+        
+        /* 波形可视化 */
+        .wave-visualizer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 30px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .wave-bar {
+            width: 4px;
+            margin: 0 2px;
+            background: linear-gradient(to top, var(--neon-pink), var(--neon-rose));
+            border-radius: 2px;
+            animation: wavePulse 1.5s ease-in-out infinite alternate;
+            animation-delay: calc(var(--i) * 0.05s);
+        }
+        
+        @keyframes wavePulse {
+            0% { height: 10%; }
+            100% { height: 100%; }
+        }
+        
+        /* 版权信息 */
+        .copyright {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: pink;
+            font-size: 14px;
+            opacity: 0.7;
+            z-index: 100;
+        }
+        .control-btn, .play-btn, .song-title, #progressBar {
+            pointer-events: auto;
+        }
+    </style>
+    <!-- 字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <!-- 星星背景 -->
+    <div class="stars"></div>
+    
+    <!-- 音乐播放器 -->
+    <div class="cosmic-player">
+        <!-- 全息效果 -->
+        <div class="holographic-effect"></div>
+        
+        <!-- 歌曲信息 -->
+        <div class="song-info">
+            <h1 class="song-title" id="toggleButton">可我只是海 - LBI利比（时柏尘）</h1>
+            <div class="song-artist">网页作者: 黄梓林</div>
+            <div class="song-performers">表演: 陈伊晗 王铭墘 黄锌悦</div>
+        </div>
+        
+        <!-- 歌词显示 -->
+        <div class="lyrics-portal">
+            <div class="lyrics-container" id="lyricsContainer">
+                <div class="lyrics-line previous"></div>
+                <div class="lyrics-line current">此为纯音乐，请尽情享受</div>
+                <div class="lyrics-line next"></div>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="time-rift">
+            <div class="progress-container" id="progressBar">
+                <div class="progress" id="progress">
+                    <div class="progress-handle"></div>
+                </div>
+            </div>
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="quantum-controls">
+            <button class="control-btn" id="prevBtn">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="control-btn play-btn" id="playBtn">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+            <button class="control-btn" id="nextBtn">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+        
+        <!-- 波形可视化 -->
+        <div class="wave-visualizer"></div>
+        
+        <!-- 音频元素 -->
+        <audio id="audio" src="music.mp3"></audio>
+    </div>
+    
+    <!-- 版权信息 -->
+    <div class="copyright">
+        &copy; 2024 咏春音乐播放器 | 设计: 小黄
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建星星背景
+            function createStars() {
+                const starsContainer = document.querySelector('.stars');
+                const starCount = 100;
+                
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // 随机大小 (1-3px)
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    
+                    // 随机位置
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    
+                    // 随机闪烁时间
+                    star.style.setProperty('--duration', `${Math.random() * 4 + 3}s`);
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            function createWaveBars() {
+                const visualizer = document.querySelector('.wave-visualizer');
+                const barCount = 30;
+                
+                for (let i = 0; i < barCount; i++) {
+                    const bar = document.createElement('div');
+                    bar.classList.add('wave-bar');
+                    bar.style.setProperty('--i', i);
+                    visualizer.appendChild(bar);
+                }
+            }
+            
+            createStars();
+            createWaveBars();
+            
+            const audio = document.getElementById('audio');
+            const playBtn = document.getElementById('playBtn');
+            const playIcon = document.getElementById('playIcon');
+            const progressBar = document.getElementById('progressBar');
+            const progress = document.getElementById('progress');
+            const currentTimeEl = document.getElementById('currentTime');
+            const durationEl = document.getElementById('duration');
+            const lyricsContainer = document.getElementById('lyricsContainer');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const cosmicPlayer = document.querySelector('.cosmic-player');
+            
+            let lyrics = [];
+            let lyricTimes = [];
+            
+            const text = `
+[by:天琴实验室AI生成v1.0]
+[offset:0]
+[tool:LDDC v0.9.1 https://github.com/chenmozhijin/LDDC]
+
+[00:00.196]可我只是海 - LBI利比（时柏尘）
+[00:02.395]作词：滕桂/九九啊
+[00:03.691]作曲：查航/王珺昊
+[00:04.803]编曲：Polaris张旭宸
+[00:05.603]吉他：张小越
+[00:06.571]混音/母带：LBI利比
+[00:07.676]和声：夏初安 / LBI利比
+[00:08.932]制作人：LBI利比
+[00:09.923]制作公司：天马行空studio
+[00:11.323]策划：猫猫
+[00:12.067]监制：曲肖冰
+[00:12.931]推广：猫猫/万叶/赵一泽
+[00:13.778]联合推广：米喜文化
+[00:13.821]OP：冰曲文化
+[00:13.845]【未经著作权人许可 不得翻唱 翻录或使用】
+[00:13.945]原来深秋是孤独的
+[00:18.360]是握不住的
+[00:20.760]寒冬总是来得太早了
+[00:25.260]我没办法拒绝
+[00:27.600]原来夜晚是落寞的
+[00:32.100]是一个人的
+[00:34.470]入侵总是过于强烈了
+[00:38.910]我只能接受着
+[00:41.370]我离开了北方 不再有眼泪
+[00:48.420]我放下了执着 便不再疲惫
+[00:55.380]别再追究了 谁辜负了谁
+[01:02.130]要明白早已经 再无法挽回
+[01:08.790]原来深秋是孤独的
+[01:13.200]是握不住的
+[01:15.600]寒冬总是来的太早了
+[01:20.100]我没办法拒绝
+[01:22.440]原来夜晚是落寞的
+[01:26.940]是一个人的
+[01:29.310]入侵总是过于强烈了
+[01:33.810]我只能接受着
+[01:36.180]我离开了北方 不再有眼泪
+[01:43.230]我放下了执着 便不再疲惫
+[01:50.280]别再追究了 谁辜负了谁
+[01:56.970]要明白早已经 再无法挽回
+[02:03.600]我背对着黑夜 不再喝烂醉
+[02:10.710]我成全了遗憾 再无法爱谁
+[02:17.640]别再回头了 显得多狼狈
+[02:24.420]等时间冲刷着 谁又记得谁
+[02:32.400]你喜欢上了太阳 可我只是海
+`;
+
+            // 解析LRC歌词
+            function parseLRC(lrcText) {
+                const lines = lrcText.split('\n');
+                const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})?\]/;
+                
+                lines.forEach(line => {
+                    const matches = timeRegex.exec(line);
+                    if (matches) {
+                        const minutes = parseFloat(matches[1]);
+                        const seconds = parseFloat(matches[2]);
+                        const milliseconds = matches[3] ? parseFloat(matches[3]) / 100 : 0;
+                        const time = minutes * 60 + seconds + milliseconds;
+                        
+                        const text = line.replace(timeRegex, '').trim();
+                        if (text) {
+                            lyricTimes.push(time);
+                            lyrics.push(text);
+                        }
+                    }
+                });
+            }
+            parseLRC(text);
+            // 更新歌词显示
+            function updateLyrics(currentTime) {
+                if (lyrics.length === 0) {
+                    // 如果没有歌词，显示默认信息
+                    document.querySelector('.lyrics-line.current').textContent = '此为纯音乐，请尽情享受';
+                    return;
+                }
+                
+                let currentIndex = -1;
+                
+                // 查找当前时间对应的歌词
+                for (let i = 0; i < lyricTimes.length; i++) {
+                    if (currentTime >= lyricTimes[i]) {
+                        currentIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (currentIndex === -1) {
+                    // 还没开始，显示第一句歌词
+                    document.querySelector('.lyrics-line.previous').textContent = '';
+                    document.querySelector('.lyrics-line.current').textContent = '...';
+                    document.querySelector('.lyrics-line.next').textContent = lyrics[0] || '';
+                } else if (currentIndex === lyrics.length - 1) {
+                    // 最后一句歌词
+                    document.querySelector('.lyrics-line.previous').textContent = lyrics[currentIndex - 1] || '';
+                    document.querySelector('.lyrics-line.current').textContent = lyrics[currentIndex];
+                    document.querySelector('.lyrics-line.next').textContent = '';
+                } else {
+                    // 中间歌词
+                    document.querySelector('.lyrics-line.previous').textContent = currentIndex > 0 ? lyrics[currentIndex - 1] : '';
+                    document.querySelector('.lyrics-line.current').textContent = lyrics[currentIndex];
+                    document.querySelector('.lyrics-line.next').textContent = lyrics[currentIndex + 1];
+                }
+            }
+            
+            // 播放/暂停切换
+            function togglePlay() {
+                if (audio.paused) {
+                    audio.play();
+                    playIcon.classList.replace('fa-play', 'fa-pause');
+                    cosmicPlayer.style.animation = 'float 8s ease-in-out infinite, pulseGlow 2s ease-in-out infinite alternate';
+                } else {
+                    audio.pause();
+                    playIcon.classList.replace('fa-pause', 'fa-play');
+                    cosmicPlayer.style.animation = 'float 8s ease-in-out infinite';
+                }
+            }
+            
+            // 更新进度条
+            function updateProgress() {
+                const { currentTime, duration } = audio;
+                const progressPercent = (currentTime / duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+                
+                // 更新时间显示
+                currentTimeEl.textContent = formatTime(currentTime);
+                if (duration) {
+                    durationEl.textContent = formatTime(duration);
+                }
+                
+                // 更新歌词
+                updateLyrics(currentTime);
+                
+                // 动画波形
+                animateWaveBars();
+            }
+            
+            // 设置进度
+            function setProgress(e) {
+                const width = this.clientWidth;
+                const clickX = e.offsetX;
+                const duration = audio.duration;
+                audio.currentTime = (clickX / width) * duration;
+            }
+            
+            // 格式化时间
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+            
+            // 动画波形条
+            function animateWaveBars() {
+                const bars = document.querySelectorAll('.wave-bar');
+                if (audio.paused) return;
+                
+                bars.forEach((bar, i) => {
+                    // 随机高度
+                    const randomHeight = Math.random() * 100;
+                    bar.style.height = `${randomHeight}%`;
+                    
+                    // 动态颜色变化
+                    const hue = 300 + Math.sin(Date.now() / 1000 + i) * 30; // 调整为粉色系色调
+                    bar.style.background = `linear-gradient(to top, hsl(${hue}, 100%, 70%), hsl(${hue + 20}, 100%, 70%))`;
+                });
+                
+                requestAnimationFrame(animateWaveBars);
+            }
+            
+            // 事件监听
+            playBtn.addEventListener('click', togglePlay);
+            progressBar.addEventListener('click', setProgress);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', () => {
+                playIcon.classList.replace('fa-pause', 'fa-play');
+                cosmicPlayer.style.animation = 'float 8s ease-in-out infinite';
+            });
+            
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.textContent = formatTime(audio.duration);
+            });
+            
+            // 上一首/下一首按钮
+            prevBtn.addEventListener('click', () => {
+                audio.currentTime = Math.max(0, audio.currentTime - 5); // 后退5秒
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                audio.currentTime = Math.min(audio.duration, audio.currentTime + 5); // 前进5秒
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlay();
+                } else if (e.code === 'ArrowLeft') {
+                    audio.currentTime = Math.max(0, audio.currentTime - 5);
+                } else if (e.code === 'ArrowRight') {
+                    audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+                }
+            });
+            
+            // 3D悬停效果
+            cosmicPlayer.addEventListener('mousemove', (e) => {
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+                cosmicPlayer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            });
+            
+            cosmicPlayer.addEventListener('mouseleave', () => {
+                cosmicPlayer.style.transform = 'rotateY(0deg) rotateX(0deg)';
+            });
+        });
+    </script>
+    <script>
+let clickCount = 0;
+
+document.getElementById('toggleButton').addEventListener('click', function() {
+  clickCount++; // 每次点击按钮，计数加1
+
+  if (clickCount % 2 !== 0) {
+    // 第奇数次点击，放大（全屏）
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
+      document.documentElement.webkitRequestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+      document.documentElement.msRequestFullscreen();
+    }
+  } else {
+    // 第偶数次点击，取消全屏
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) { // Firefox
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { // IE/Edge
+      document.msExitFullscreen();
+    }
+  }
+});
+    </script>
+</body>
+</html>

@@ -22,6 +22,27 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+        }
+        
+        /* 新增的登录按钮样式 */
+        .login-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            z-index: 10;
+        }
+        
+        .login-btn:hover {
+            background: #2980b9;
         }
         
         header {
@@ -43,7 +64,6 @@
             margin-bottom: 20px;
         }
         
-        /* 新增的媒体展示区域样式 */
         .media-container {
             max-width: 800px;
             height: 450px;
@@ -167,11 +187,13 @@
 </head>
 <body>
     <div class="container">
+        <!-- 新增的登录按钮 -->
+        <button class="login-btn" id="loginBtn">登录</button>
+        
         <header>
             <div class="logo">全能工具箱</div>
             <div class="slogan">一站式在线工具集合</div>
             
-            <!-- 新增的媒体展示区域 -->
             <div class="media-container">
                 <video id="mediaDisplay" autoplay muted>
                     <source src="1.mp4" type="video/mp4">
@@ -199,8 +221,26 @@
     <script>
         // 工具数据
         const tools = [
-            { icon: '📝', name: '字符串数量统计', desc: '字数统计', tags: '文本,处理,格式化', path: 'tool/string-how-long.html' },
-            
+            { icon: '📝', name: '文本处理', desc: '文本格式化、字数统计、编码转换等', tags: '文本,处理,格式化', path: 'tool/wenbenchuli.html' },
+            { icon: '🔢', name: '加密解密', desc: 'MD5、SHA、AES等加密解密工具', tags: '加密,解密,安全', path: 'tool/jiamijiemi.html' },
+            { icon: '📊', name: 'JSON格式化', desc: 'JSON数据格式化与验证', tags: 'json,数据,格式化', path: 'tool/json.html' },
+            { icon: '🖼️', name: '图片压缩', desc: '在线图片压缩与优化', tags: '图片,压缩,优化', path: 'tool/tupianyasuo.html' },
+            { icon: '💻', name: '代码美化', desc: '多种编程语言的代码美化工具', tags: '代码,格式化,美化', path: 'tool/daimameihua.html' },
+            { icon: '🌐', name: 'IP查询', desc: '查询IP地址信息与地理位置', tags: 'ip,网络,查询', path: 'tool/ipchaxun.html' },
+            { icon: '🔍', name: '正则测试', desc: '正则表达式在线测试工具', tags: '正则,表达式,测试', path: 'tool/zhengzeceshi.html' },
+            { icon: '📦', name: 'API测试', desc: 'HTTP请求模拟与API调试', tags: 'api,测试,http', path: 'tool/apiceshi.html' },
+            { icon: '📅', name: '时间转换', desc: '日期时间转换与时区计算', tags: '时间,日期,时区', path: 'tool/shijianzhuanhuan.html' },
+            { icon: '🧮', name: '科学计算', desc: '高级科学计算器', tags: '计算,科学,数学', path: 'tool/kexuejisuan.html' },
+            { icon: '📏', name: '单位换算', desc: '长度、面积、体积等单位转换', tags: '单位,换算,转换', path: 'tool/danweihuansuan.html' },
+            { icon: '🎨', name: '配色工具', desc: '颜色选择与调色板生成', tags: '颜色,配色,设计', path: 'tool/peisegongju.html' },
+            { icon: '📄', name: 'PDF转换', desc: 'PDF与其他格式互转', tags: 'pdf,转换,文档', path: 'tool/pdfzhuanhuan.html' },
+            { icon: '🔤', name: '文字转语音', desc: '将文字转换为语音输出', tags: '文字,语音,tts', path: 'tool/wenzizhuanvoyin.html' },
+            { icon: '📈', name: '图表生成', desc: '在线生成各种数据图表', tags: '图表,数据,可视化', path: 'tool/tubiaoshengcheng.html' },
+            { icon: '🔗', name: '短链接', desc: '生成短链接与二维码', tags: '链接,短链,二维码', path: 'tool/duanlianjie.html' },
+            { icon: '📱', name: 'UA解析', desc: '用户代理字符串解析', tags: 'ua,解析,浏览器', path: 'tool/uajiexi.html' },
+            { icon: '🔢', name: '进制转换', desc: '二进制、十进制、十六进制转换', tags: '进制,转换,数学', path: 'tool/jinzhizhuanhuan.html' },
+            { icon: '📋', name: 'Markdown编辑器', desc: '在线Markdown编辑与预览', tags: 'markdown,编辑,写作', path: 'tool/markdown.html' },
+            { icon: '🎲', name: '随机生成', desc: '随机数、密码、数据生成', tags: '随机,生成,密码', path: 'tool/suijishengcheng.html' }
         ];
 
         // 初始化工具列表
@@ -277,6 +317,11 @@
                 img.alt = '工具箱展示';
                 
                 mediaDisplay.parentNode.replaceChild(img, mediaDisplay);
+            });
+            
+            // 登录按钮点击事件
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                window.location.href = 'index1.html';
             });
         });
 

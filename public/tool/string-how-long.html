@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字符串字数统计 - 全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h4 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>字符串字数统计</h1>
+    
+    <div class="counter-container">
+        <h4 id="charCount">目前0个字</h4>
+        <button class="clear-btn" id="clearBtn">清空</button>
+    </div>
+    
+    <textarea id="textInput" placeholder="请输入要统计的文字内容..."></textarea>
+    
+    <footer>
+        <p>© 2023 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textInput = document.getElementById('textInput');
+            const charCount = document.getElementById('charCount');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            // 统计字符数并更新显示
+            function updateCharCount() {
+                const count = textInput.value.length;
+                charCount.textContent = `目前${count}个字`;
+            }
+            
+            // 清空输入框
+            function clearText() {
+                textInput.value = '';
+                updateCharCount();
+                textInput.focus();
+            }
+            
+            // 监听输入事件
+            textInput.addEventListener('input', updateCharCount);
+            
+            // 监听清空按钮点击
+            clearBtn.addEventListener('click', clearText);
+            
+            // 初始聚焦到输入框
+            textInput.focus();
+        });
+    </script>
+</body>
+</html>

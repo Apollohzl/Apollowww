@@ -163,64 +163,66 @@
         <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
     </footer>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const queryBtn = document.getElementById('queryBtn');
-    const resultDiv = document.getElementById('result');
-    const loadingDiv = document.getElementById('loading');
-    
-    queryBtn.addEventListener('click', async function() {
-        // 显示加载中提示
-        loadingDiv.style.display = 'block';
-        resultDiv.textContent = '';
-        resultDiv.className = ''; // 清除错误类
-        
-        try {
-            // 同时发起两个API请求
-            const [baiduResponse, ipResponse] = await Promise.all([
-                fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district'),
-                fetch('https://ab5220bc47ba.aapq.net/ip')
-            ]);
+        document.addEventListener('DOMContentLoaded', function() {
+            const queryBtn = document.getElementById('queryBtn');
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
             
-            // 检查响应状态
-            if (!baiduResponse.ok || !ipResponse.ok) {
-                throw new Error('一个或多个API请求失败');
-            }
+            // 腾讯地图API密钥 - 请替换为你自己的key
+            const qqMapKey = 'SJZBZ-OL2YM-GQN6M-6IQWN-UAULS-XKBFZ';
             
-            // 解析JSON数据
-            const baiduData = await baiduResponse.json();
-            const ipData = await ipResponse.json();
-            
-            // 检查API返回状态
-            if (baiduData.code !== "Success") {
-                throw new Error(baiduData.message || '百度API返回状态异常');
-            }
-            
-            // 格式化显示结果
-            let resultText = `IP地址: ${baiduData.ip || ipData.ip}\n`;
-            resultText += `大洲: ${baiduData.data.continent || '未知'}\n`;
-            resultText += `国家: ${baiduData.data.country || ipData.countryName || '未知'}\n`;
-            resultText += `国家代码: ${ipData.countryCodeAlpha2 || '未知'}\n`;
-            resultText += `省份: ${baiduData.data.prov || ipData.regionName || '未知'}\n`;
-            resultText += `城市: ${baiduData.data.city || ipData.cityName || '未知'}\n`;
-            resultText += `区县: ${baiduData.data.district || '未知'}\n`;
-            resultText += `邮政编码: ${baiduData.data.zipcode || '未知'}\n`;
-            resultText += `运营商: ${baiduData.data.owner || ipData.asname || '未知'}\n`;
-            resultText += `ISP: ${baiduData.data.isp || '未知'}\n`;
-            resultText += `ASN: ${ipData.asn || '未知'}\n`;
-            resultText += `行政区划代码: ${baiduData.data.adcode || '未知'}\n`;
-            resultText += `纬度: ${ipData.latitude || '未知'}\n`;
-            resultText += `经度: ${ipData.longitude || '未知'}\n`;
-            resultText += `经纬度坐标: (${ipData.latitude || '未知'}, ${ipData.longitude || '未知'})`;
-            
-            resultDiv.textContent = resultText;
-        } catch (error) {
-            resultDiv.textContent = `查询失败: ${error.message}`;
-            resultDiv.className = 'error';
-        } finally {
-            loadingDiv.style.display = 'none';
-        }
-    });
-});
-</script>
+            queryBtn.addEventListener('click', async function() {
+                loadingDiv.style.display = 'block';
+                resultDiv.textContent = '';
+                resultDiv.className = '';
+                
+                try {
+                    // 构建请求URL
+                    const url = `https://apis.map.qq.com/ws/location/v1/ip?key=${qqMapKey}`;
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`网络请求失败: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 检查API返回状态
+                    if (data.status !== 0) {
+                        throw new Error(data.message || 'API返回状态异常');
+                    }
+                    
+                    // 格式化显示结果
+                    let resultText = `状态: 成功 (${data.status})\n`;
+                    resultText += `状态描述: ${data.message}\n\n`;
+                    
+                    resultText += `=== IP信息 ===\n`;
+                    resultText += `IP地址: ${data.result.ip}\n\n`;
+                    
+                    resultText += `=== 地理位置 ===\n`;
+                    resultText += `国家: ${data.result.ad_info.nation}\n`;
+                    resultText += `国家代码: ${data.result.ad_info.nation_code}\n`;
+                    resultText += `省份: ${data.result.ad_info.province}\n`;
+                    resultText += `城市: ${data.result.ad_info.city || '未知'}\n`;
+                    resultText += `区县: ${data.result.ad_info.district || '未知'}\n`;
+                    resultText += `行政区划代码: ${data.result.ad_info.adcode}\n\n`;
+                    
+                    resultText += `=== 坐标信息 ===\n`;
+                    resultText += `纬度: ${data.result.location.lat}\n`;
+                    resultText += `经度: ${data.result.location.lng}\n`;
+                    resultText += `经纬度坐标: (${data.result.location.lat}, ${data.result.location.lng})`;
+                    
+                    resultDiv.textContent = resultText;
+                    resultDiv.className = 'success';
+                } catch (error) {
+                    resultDiv.textContent = `查询失败: ${error.message}`;
+                    resultDiv.className = 'error';
+                } finally {
+                    loadingDiv.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

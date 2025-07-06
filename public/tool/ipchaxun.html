@@ -163,8 +163,7 @@
         <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
     </footer>
 <script>
-
-function a() {
+document.addEventListener('DOMContentLoaded', function() {
     const queryBtn = document.getElementById('queryBtn');
     const resultDiv = document.getElementById('result');
     const loadingDiv = document.getElementById('loading');
@@ -210,7 +209,7 @@ function a() {
         }
     };
     
-    queryBtn.addEventListener('click', function() {
+    function a(){
         loadingDiv.style.display = 'block';
         resultDiv.textContent = '';
         resultDiv.className = '';
@@ -224,9 +223,10 @@ function a() {
         script.onload = script.onerror = function() {
             document.body.removeChild(script);
         };
-    });
-};
-a();
+    }
+    a();
+    
+});
     </script>
 </body>
 </html>

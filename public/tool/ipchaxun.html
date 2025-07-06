@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ip及地理位置查询 - 全能工具箱</title>
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h4 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+    </style>
+    <style>
+                .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9e9e9;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .loading {
+            display: none;
+            margin: 10px 0;
+            color: #666;
+        }
+        .error {
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>ip及地理位置查询</h1>
+    
+    <div class="container">
+        <p>点击下方按钮查询您的IP地址和地理位置信息：</p>
+        
+        <button id="queryBtn">查询IP信息</button>
+        <div id="loading" class="loading">正在查询，请稍候...</div>
+        
+        <div id="result"></div>
+    </div>
+    
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const queryBtn = document.getElementById('queryBtn');
+    const resultDiv = document.getElementById('result');
+    const loadingDiv = document.getElementById('loading');
+    
+    queryBtn.addEventListener('click', async function() {
+        // 显示加载中提示
+        loadingDiv.style.display = 'block';
+        resultDiv.textContent = '';
+        resultDiv.className = ''; // 清除错误类
+        
+        try {
+            // 同时发起两个API请求
+            const [baiduResponse, ipResponse] = await Promise.all([
+                fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district'),
+                fetch('https://ab5220bc47ba.aapq.net/ip')
+            ]);
+            
+            // 检查响应状态
+            if (!baiduResponse.ok || !ipResponse.ok) {
+                throw new Error('一个或多个API请求失败');
+            }
+            
+            // 解析JSON数据
+            const baiduData = await baiduResponse.json();
+            const ipData = await ipResponse.json();
+            
+            // 检查API返回状态
+            if (baiduData.code !== "Success") {
+                throw new Error(baiduData.message || '百度API返回状态异常');
+            }
+            
+            // 格式化显示结果
+            let resultText = `IP地址: ${baiduData.ip || ipData.ip}\n`;
+            resultText += `大洲: ${baiduData.data.continent || '未知'}\n`;
+            resultText += `国家: ${baiduData.data.country || ipData.countryName || '未知'}\n`;
+            resultText += `国家代码: ${ipData.countryCodeAlpha2 || '未知'}\n`;
+            resultText += `省份: ${baiduData.data.prov || ipData.regionName || '未知'}\n`;
+            resultText += `城市: ${baiduData.data.city || ipData.cityName || '未知'}\n`;
+            resultText += `区县: ${baiduData.data.district || '未知'}\n`;
+            resultText += `邮政编码: ${baiduData.data.zipcode || '未知'}\n`;
+            resultText += `运营商: ${baiduData.data.owner || ipData.asname || '未知'}\n`;
+            resultText += `ISP: ${baiduData.data.isp || '未知'}\n`;
+            resultText += `ASN: ${ipData.asn || '未知'}\n`;
+            resultText += `行政区划代码: ${baiduData.data.adcode || '未知'}\n`;
+            resultText += `纬度: ${ipData.latitude || '未知'}\n`;
+            resultText += `经度: ${ipData.longitude || '未知'}\n`;
+            resultText += `经纬度坐标: (${ipData.latitude || '未知'}, ${ipData.longitude || '未知'})`;
+            
+            resultDiv.textContent = resultText;
+        } catch (error) {
+            resultDiv.textContent = `查询失败: ${error.message}`;
+            resultDiv.className = 'error';
+        } finally {
+            loadingDiv.style.display = 'none';
+        }
+    });
+});
+</script>
+</body>
+</html>

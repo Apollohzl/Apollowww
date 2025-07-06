@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全能工具箱 - 您的在线工具集合</title>
+    <script src="https://cmp.gatekeeperconsent.com/min.js" data-cfasync="false"></script>
+    <script src="https://the.gatekeeperconsent.com/cmp.min.js" data-cfasync="false"></script>
+    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
+    <script>
+        window.ezstandalone = window.ezstandalone || {};
+        ezstandalone.cmd = ezstandalone.cmd || [];
+    </script>
     <style>
         * {
             margin: 0;
@@ -78,6 +85,24 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        .text {
+            opacity: 1;
+            will-change: auto;
+            transform: none;
+            text-shadow: skyblue 2px 2px 1px;
+            text-align: center;
+            position: relative; /* 使 cursor 和 bottom-text 相对其定位 */
+        }
+
+        .main-content {
+            flex: 3;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: 135px; 
+            overflow: auto;
         }
         
         .search-box {
@@ -194,12 +219,18 @@
             <div class="logo">全能工具箱</div>
             <div class="slogan">一站式在线工具集合</div>
             
+            
             <div class="media-container">
                 <video id="mediaDisplay" autoplay muted>
                     <source src="1.mp4" type="video/mp4">
                     您的浏览器不支持视频播放
                 </video>
             </div>
+            <div class="main-content">
+                <p  class="text" id="get_text">...</p>
+                <p  class="text" id="get_from">--.....</p>
+            </div>
+            
         </header>
         
         <div class="search-box">
@@ -222,7 +253,7 @@
         // 工具数据
         const tools = [
             { icon: '📝', name: '文本处理', desc: '文本格式化、字数统计、编码转换等', tags: '文本,处理,格式化', path: 'tool/wenbenchuli.html' },
-            { icon: '🔢', name: '加密解密', desc: 'MD5、SHA、AES等加密解密工具', tags: '加密,解密,安全', path: 'tool/jiamijiemi.html' },
+            { icon: '🔢', name: '二维码生成', desc: '二维码', tags: '加密,解密,安全', path: 'tool/erweima.html' },
             { icon: '📊', name: 'JSON格式化', desc: 'JSON数据格式化与验证', tags: 'json,数据,格式化', path: 'tool/json.html' },
             { icon: '🖼️', name: '图片压缩', desc: '在线图片压缩与优化', tags: '图片,压缩,优化', path: 'tool/tupianyasuo.html' },
             { icon: '💻', name: '代码美化', desc: '多种编程语言的代码美化工具', tags: '代码,格式化,美化', path: 'tool/daimameihua.html' },
@@ -327,6 +358,67 @@
 
         // 初始渲染
         renderTools(tools);
+    </script>
+    <script>
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function fetchHitokoto() {
+            while(true){
+                try {
+                    const response = await fetch('https://international.v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=e&c=f&c=g&c=h&c=i&c=j&c=k&c=l');
+                    const data = await response.json();
+                    const hitokoto = data.hitokoto;
+                    const from = "--《" + data.from + "》";
+                    document.getElementById("get_from").textContent = '';
+                    document.getElementById("get_text").textContent = '';
+                    const get_text = document.getElementById('get_text');
+                    await toput(hitokoto, get_text);  
+                    document.getElementById("get_from").textContent = from;
+                    await waittext(hitokoto,20,get_text); 
+                    
+                    document.getElementById("get_from").textContent = '';
+                    await reput(hitokoto,get_text);
+                    
+                    await waittext("",23,get_text);
+                    document.getElementById("get_text").textContent ='';
+                } catch (error) {
+                    document.getElementById("get_from").textContent ='...';
+                    document.getElementById("get_text").textContent ='...';
+                    await wait(10000);
+                }
+            }
+        }
+
+        async function toput(text, element) {
+            for (let i = 0; i < text.length; i++) {
+                if (i%2==0){
+                    element.textContent = text.slice(0, i + 1)+"|"; // 显示到当前字符
+                    await wait(150); 
+                }else{
+                    element.textContent = text.slice(0, i + 1)+""; // 显示到当前字符
+                    await wait(150); 
+                }
+                
+            }
+        }
+        async function waittext(text,ci,element,waittime=190){
+            for (let i=0;i<ci;i++){
+                element.textContent = text+"|";
+                await wait(waittime);
+                element.textContent = text;
+                await wait(waittime);
+            }
+        }
+        async function reput(text, element) {
+            for (let i = text.length; i >0; i--) {
+                element.textContent = text.slice(0, i-1)+"|"; // 显示到当前字符
+                await wait(100); 
+            }
+        }
+        fetchHitokoto();
+        
     </script>
 </body>
 </html>

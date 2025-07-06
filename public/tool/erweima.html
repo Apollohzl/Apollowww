@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字符串字数统计 - 全能工具箱</title>
+    <script src="qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h4 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>字符串字数统计</h1>
+    
+    <div class="counter-container">
+        <button class="clear-btn" id="clearBtn">生成</button>
+    </div>
+    
+    <textarea id="textInput" placeholder="请输入要生成的文字内容..."></textarea>
+    <img src="" id="qrcode" alt="二维码" width="100%" height="50%"/>
+    <footer>
+        <p>© 2023 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const textInput = document.getElementById('textInput');
+    const generateBtn = document.getElementById('clearBtn');
+    const qrcodeImg = document.getElementById('qrcode');
+    
+    // 检查QRCode库是否加载
+    if (typeof QRCode === 'undefined') {
+        console.error('QRCode库未加载');
+        alert('二维码生成功能不可用，请确保已正确引入qrcode.min.js文件');
+        generateBtn.disabled = true;
+        return;
+    }
+
+    // 生成二维码函数
+    function generateQRCode() {
+        const text = textInput.value.trim();
+        
+        if (!text) {
+            alert('请输入要生成二维码的内容');
+            return;
+        }
+        
+        // 检查内容长度
+        if (text.length > 500) { // 适当限制长度
+            alert('输入内容过长，请缩短到500字符以内');
+            return;
+        }
+        
+        try {
+            // 清除之前的二维码
+            qrcodeImg.src = '';
+            
+            // 创建临时容器
+            const container = document.createElement('div');
+            document.body.appendChild(container);
+            
+            // 生成新二维码 - 自动选择合适版本
+            const qrcode = new QRCode(container, {
+                text: text,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L, // 使用中等纠错级别
+                version: 40 // 手动指定更高版本（1-40）
+            });
+            
+            // 获取生成的二维码图片数据
+            setTimeout(() => {
+                const qrImg = container.querySelector('img');
+                if (qrImg) {
+                    qrcodeImg.src = qrImg.src;
+                    qrcodeImg.alt = '生成的二维码: ' + text.substring(0, 20) + (text.length > 20 ? '...' : '');
+                    
+                    // 缓存到本地存储
+                    localStorage.setItem('lastQRCode', qrImg.src);
+                    localStorage.setItem('lastQRText', text);
+                }
+                
+                // 移除临时容器
+                document.body.removeChild(container);
+            }, 1000);
+            
+        } catch (error) {
+            console.error('生成二维码失败:', error);
+            if (error.message.includes('code length overflow')) {
+                alert('内容过长，无法生成二维码，请缩短内容');
+            } else {
+                alert('生成二维码失败: ' + error.message);
+            }
+        }
+    }
+        
+        // 从缓存加载上一次生成的二维码
+        function loadCachedQRCode() {
+            const cachedQR = localStorage.getItem('lastQRCode');
+            const cachedText = localStorage.getItem('lastQRText');
+            
+            if (cachedQR && cachedText) {
+                qrcodeImg.src = cachedQR;
+                qrcodeImg.alt = '缓存的二维码: ' + cachedText.substring(0, 20) + (cachedText.length > 20 ? '...' : '');
+                textInput.value = cachedText;
+            }
+        }
+        
+        // 监听生成按钮点击
+        generateBtn.addEventListener('click', generateQRCode);
+        
+        // 监听回车键
+        textInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQRCode();
+            }
+        });
+        
+        // 页面加载时尝试加载缓存的二维码
+        loadCachedQRCode();
+        
+        // 初始聚焦到输入框
+        textInput.focus();
+    });
+</script>
+</body>
+</html>

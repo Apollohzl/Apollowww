@@ -163,66 +163,68 @@
         <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
     </footer>
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const queryBtn = document.getElementById('queryBtn');
-            const resultDiv = document.getElementById('result');
-            const loadingDiv = document.getElementById('loading');
+window.onload = function() {
+    const queryBtn = document.getElementById('queryBtn');
+    const resultDiv = document.getElementById('result');
+    const loadingDiv = document.getElementById('loading');
+    
+    // 腾讯地图API密钥
+    const qqMapKey = 'SJZBZ-OL2YM-GQN6M-6IQWN-UAULS-XKBFZ';
+    
+    // 全局回调函数
+    window.handleQQMapResponse = function(data) {
+        loadingDiv.style.display = 'none';
+        
+        try {
+            // 检查API返回状态
+            if (data.status !== 0) {
+                throw new Error(data.message || 'API返回状态异常');
+            }
             
-            // 腾讯地图API密钥 - 请替换为你自己的key
-            const qqMapKey = 'SJZBZ-OL2YM-GQN6M-6IQWN-UAULS-XKBFZ';
+            // 格式化显示结果
+            let resultText = `状态: 成功 (${data.status})\n`;
+            resultText += `状态描述: ${data.message}\n\n`;
             
-            queryBtn.addEventListener('click', async function() {
-                loadingDiv.style.display = 'block';
-                resultDiv.textContent = '';
-                resultDiv.className = '';
-                
-                try {
-                    // 构建请求URL
-                    const url = `https://apis.map.qq.com/ws/location/v1/ip?key=${qqMapKey}`;
-                    
-                    const response = await fetch(url);
-                    
-                    if (!response.ok) {
-                        throw new Error(`网络请求失败: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // 检查API返回状态
-                    if (data.status !== 0) {
-                        throw new Error(data.message || 'API返回状态异常');
-                    }
-                    
-                    // 格式化显示结果
-                    let resultText = `状态: 成功 (${data.status})\n`;
-                    resultText += `状态描述: ${data.message}\n\n`;
-                    
-                    resultText += `=== IP信息 ===\n`;
-                    resultText += `IP地址: ${data.result.ip}\n\n`;
-                    
-                    resultText += `=== 地理位置 ===\n`;
-                    resultText += `国家: ${data.result.ad_info.nation}\n`;
-                    resultText += `国家代码: ${data.result.ad_info.nation_code}\n`;
-                    resultText += `省份: ${data.result.ad_info.province}\n`;
-                    resultText += `城市: ${data.result.ad_info.city || '未知'}\n`;
-                    resultText += `区县: ${data.result.ad_info.district || '未知'}\n`;
-                    resultText += `行政区划代码: ${data.result.ad_info.adcode}\n\n`;
-                    
-                    resultText += `=== 坐标信息 ===\n`;
-                    resultText += `纬度: ${data.result.location.lat}\n`;
-                    resultText += `经度: ${data.result.location.lng}\n`;
-                    resultText += `经纬度坐标: (${data.result.location.lat}, ${data.result.location.lng})`;
-                    
-                    resultDiv.textContent = resultText;
-                    resultDiv.className = 'success';
-                } catch (error) {
-                    resultDiv.textContent = `查询失败: ${error.message}`;
-                    resultDiv.className = 'error';
-                } finally {
-                    loadingDiv.style.display = 'none';
-                }
-            });
-        });
+            resultText += `=== IP信息 ===\n`;
+            resultText += `IP地址: ${data.result.ip}\n\n`;
+            
+            resultText += `=== 地理位置 ===\n`;
+            resultText += `国家: ${data.result.ad_info.nation}\n`;
+            resultText += `国家代码: ${data.result.ad_info.nation_code}\n`;
+            resultText += `省份: ${data.result.ad_info.province}\n`;
+            resultText += `城市: ${data.result.ad_info.city || '未知'}\n`;
+            resultText += `区县: ${data.result.ad_info.district || '未知'}\n`;
+            resultText += `行政区划代码: ${data.result.ad_info.adcode}\n\n`;
+            
+            resultText += `=== 坐标信息 ===\n`;
+            resultText += `纬度: ${data.result.location.lat}\n`;
+            resultText += `经度: ${data.result.location.lng}\n`;
+            resultText += `经纬度坐标: (${data.result.location.lat}, ${data.result.location.lng})`;
+            
+            resultDiv.textContent = resultText;
+            resultDiv.className = 'success';
+        } catch (error) {
+            resultDiv.textContent = `查询失败: ${error.message}`;
+            resultDiv.className = 'error';
+        }
+    };
+    
+    queryBtn.addEventListener('click', function() {
+        loadingDiv.style.display = 'block';
+        resultDiv.textContent = '';
+        resultDiv.className = '';
+        
+        // 创建JSONP请求
+        const script = document.createElement('script');
+        script.src = `https://apis.map.qq.com/ws/location/v1/ip?key=${qqMapKey}&output=jsonp&callback=handleQQMapResponse`;
+        document.body.appendChild(script);
+        
+        // 请求完成后移除script标签
+        script.onload = script.onerror = function() {
+            document.body.removeChild(script);
+        };
+    });
+};
     </script>
 </body>
 </html>

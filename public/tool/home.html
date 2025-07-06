@@ -14,7 +14,7 @@
     <link rel="mask-icon" type="image/x-icon"
         href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
         color="#111">
-    <title>字符串字数统计 - 全能工具箱</title>
+    <title> - 全能工具箱</title>
     <style>
         * {
             margin: 0;
@@ -108,7 +108,7 @@
     </style>
 </head>
 <body>
-    <h1>字符串字数统计</h1>
+    <h1></h1>
     
     <div class="counter-container">
         <h4 id="charCount">目前0个字</h4>
@@ -122,33 +122,7 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const textInput = document.getElementById('textInput');
-            const charCount = document.getElementById('charCount');
-            const clearBtn = document.getElementById('clearBtn');
-            
-            // 统计字符数并更新显示
-            function updateCharCount() {
-                const count = textInput.value.length;
-                charCount.textContent = `目前${count}个字`;
-            }
-            
-            // 清空输入框
-            function clearText() {
-                textInput.value = '';
-                updateCharCount();
-                textInput.focus();
-            }
-            
-            // 监听输入事件
-            textInput.addEventListener('input', updateCharCount);
-            
-            // 监听清空按钮点击
-            clearBtn.addEventListener('click', clearText);
-            
-            // 初始聚焦到输入框
-            textInput.focus();
-        });
+        
     </script>
 </body>
 </html>

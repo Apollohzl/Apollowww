@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 创建JSONP请求
         const script = document.createElement('script');
-        script.src = `https://apis.map.qq.com/ws/location/v1/ip?key=${qqMapKey}&output=jsonp&callback=handleQQMapResponse`;
+        script.src = `https://apis.map.qq.com/ws/location/v1/ip?key=${window.qqMapKey}&output=jsonp&callback=handleQQMapResponse`;
         document.body.appendChild(script);
         
         // 请求完成后移除script标签

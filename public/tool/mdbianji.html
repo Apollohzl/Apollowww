@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown编辑器 - 全能工具箱</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .editor-pane, .preview-pane {
+            flex: 1;
+        }
+        
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 500px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: none;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+        
+        .preview {
+            height: 500px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .counter {
+            margin: 10px 0;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        /* 代码块样式增强 */
+        pre {
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+            background: #f6f8fa !important;
+            margin: 16px 0;
+        }
+        
+        code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 85%;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Markdown编辑器</h1>
+    
+    <button class="clear-btn" id="clearBtn">清空内容</button>
+    <div class="counter">字符数: <span id="charCount">0</span></div>
+    
+    <div class="container">
+        <div class="editor-pane">
+            <textarea id="textInput" placeholder="请输入Markdown内容..."></textarea>
+        </div>
+        <div class="preview-pane">
+            <div class="preview markdown-body" id="preview"></div>
+        </div>
+    </div>
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <!-- 引入marked.js和highlight.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
+    <!-- 引入多种语言的高亮支持 -->
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/sql.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textInput = document.getElementById('textInput');
+            const preview = document.getElementById('preview');
+            const charCount = document.getElementById('charCount');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            // 配置marked.js
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return hljs.highlightAuto(code).value;
+                }
+            });
+            
+            // 更新预览和字符计数
+            function updateContent() {
+                const markdownText = textInput.value;
+                preview.innerHTML = marked.parse(markdownText);
+                charCount.textContent = markdownText.length;
+                
+                // 为所有pre code元素应用高亮
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+            
+            // 初始渲染
+            updateContent();
+            
+            // 监听输入变化
+            textInput.addEventListener('input', updateContent);
+            
+            // 清空按钮事件
+            clearBtn.addEventListener('click', function() {
+                textInput.value = '';
+                updateContent();
+            });
+            
+            // 加载包含多种语言代码示例的Markdown
+            textInput.value = `# 代码高亮示例
+
+以下是一些常见编程语言的代码示例：
+
+## JavaScript 示例
+\`\`\`javascript
+// 计算斐波那契数列
+function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+// ES6箭头函数
+const greet = (name) => \`Hello, \${name}!\`;
+\`\`\`
+
+## Python 示例
+\`\`\`python
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+# 列表推导式
+squares = [x**2 for x in range(10)]
+\`\`\`
+
+## Java 示例
+\`\`\`java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        
+        // 多行字符串
+        String html = """
+            <html>
+                <body>
+                    <p>Hello, world!</p>
+                </body>
+            </html>
+            """;
+    }
+}
+\`\`\`
+
+## HTML/CSS 示例
+\`\`\`html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hello World</h1>
+    </div>
+</body>
+</html>
+\`\`\`
+
+## SQL 示例
+\`\`\`sql
+-- 创建用户表
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- 插入数据
+INSERT INTO users (username, email)
+VALUES ('john_doe', 'john@example.com');
+
+-- 查询数据
+SELECT * FROM users WHERE id > 10;
+\`\`\`
+
+## Shell 示例
+\`\`\`bash
+#!/bin/bash
+
+# 备份目录
+BACKUP_DIR="/var/backups"
+
+# 创建备份
+tar -czf "$BACKUP_DIR/backup-$(date +%Y%m%d).tar.gz" /home/user
+\`\`\`
+`;
+            updateContent();
+        });
+    </script>
+</body>
+</html>

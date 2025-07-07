@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>Python编辑器 - 全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h4 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+
+        /* 新增的加载提示样式 */
+        #loading {
+            display: none;
+            text-align: center;
+            color: #7f8c8d;
+            margin: 10px 0;
+        }
+
+        /* 新增的运行按钮样式 */
+        #run-btn {
+            background: #2ecc71;
+            margin-left: 10px;
+        }
+
+        #run-btn:hover {
+            background: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>Python编辑器</h1>
+    
+    <div class="counter-container">
+        <div>
+            <button class="clear-btn" id="clear">清空</button>
+            <button class="clear-btn" id="run-btn">运行</button>
+        </div>
+        
+    </div>
+    <p>首次加载需要下载Pyodide（约10MB），可能需要几秒钟，仅支持大多数Python标准库功能，如需更全面功能请使用本地Python环境。</p>
+    <div id="loading">正在加载Pyodide环境，请稍候...</div>
+    
+    <textarea id="py" placeholder="请输入python内容..."></textarea>
+    <textarea id="result" placeholder="运行结果..." readonly></textarea>
+    
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <!-- 引入Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    
+    <script>
+        // 初始化Pyodide
+        let pyodide;
+        async function initializePyodide() {
+            const loadingElement = document.getElementById('loading');
+            loadingElement.style.display = 'block';
+            
+            try {
+                pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/"
+                });
+                loadingElement.style.display = 'none';
+                console.log("Pyodide加载完成");
+            } catch (error) {
+                loadingElement.textContent = "加载Pyodide失败: " + error.message;
+                console.error("Pyodide加载失败:", error);
+            }
+        }
+
+        // 页面加载时初始化Pyodide
+        initializePyodide();
+
+        // 运行Python代码
+        async function runPythonCode() {
+            if (!pyodide) {
+                document.getElementById('result').value = "Pyodide尚未加载完成，请稍后再试...";
+                return;
+            }
+
+            const pythonCode = document.getElementById('py').value;
+            const resultElement = document.getElementById('result');
+            
+            if (!pythonCode.trim()) {
+                resultElement.value = "请输入Python代码";
+                return;
+            }
+            
+            try {
+                // 捕获print输出
+                let output = '';
+                pyodide.setStdout({
+                    batched: (text) => {
+                        output += text + '\n';
+                    }
+                });
+                
+                // 执行代码
+                await pyodide.runPythonAsync(pythonCode);
+                
+                // 显示结果
+                resultElement.value = output || "代码执行成功，但没有输出";
+            } catch (error) {
+                resultElement.value = "执行错误:\n" + error;
+                console.error("Python执行错误:", error);
+            }
+        }
+
+        // 清空代码和结果
+        function clearCode() {
+            document.getElementById('py').value = '';
+            document.getElementById('result').value = '';
+        }
+
+        // 绑定按钮点击事件
+        document.getElementById('run-btn').addEventListener('click', runPythonCode);
+        document.getElementById('clear').addEventListener('click', clearCode);
+    </script>
+</body>
+</html>

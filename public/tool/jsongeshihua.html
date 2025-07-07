@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>JSON格式化 - 全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h4 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON格式化</h1>
+    
+    <div class="counter-container">
+        
+        <button class="clear-btn" id="makeBtn">格式化</button>
+        <button class="clear-btn" id="minifyBtn">压缩</button>
+        <button class="clear-btn" id="clearBtn">清空</button>
+    </div>
+    
+    <textarea id="textInput" placeholder="请输入JSON内容..."></textarea>
+    <textarea id="result" placeholder="结果..."></textarea>
+    
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+            const textInput = document.getElementById('textInput');
+            const makeBtn = document.getElementById('makeBtn');
+            const minifyBtn = document.getElementById('minifyBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+            
+            // 格式化JSON
+            makeBtn.addEventListener('click', function() {
+                try {
+                    const jsonInput = textInput.value.trim();
+                    if (!jsonInput) {
+                        errorDiv.textContent = '请输入JSON内容';
+                        resultDiv.textContent = '';
+                        return;
+                    }
+                    
+                    const parsedJson = JSON.parse(jsonInput);
+                    const formattedJson = JSON.stringify(parsedJson, null, 2);
+                    resultDiv.textContent = formattedJson;
+                    errorDiv.textContent = '';
+                    
+                    // 语法高亮
+                    highlightJson();
+                } catch (e) {
+                    errorDiv.textContent = 'JSON格式错误: ' + e.message;
+                    resultDiv.textContent = '';
+                }
+            });
+            
+            // 压缩JSON
+            minifyBtn.addEventListener('click', function() {
+                try {
+                    const jsonInput = textInput.value.trim();
+                    if (!jsonInput) {
+                        errorDiv.textContent = '请输入JSON内容';
+                        resultDiv.textContent = '';
+                        return;
+                    }
+                    
+                    const parsedJson = JSON.parse(jsonInput);
+                    const minifiedJson = JSON.stringify(parsedJson);
+                    resultDiv.textContent = minifiedJson;
+                    errorDiv.textContent = '';
+                    
+                    // 语法高亮
+                    highlightJson();
+                } catch (e) {
+                    errorDiv.textContent = 'JSON格式错误: ' + e.message;
+                    resultDiv.textContent = '';
+                }
+            });
+            
+            // 清空内容
+            clearBtn.addEventListener('click', function() {
+                textInput.value = '';
+                resultDiv.textContent = '';
+                errorDiv.textContent = '';
+            });
+            
+            // 简单的JSON语法高亮
+            function highlightJson() {
+                let jsonText = resultDiv.textContent;
+                if (!jsonText) return;
+                
+                // 简单的正则替换实现高亮
+                jsonText = jsonText
+                    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?)/g, function(match) {
+                        let cls = 'color: #0000ff;'; // 键名和字符串值
+                        if (/:$/.test(match)) {
+                            cls = 'color: #008000; font-weight: bold;'; // 键名
+                        }
+                        return '<span style="' + cls + '">' + match + '</span>';
+                    })
+                    .replace(/\b(true|false|null)\b/g, '<span style="color: #aa0d91;">$1</span>') // 布尔值和null
+                    .replace(/\b-?\d+(\.\d+)?([eE][+-]?\d+)?\b/g, '<span style="color: #ff0000;">$&</span>'); // 数字
+                
+                resultDiv.innerHTML = jsonText;
+            }
+            
+            // 示例JSON
+            textInput.value = '{"name": "JSON格式化工具","description": "一个简单的在线JSON格式化工具","version": 1.0,"features": ["格式化", "压缩", "语法高亮"],"author": {"name": "开发者","email": "dev@example.com"},"isActive": true,"license": null}';
+        });
+    </script>
+    </script>
+</body>
+</html>

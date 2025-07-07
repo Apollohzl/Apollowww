@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>正则测试 - 全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h4 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            textarea {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>正则表达式在线测试工具</h1>
+    
+    <div class="counter-container">
+        <button class="clear-btn" id="testBtn">测试</button>
+        <button class="clear-btn" id="clearBtn">清空</button>
+    </div>
+    
+    <textarea id="biaoda" placeholder="请输入表达式内容..."></textarea>
+    <textarea id="things" placeholder="请输入表达式测试内容..."></textarea>
+    <textarea id="result" placeholder="结果..."></textarea>
+    
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // 获取测试按钮和清空按钮
+    const testBtn = document.getElementById('testBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    
+    // 获取三个textarea元素
+    const biaodaTextarea = document.getElementById('biaoda');
+    const thingsTextarea = document.getElementById('things');
+    const resultTextarea = document.getElementById('result');
+    
+    // 测试按钮点击事件
+    testBtn.addEventListener('click', function() {
+        try {
+            // 获取正则表达式和测试内容
+            const regexPattern = biaodaTextarea.value;
+            const testContent = thingsTextarea.value;
+            
+            // 如果内容为空，给出提示
+            if (!regexPattern.trim()) {
+                resultTextarea.value = '请输入正则表达式';
+                return;
+            }
+            
+            if (!testContent.trim()) {
+                resultTextarea.value = '请输入测试内容';
+                return;
+            }
+            
+            // 尝试创建正则表达式（处理可能的标志如g,i,m等）
+            const regexParts = regexPattern.match(/^\/(.*?)\/([gimuy]*)$/);
+            let regex, flags;
+            
+            if (regexParts) {
+                // 格式为 /pattern/flags
+                regex = new RegExp(regexParts[1], regexParts[2]);
+            } else {
+                // 格式为 pattern
+                regex = new RegExp(regexPattern);
+            }
+            
+            // 执行测试
+            const isMatch = regex.test(testContent);
+            
+            // 查找所有匹配项
+            const matches = [];
+            let match;
+            const globalRegex = new RegExp(regex.source, regex.flags.includes('g') ? regex.flags : regex.flags + 'g');
+            
+            while ((match = globalRegex.exec(testContent)) !== null) {
+                matches.push({
+                    index: match.index,
+                    match: match[0],
+                    groups: match.groups || null,
+                    groupsArray: match.slice(1)
+                });
+                
+                // 避免无限循环
+                if (match.index === globalRegex.lastIndex) {
+                    globalRegex.lastIndex++;
+                }
+            }
+            
+            // 格式化输出结果
+            let formattedResult = `正则表达式: ${regex}\n`;
+            formattedResult += `是否匹配: ${isMatch ? '是' : '否'}\n\n`;
+            
+            if (matches.length > 0) {
+                formattedResult += `找到 ${matches.length} 个匹配项:\n`;
+                matches.forEach((m, i) => {
+                    formattedResult += `\n匹配项 ${i + 1}:\n`;
+                    formattedResult += `位置: ${m.index}\n`;
+                    formattedResult += `匹配文本: "${m.match}"\n`;
+                    
+                    if (m.groupsArray.length > 0) {
+                        formattedResult += `捕获组: ${JSON.stringify(m.groupsArray)}\n`;
+                    }
+                    
+                    if (m.groups && Object.keys(m.groups).length > 0) {
+                        formattedResult += `命名捕获组: ${JSON.stringify(m.groups)}\n`;
+                    }
+                });
+            } else {
+                formattedResult += '没有找到匹配项';
+            }
+            
+            // 输出结果
+            resultTextarea.value = formattedResult;
+            
+        } catch (error) {
+            resultTextarea.value = `错误: ${error.message}`;
+        }
+    });
+    
+    // 清空按钮点击事件
+    clearBtn.addEventListener('click', function() {
+        thingsTextarea.value = '';
+    });
+});
+    </script>
+</body>
+</html>

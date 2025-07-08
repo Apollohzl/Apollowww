@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 全能测试工具箱</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin: 25px 0 15px;
+            color: #34495e;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], 
+        input[type="url"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button.danger {
+            background: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background: #c0392b;
+        }
+        
+        button.success {
+            background: #2ecc71;
+        }
+        
+        button.success:hover {
+            background: #27ae60;
+        }
+        
+        .response-container {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .response-status {
+            font-weight: bold;
+        }
+        
+        .response-time {
+            color: #7f8c8d;
+        }
+        
+        .response-body {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .header-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .header-row input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .header-row button {
+            width: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .json-editor {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .json-input, .json-output {
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .formatted-json {
+            white-space: pre-wrap;
+            font-family: monospace;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            min-height: 150px;
+        }
+        
+        .tool-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tool-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .tool-card p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .history-method {
+            display: inline-block;
+            width: 60px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            border-radius: 3px;
+            padding: 2px 5px;
+            margin-right: 10px;
+        }
+        
+        .get { background: #2ecc71; }
+        .post { background: #3498db; }
+        .put { background: #f39c12; }
+        .delete { background: #e74c3c; }
+        .patch { background: #9b59b6; }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        
+        
+        }
+
+        .tools-output-container {
+            margin-top: 20px;
+        }
+        
+        .tools-output-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        #tools-output {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            background: #f5f5f5;
+        }
+        
+        @media (max-width: 768px) {
+            .json-editor {
+                flex-direction: column;
+            }
+            
+            .json-input, .json-output {
+                margin: 10px 0;
+            }
+            
+            .tool-card {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>API 全能测试工具箱</h1>
+    
+    <div class="tab-container">
+        <div class="tab active" data-tab="request">API 请求</div>
+        <div class="tab" data-tab="json">JSON 工具</div>
+        <div class="tab" data-tab="encode">编码/解码</div>
+        <div class="tab" data-tab="history">历史记录</div>
+        <div class="tab" data-tab="tools">其他工具</div>
+    </div>
+    
+    <!-- API 请求标签页 -->
+    <div class="tab-content active" id="request">
+        <div class="input-group">
+            <label for="request-method">请求方法</label>
+            <select id="request-method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="HEAD">HEAD</option>
+                <option value="OPTIONS">OPTIONS</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="request-url">请求 URL</label>
+            <input type="url" id="request-url" placeholder="https://api.example.com/endpoint">
+        </div>
+        
+        <div class="input-group">
+            <label>请求头 <button id="add-header">+ 添加</button></label>
+            <div id="request-headers">
+                <div class="header-row">
+                    <input type="text" placeholder="Header 名称" value="Content-Type">
+                    <input type="text" placeholder="Header 值" value="application/json">
+                    <button class="danger remove-header">×</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="request-body">请求体 (仅 POST/PUT/PATCH)</label>
+            <textarea id="request-body" placeholder='{"key": "value"}'></textarea>
+        </div>
+        
+        <div class="input-group">
+            <label>请求参数 <button id="add-param">+ 添加</button></label>
+            <div id="request-params">
+                <div class="header-row">
+                    <input type="text" placeholder="参数名">
+                    <input type="text" placeholder="参数值">
+                    <button class="danger remove-param">×</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="success" id="send-request">发送请求</button>
+        <button id="save-request">保存请求</button>
+        <button id="clear-request">清空</button>
+        
+        <div class="response-container" id="response-container" style="display: none;">
+            <div class="response-header">
+                <div class="response-status">状态: <span id="response-status"></span></div>
+                <div class="response-time">时间: <span id="response-time"></span> ms</div>
+            </div>
+            
+            <label>响应头</label>
+            <div class="response-body" id="response-headers"></div>
+            
+            <label>响应体</label>
+            <div class="response-body" id="response-data"></div>
+            
+            <button id="copy-response">复制响应</button>
+            <button id="export-response">导出为文件</button>
+        </div>
+    </div>
+    
+    <!-- JSON 工具标签页 -->
+    <div class="tab-content" id="json">
+        <h2>JSON 格式化与验证</h2>
+        <div class="json-editor">
+            <div class="json-input">
+                <label for="json-input">输入 JSON</label>
+                <textarea id="json-input" placeholder='{"name": "value", "array": [1, 2, 3]}'></textarea>
+                <button id="format-json">格式化</button>
+                <button id="minify-json">压缩</button>
+                <button id="validate-json">验证</button>
+                <button id="clear-json">清空</button>
+            </div>
+            <div class="json-output">
+                <label>格式化结果</label>
+                <div class="formatted-json" id="json-output"></div>
+                <div id="json-validation"></div>
+            </div>
+        </div>
+        
+        <h2>JSON 转换</h2>
+        <div class="tool-row">
+            <div class="tool-card">
+                <h3>JSON 转 XML</h3>
+                <p>将 JSON 数据转换为 XML 格式</p>
+                <button id="json-to-xml">转换</button>
+            </div>
+            <div class="tool-card">
+                <h3>XML 转 JSON</h3>
+                <p>将 XML 数据转换为 JSON 格式</p>
+                <button id="xml-to-json">转换</button>
+            </div>
+            <div class="tool-card">
+                <h3>JSON 转 CSV</h3>
+                <p>将 JSON 数组转换为 CSV 格式</p>
+                <button id="json-to-csv">转换</button>
+            </div>
+            <div class="tool-card">
+                <h3>CSV 转 JSON</h3>
+                <p>将 CSV 数据转换为 JSON 格式</p>
+                <button id="csv-to-json">转换</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编码/解码标签页 -->
+    <div class="tab-content" id="encode">
+        <h2>编码/解码工具</h2>
+        <div class="input-group">
+            <label for="encode-input">输入文本</label>
+            <textarea id="encode-input" placeholder="输入要编码或解码的文本"></textarea>
+        </div>
+        
+        <div class="tool-row">
+            <div class="tool-card">
+                <h3>URL 编码</h3>
+                <p>对 URL 进行编码</p>
+                <button id="url-encode">编码</button>
+                <button id="url-decode">解码</button>
+            </div>
+            <div class="tool-card">
+                <h3>Base64 编码</h3>
+                <p>Base64 编码/解码</p>
+                <button id="base64-encode">编码</button>
+                <button id="base64-decode">解码</button>
+            </div>
+            <div class="tool-card">
+                <h3>HTML 编码</h3>
+                <p>HTML 实体编码/解码</p>
+                <button id="html-encode">编码</button>
+                <button id="html-decode">解码</button>
+            </div>
+            <div class="tool-card">
+                <h3>JWT 解码</h3>
+                <p>解码 JSON Web Token</p>
+                <button id="jwt-decode">解码</button>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="encode-output">结果</label>
+            <textarea id="encode-output" readonly></textarea>
+        </div>
+    </div>
+    
+    <!-- 历史记录标签页 -->
+    <div class="tab-content" id="history">
+        <h2>请求历史记录</h2>
+        <button id="clear-history" class="danger">清空历史记录</button>
+        <div id="history-list"></div>
+    </div>
+    
+    <!-- 其他工具标签页 -->
+    <div class="tab-content" id="tools">
+        <h2>开发者工具</h2>
+        <div class="tool-row">
+            <div class="tool-card">
+                <h3>时间戳转换</h3>
+                <p>Unix 时间戳与日期相互转换</p>
+                <button id="timestamp-now">当前时间戳</button>
+                <button id="timestamp-convert">转换</button>
+            </div>
+            <div class="tool-card">
+                <h3>UUID 生成器</h3>
+                <p>生成随机 UUID</p>
+                <button id="generate-uuid">生成 UUID v4</button>
+            </div>
+            <div class="tool-card">
+                <h3>哈希生成器</h3>
+                <p>生成文本的哈希值</p>
+                <button id="generate-sha1">SHA-1</button>
+                <button id="generate-sha256">SHA-256</button>
+            </div>
+            <div class="tool-card">
+                <h3>Lorem Ipsum</h3>
+                <p>生成随机文本</p>
+                <button id="generate-lorem">生成文本</button>
+            </div>
+        </div>
+        
+        <!-- 新增的开发者工具输出区域 -->
+        <div class="tools-output-container">
+            <label for="tools-output">开发者工具输出</label>
+            <textarea id="tools-output" readonly></textarea>
+        </div>
+        
+        <h2>Mock 数据生成</h2>
+        <div class="input-group">
+            <label for="mock-schema">JSON Schema</label>
+            <textarea id="mock-schema" placeholder='{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "number" }
+  }
+}'></textarea>
+            <button id="generate-mock">生成 Mock 数据</button>
+            <div class="formatted-json" id="mock-output"></div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>copyright © 2025 API 全能测试工具箱 | 为开发者提供专业的 API 测试工具</p>
+    </div>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有活动标签
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 激活当前标签
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // API 请求功能
+        const requestMethod = document.getElementById('request-method');
+        const requestUrl = document.getElementById('request-url');
+        const requestHeaders = document.getElementById('request-headers');
+        const requestBody = document.getElementById('request-body');
+        const requestParams = document.getElementById('request-params');
+        const sendRequestBtn = document.getElementById('send-request');
+        const responseContainer = document.getElementById('response-container');
+        const responseStatus = document.getElementById('response-status');
+        const responseTime = document.getElementById('response-time');
+        const responseHeaders = document.getElementById('response-headers');
+        const responseData = document.getElementById('response-data');
+        
+        // 添加请求头
+        document.getElementById('add-header').addEventListener('click', () => {
+            const headerRow = document.createElement('div');
+            headerRow.className = 'header-row';
+            headerRow.innerHTML = `
+                <input type="text" placeholder="Header 名称">
+                <input type="text" placeholder="Header 值">
+                <button class="danger remove-header">×</button>
+            `;
+            requestHeaders.appendChild(headerRow);
+            
+            // 添加删除事件
+            headerRow.querySelector('.remove-header').addEventListener('click', () => {
+                headerRow.remove();
+            });
+        });
+        
+        // 添加请求参数
+        document.getElementById('add-param').addEventListener('click', () => {
+            const paramRow = document.createElement('div');
+            paramRow.className = 'header-row';
+            paramRow.innerHTML = `
+                <input type="text" placeholder="参数名">
+                <input type="text" placeholder="参数值">
+                <button class="danger remove-param">×</button>
+            `;
+            requestParams.appendChild(paramRow);
+            
+            // 添加删除事件
+            paramRow.querySelector('.remove-param').addEventListener('click', () => {
+                paramRow.remove();
+            });
+        });
+        
+        // 发送请求
+        sendRequestBtn.addEventListener('click', async () => {
+            const method = requestMethod.value;
+            let url = requestUrl.value;
+            
+            // 处理查询参数
+            const params = [];
+            document.querySelectorAll('#request-params .header-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const key = inputs[0].value.trim();
+                const value = inputs[1].value.trim();
+                if (key && value) {
+                    params.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+                }
+            });
+            
+            if (params.length > 0) {
+                url += (url.includes('?') ? '&' : '?');
+                url += params.join('&');
+            }
+            
+            // 处理请求头
+            const headers = {};
+            document.querySelectorAll('#request-headers .header-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const key = inputs[0].value.trim();
+                const value = inputs[1].value.trim();
+                if (key && value) {
+                    headers[key] = value;
+                }
+            });
+            
+            // 处理请求体
+            let body = null;
+            if (['POST', 'PUT', 'PATCH'].includes(method)) {
+                body = requestBody.value;
+                try {
+                    // 如果是 JSON，尝试解析以确保格式正确
+                    if (headers['Content-Type'] && headers['Content-Type'].includes('application/json') && body) {
+                        JSON.parse(body);
+                    }
+                } catch (e) {
+                    alert('JSON 格式错误: ' + e.message);
+                    return;
+                }
+            }
+            
+            // 发送请求
+            try {
+                const startTime = Date.now();
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: method === 'GET' || method === 'HEAD' ? null : body
+                });
+                
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // 显示响应
+                responseContainer.style.display = 'block';
+                responseStatus.textContent = `${response.status} ${response.statusText}`;
+                responseStatus.style.color = response.ok ? '#2ecc71' : '#e74c3c';
+                responseTime.textContent = duration;
+                
+                // 显示响应头
+                const headersText = [];
+                response.headers.forEach((value, key) => {
+                    headersText.push(`${key}: ${value}`);
+                });
+                responseHeaders.textContent = headersText.join('\n');
+                
+                // 显示响应体
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    responseData.textContent = JSON.stringify(data, null, 2);
+                } else if (contentType.includes('text/')) {
+                    responseData.textContent = await response.text();
+                } else {
+                    responseData.textContent = '二进制数据 (未显示)';
+                }
+                
+                // 保存到历史记录
+                saveToHistory(method, url, headers, body, response);
+            } catch (error) {
+                responseContainer.style.display = 'block';
+                responseStatus.textContent = `Error: ${error.message}`;
+                responseStatus.style.color = '#e74c3c';
+                responseHeaders.textContent = '';
+                responseData.textContent = error.stack || '';
+            }
+        });
+        
+        // JSON 工具功能
+        const jsonInput = document.getElementById('json-input');
+        const jsonOutput = document.getElementById('json-output');
+        const jsonValidation = document.getElementById('json-validation');
+        
+        document.getElementById('format-json').addEventListener('click', () => {
+            try {
+                const json = JSON.parse(jsonInput.value);
+                jsonOutput.textContent = JSON.stringify(json, null, 2);
+                jsonValidation.textContent = '✅ JSON 格式正确';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonOutput.textContent = '';
+                jsonValidation.textContent = '❌ JSON 格式错误: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+        
+        document.getElementById('minify-json').addEventListener('click', () => {
+            try {
+                const json = JSON.parse(jsonInput.value);
+                jsonOutput.textContent = JSON.stringify(json);
+                jsonValidation.textContent = '✅ JSON 格式正确';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonOutput.textContent = '';
+                jsonValidation.textContent = '❌ JSON 格式错误: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+        
+        document.getElementById('validate-json').addEventListener('click', () => {
+            try {
+                JSON.parse(jsonInput.value);
+                jsonValidation.textContent = '✅ JSON 格式正确';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonValidation.textContent = '❌ JSON 格式错误: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+
+        
+        document.getElementById('clear-json').addEventListener('click', () => {
+            jsonInput.value = '';
+            jsonOutput.textContent = '';
+            jsonValidation.textContent = '';
+        });
+
+        // JSON 转换功能实现
+        document.getElementById('json-to-xml').addEventListener('click', () => {
+            try {
+                const json = JSON.parse(jsonInput.value);
+                const xml = jsonToXml(json);
+                jsonOutput.textContent = xml;
+                jsonValidation.textContent = '✅ JSON 转 XML 成功';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonOutput.textContent = '';
+                jsonValidation.textContent = '❌ 转换失败: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+
+        document.getElementById('xml-to-json').addEventListener('click', () => {
+            try {
+                const xml = jsonInput.value;
+                const json = xmlToJson(xml);
+                jsonOutput.textContent = JSON.stringify(json, null, 2);
+                jsonValidation.textContent = '✅ XML 转 JSON 成功';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonOutput.textContent = '';
+                jsonValidation.textContent = '❌ 转换失败: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+
+        document.getElementById('json-to-csv').addEventListener('click', () => {
+            try {
+                const json = JSON.parse(jsonInput.value);
+                const csv = jsonToCsv(json);
+                jsonOutput.textContent = csv;
+                jsonValidation.textContent = '✅ JSON 转 CSV 成功';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonOutput.textContent = '';
+                jsonValidation.textContent = '❌ 转换失败: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+
+        document.getElementById('csv-to-json').addEventListener('click', () => {
+            try {
+                const csv = jsonInput.value;
+                const json = csvToJson(csv);
+                jsonOutput.textContent = JSON.stringify(json, null, 2);
+                jsonValidation.textContent = '✅ CSV 转 JSON 成功';
+                jsonValidation.style.color = '#2ecc71';
+            } catch (e) {
+                jsonOutput.textContent = '';
+                jsonValidation.textContent = '❌ 转换失败: ' + e.message;
+                jsonValidation.style.color = '#e74c71';
+            }
+        });
+
+        // 转换工具函数
+        function jsonToXml(json, nodeName = 'root') {
+            if (typeof json !== 'object') {
+                return `<${nodeName}>${json}</${nodeName}>`;
+            }
+
+            let xml = '';
+            if (Array.isArray(json)) {
+                json.forEach((item, index) => {
+                    xml += jsonToXml(item, nodeName + '_' + index);
+                });
+            } else {
+                for (const key in json) {
+                    if (json.hasOwnProperty(key)) {
+                        const value = json[key];
+                        xml += jsonToXml(value, key);
+                    }
+                }
+            }
+            
+            return `<${nodeName}>${xml}</${nodeName}>`;
+        }
+
+        function xmlToJson(xmlStr) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlStr, "text/xml");
+            
+            function parseNode(node) {
+                const obj = {};
+                
+                if (node.nodeType === 3) { // 文本节点
+                    return node.nodeValue.trim();
+                }
+                
+                if (node.attributes && node.attributes.length > 0) {
+                    obj['@attributes'] = {};
+                    for (let i = 0; i < node.attributes.length; i++) {
+                        const attr = node.attributes[i];
+                        obj['@attributes'][attr.nodeName] = attr.nodeValue;
+                    }
+                }
+                
+                if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
+                    // 只有一个文本子节点
+                    return node.childNodes[0].nodeValue.trim();
+                } else if (node.childNodes.length > 0) {
+                    // 处理子节点
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        const child = node.childNodes[i];
+                        if (child.nodeType !== 3) { // 忽略纯文本节点
+                            const childName = child.nodeName;
+                            const childValue = parseNode(child);
+                            
+                            if (obj[childName]) {
+                                if (!Array.isArray(obj[childName])) {
+                                    obj[childName] = [obj[childName]];
+                                }
+                                obj[childName].push(childValue);
+                            } else {
+                                obj[childName] = childValue;
+                            }
+                        }
+                    }
+                }
+                
+                return obj;
+            }
+            
+            return parseNode(xmlDoc.documentElement);
+        }
+
+        function jsonToCsv(json) {
+            if (!Array.isArray(json)) {
+                throw new Error('CSV转换需要JSON数组');
+            }
+            
+            if (json.length === 0) return '';
+            
+            // 获取所有可能的键
+            const allKeys = new Set();
+            json.forEach(item => {
+                Object.keys(item).forEach(key => allKeys.add(key));
+            });
+            const headers = Array.from(allKeys);
+            
+            // 生成CSV内容
+            let csv = headers.join(',') + '\n';
+            
+            json.forEach(item => {
+                const row = headers.map(header => {
+                    let value = item[header] !== undefined ? item[header] : '';
+                    // 处理值中的逗号和引号
+                    if (typeof value === 'string') {
+                        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                            value = `"${value.replace(/"/g, '""')}"`;
+                        }
+                    }
+                    return value;
+                });
+                csv += row.join(',') + '\n';
+            });
+            
+            return csv;
+        }
+
+        function csvToJson(csv) {
+            const lines = csv.split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',');
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const obj = {};
+                let currentLine = lines[i];
+                let insideQuotes = false;
+                let currentField = '';
+                let fieldIndex = 0;
+                
+                for (let j = 0; j < currentLine.length; j++) {
+                    const char = currentLine[j];
+                    
+                    if (char === '"') {
+                        insideQuotes = !insideQuotes;
+                    } else if (char === ',' && !insideQuotes) {
+                        obj[headers[fieldIndex]] = currentField.trim();
+                        currentField = '';
+                        fieldIndex++;
+                    } else {
+                        currentField += char;
+                    }
+                }
+                
+                // 添加最后一个字段
+                if (fieldIndex < headers.length) {
+                    obj[headers[fieldIndex]] = currentField.trim();
+                }
+                
+                result.push(obj);
+            }
+            
+            return result;
+        }
+        
+        // 编码/解码功能
+        const encodeInput = document.getElementById('encode-input');
+        const encodeOutput = document.getElementById('encode-output');
+        
+        document.getElementById('url-encode').addEventListener('click', () => {
+            encodeOutput.value = encodeURIComponent(encodeInput.value);
+        });
+        
+        document.getElementById('url-decode').addEventListener('click', () => {
+            encodeOutput.value = decodeURIComponent(encodeInput.value);
+        });
+        
+        document.getElementById('base64-encode').addEventListener('click', () => {
+            encodeOutput.value = btoa(encodeInput.value);
+        });
+        
+        document.getElementById('base64-decode').addEventListener('click', () => {
+            encodeOutput.value = atob(encodeInput.value);
+        });
+        
+        document.getElementById('html-encode').addEventListener('click', () => {
+            encodeOutput.value = encodeInput.value
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        });
+        
+        document.getElementById('html-decode').addEventListener('click', () => {
+            encodeOutput.value = encodeInput.value
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'");
+        });
+        
+        document.getElementById('jwt-decode').addEventListener('click', () => {
+            const token = encodeInput.value;
+            try {
+                const [header, payload, signature] = token.split('.');
+                const decodedHeader = JSON.parse(atob(header));
+                const decodedPayload = JSON.parse(atob(payload));
+                
+                encodeOutput.value = `Header:\n${JSON.stringify(decodedHeader, null, 2)}\n\nPayload:\n${JSON.stringify(decodedPayload, null, 2)}`;
+            } catch (e) {
+                encodeOutput.value = 'JWT 解码错误: ' + e.message;
+            }
+        });
+        
+        // 历史记录功能
+        function saveToHistory(method, url, headers, body, response) {
+            const history = JSON.parse(localStorage.getItem('apiHistory') || []);
+            
+            const entry = {
+                id: Date.now(),
+                method,
+                url,
+                headers,
+                body,
+                status: response.status,
+                statusText: response.statusText,
+                timestamp: new Date().toISOString()
+            };
+            
+            history.unshift(entry);
+            if (history.length > 50) history.pop(); // 限制历史记录数量
+            
+            localStorage.setItem('apiHistory', JSON.stringify(history));
+            renderHistory();
+        }
+        
+        function renderHistory() {
+            const historyList = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('apiHistory') || '[]');
+            
+            historyList.innerHTML = '';
+            history.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <span class="history-method ${entry.method.toLowerCase()}">${entry.method}</span>
+                    <span>${entry.url}</span>
+                    <span style="float: right; color: ${entry.status >= 400 ? '#e74c3c' : '#2ecc71'}">${entry.status}</span>
+                `;
+                
+                item.addEventListener('click', () => {
+                    loadHistoryEntry(entry);
+                    document.querySelector('.tab[data-tab="request"]').click();
+                });
+                
+                historyList.appendChild(item);
+            });
+        }
+        
+        function loadHistoryEntry(entry) {
+            requestMethod.value = entry.method;
+            requestUrl.value = entry.url;
+            
+            // 清空现有头
+            requestHeaders.innerHTML = '';
+            Object.entries(entry.headers).forEach(([key, value]) => {
+                const headerRow = document.createElement('div');
+                headerRow.className = 'header-row';
+                headerRow.innerHTML = `
+                    <input type="text" placeholder="Header 名称" value="${key}">
+                    <input type="text" placeholder="Header 值" value="${value}">
+                    <button class="danger remove-header">×</button>
+                `;
+                requestHeaders.appendChild(headerRow);
+                
+                headerRow.querySelector('.remove-header').addEventListener('click', () => {
+                    headerRow.remove();
+                });
+            });
+            
+            requestBody.value = entry.body || '';
+        }
+        
+        document.getElementById('clear-history').addEventListener('click', () => {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                localStorage.removeItem('apiHistory');
+                renderHistory();
+            }
+        });
+        
+        // 修改开发者工具的功能，将输出重定向到 tools-output
+        document.getElementById('timestamp-now').addEventListener('click', () => {
+            document.getElementById('tools-output').value = Math.floor(Date.now() / 1000);
+        });
+        
+        document.getElementById('timestamp-convert').addEventListener('click', () => {
+            const timestamp = parseInt(document.getElementById('tools-output').value);
+            if (isNaN(timestamp)) {
+                document.getElementById('tools-output').value = '无效的时间戳';
+                return;
+            }
+            
+            const date = new Date(timestamp * 1000);
+            document.getElementById('tools-output').value = date.toISOString() + '\n' + date.toString();
+        });
+        
+        document.getElementById('generate-uuid').addEventListener('click', () => {
+            document.getElementById('tools-output').value = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        });
+        
+        
+        document.getElementById('generate-sha1').addEventListener('click', async () => {
+            const input = prompt('请输入要计算SHA-1的文本:');
+            if (input) {
+                const msgUint8 = new TextEncoder().encode(input);
+                const hashBuffer = await crypto.subtle.digest('SHA-1', msgUint8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                document.getElementById('tools-output').value = hashHex;
+            }
+        });
+        
+        document.getElementById('generate-sha256').addEventListener('click', async () => {
+            const input = prompt('请输入要计算SHA-256的文本:');
+            if (input) {
+                const msgUint8 = new TextEncoder().encode(input);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                document.getElementById('tools-output').value = hashHex;
+            }
+        });
+        
+        document.getElementById('generate-lorem').addEventListener('click', () => {
+    // 专业拉丁词库（真实Lorem Ipsum词汇）
+    const latinWords = [
+        'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 
+        'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor',
+        'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna',
+        'aliqua', 'ut', 'enim', 'ad', 'minim', 'veniam', 'quis',
+        'nostrud', 'exercitation', 'ullamco', 'laboris', 'nisi',
+        'aliquip', 'ex', 'ea', 'commodo', 'consequat', 'duis',
+        'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
+        'velit', 'esse', 'cillum', 'eu', 'fugiat', 'nulla',
+        'pariatur', 'excepteur', 'sint', 'occaecat', 'cupidatat',
+        'non', 'proident', 'sunt', 'culpa', 'qui', 'officia',
+        'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum'
+    ];
+    
+    // 生成更专业的随机Lorem Ipsum
+    const getRandomText = () => {
+        const paragraphs = [];
+        const paraCount = 1 + Math.floor(Math.random() * 3);
+        
+        for (let p = 0; p < paraCount; p++) {
+            let paragraph = '';
+            const sentenceCount = 3 + Math.floor(Math.random() * 3);
+            
+            for (let s = 0; s < sentenceCount; s++) {
+                let sentence = '';
+                const wordCount = 5 + Math.floor(Math.random() * 10);
+                
+                for (let w = 0; w < wordCount; w++) {
+                    const word = latinWords[Math.floor(Math.random() * latinWords.length)];
+                    sentence += (w === 0) 
+                        ? word.charAt(0).toUpperCase() + word.slice(1)
+                        : ' ' + word;
+                }
+                
+                sentence += '.';
+                paragraph += sentence + ' ';
+            }
+            
+            paragraphs.push(paragraph.trim());
+        }
+        
+        return paragraphs.join('\n\n');
+    };
+    
+    document.getElementById('tools-output').value = getRandomText();
+});
+    
+        
+        document.getElementById('generate-mock').addEventListener('click', () => {
+            try {
+                const schema = JSON.parse(document.getElementById('mock-schema').value);
+                const mockData = generateMockData(schema);
+                document.getElementById('mock-output').textContent = JSON.stringify(mockData, null, 2);
+            } catch (e) {
+                document.getElementById('mock-output').textContent = '错误: ' + e.message;
+            }
+        });
+        
+        function generateMockData(schema) {
+            if (schema.type === 'object') {
+                const result = {};
+                if (schema.properties) {
+                    for (const [key, prop] of Object.entries(schema.properties)) {
+                        result[key] = generateMockData(prop);
+                    }
+                }
+                return result;
+            } else if (schema.type === 'array') {
+                const items = schema.items || { type: 'string' };
+                return [generateMockData(items), generateMockData(items)];
+            } else if (schema.type === 'string') {
+                if (schema.enum) {
+                    return schema.enum[0];
+                }
+                return 'mock string';
+            } else if (schema.type === 'number') {
+                return 123.45;
+            } else if (schema.type === 'integer') {
+                return 42;
+            } else if (schema.type === 'boolean') {
+                return true;
+            } else if (schema.type === 'null') {
+                return null;
+            }
+            return 'mock data';
+        }
+        
+        // 初始化
+        renderHistory();
+        
+        // 清空请求
+        document.getElementById('clear-request').addEventListener('click', () => {
+            requestMethod.value = 'GET';
+            requestUrl.value = '';
+            requestHeaders.innerHTML = `
+                <div class="header-row">
+                    <input type="text" placeholder="Header 名称" value="Content-Type">
+                    <input type="text" placeholder="Header 值" value="application/json">
+                    <button class="danger remove-header">×</button>
+                </div>
+            `;
+            requestBody.value = '';
+            requestParams.innerHTML = `
+                <div class="header-row">
+                    <input type="text" placeholder="参数名">
+                    <input type="text" placeholder="参数值">
+                    <button class="danger remove-param">×</button>
+                </div>
+            `;
+            responseContainer.style.display = 'none';
+            
+            // 重新绑定删除事件
+            document.querySelectorAll('.remove-header').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+            
+            document.querySelectorAll('.remove-param').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+        });
+        
+        // 复制响应
+        document.getElementById('copy-response').addEventListener('click', () => {
+            const text = `Status: ${responseStatus.textContent}\n\nHeaders:\n${responseHeaders.textContent}\n\nBody:\n${responseData.textContent}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('已复制到剪贴板');
+            });
+        });
+        
+        // 导出响应
+        document.getElementById('export-response').addEventListener('click', () => {
+            const text = `Status: ${responseStatus.textContent}\n\nHeaders:\n${responseHeaders.textContent}\n\nBody:\n${responseData.textContent}`;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `api-response-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        // 保存请求
+        document.getElementById('save-request').addEventListener('click', () => {
+            const request = {
+                method: requestMethod.value,
+                url: requestUrl.value,
+                headers: {},
+                body: requestBody.value
+            };
+            
+            document.querySelectorAll('#request-headers .header-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const key = inputs[0].value.trim();
+                const value = inputs[1].value.trim();
+                if (key && value) {
+                    request.headers[key] = value;
+                }
+            });
+            
+            const blob = new Blob([JSON.stringify(request, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `api-request-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

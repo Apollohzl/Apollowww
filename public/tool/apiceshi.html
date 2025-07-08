@@ -550,147 +550,162 @@
             });
         });
         
-        // API 请求功能
-        const requestMethod = document.getElementById('request-method');
-        const requestUrl = document.getElementById('request-url');
-        const requestHeaders = document.getElementById('request-headers');
-        const requestBody = document.getElementById('request-body');
-        const requestParams = document.getElementById('request-params');
-        const sendRequestBtn = document.getElementById('send-request');
-        const responseContainer = document.getElementById('response-container');
-        const responseStatus = document.getElementById('response-status');
-        const responseTime = document.getElementById('response-time');
-        const responseHeaders = document.getElementById('response-headers');
-        const responseData = document.getElementById('response-data');
-        
-        // 添加请求头
-        document.getElementById('add-header').addEventListener('click', () => {
-            const headerRow = document.createElement('div');
-            headerRow.className = 'header-row';
-            headerRow.innerHTML = `
-                <input type="text" placeholder="Header 名称">
-                <input type="text" placeholder="Header 值">
-                <button class="danger remove-header">×</button>
-            `;
-            requestHeaders.appendChild(headerRow);
-            
-            // 添加删除事件
-            headerRow.querySelector('.remove-header').addEventListener('click', () => {
-                headerRow.remove();
-            });
-        });
-        
-        // 添加请求参数
-        document.getElementById('add-param').addEventListener('click', () => {
-            const paramRow = document.createElement('div');
-            paramRow.className = 'header-row';
-            paramRow.innerHTML = `
-                <input type="text" placeholder="参数名">
-                <input type="text" placeholder="参数值">
-                <button class="danger remove-param">×</button>
-            `;
-            requestParams.appendChild(paramRow);
-            
-            // 添加删除事件
-            paramRow.querySelector('.remove-param').addEventListener('click', () => {
-                paramRow.remove();
-            });
-        });
-        
-        // 发送请求
-        sendRequestBtn.addEventListener('click', async () => {
-            const method = requestMethod.value;
-            let url = requestUrl.value;
-            
-            // 处理查询参数
-            const params = [];
-            document.querySelectorAll('#request-params .header-row').forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                const key = inputs[0].value.trim();
-                const value = inputs[1].value.trim();
-                if (key && value) {
-                    params.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
-                }
-            });
-            
-            if (params.length > 0) {
-                url += (url.includes('?') ? '&' : '?');
-                url += params.join('&');
+       // 发送请求
+sendRequestBtn.addEventListener('click', async () => {
+    const method = requestMethod.value;
+    let url = requestUrl.value;
+    
+    // 处理查询参数
+    const params = [];
+    document.querySelectorAll('#request-params .header-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const key = inputs[0].value.trim();
+        const value = inputs[1].value.trim();
+        if (key && value) {
+            params.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+        }
+    });
+    
+    if (params.length > 0) {
+        url += (url.includes('?') ? '&' : '?');
+        url += params.join('&');
+    }
+    
+    // 处理请求头
+    const headers = {};
+    document.querySelectorAll('#request-headers .header-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const key = inputs[0].value.trim();
+        const value = inputs[1].value.trim();
+        if (key && value) {
+            headers[key] = value;
+        }
+    });
+    
+    // 处理请求体
+    let body = null;
+    if (['POST', 'PUT', 'PATCH'].includes(method)) {
+        body = requestBody.value;
+        try {
+            // 如果是 JSON，尝试解析以确保格式正确
+            if (headers['Content-Type'] && headers['Content-Type'].includes('application/json') && body) {
+                JSON.parse(body);
             }
-            
-            // 处理请求头
-            const headers = {};
-            document.querySelectorAll('#request-headers .header-row').forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                const key = inputs[0].value.trim();
-                const value = inputs[1].value.trim();
-                if (key && value) {
-                    headers[key] = value;
-                }
-            });
-            
-            // 处理请求体
-            let body = null;
-            if (['POST', 'PUT', 'PATCH'].includes(method)) {
-                body = requestBody.value;
+        } catch (e) {
+            alert('JSON 格式错误: ' + e.message);
+            return;
+        }
+    }
+    
+    // 发送请求
+    try {
+        const startTime = Date.now();
+        const response = await fetch(url, {
+            method,
+            headers,
+            body: method === 'GET' || method === 'HEAD' ? null : body
+        });
+        
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        // 显示响应
+        responseContainer.style.display = 'block';
+        responseStatus.textContent = `${response.status} ${response.statusText}`;
+        responseStatus.style.color = response.ok ? '#2ecc71' : '#e74c3c';
+        responseTime.textContent = duration;
+        
+        // 显示响应头
+        const headersText = [];
+        response.headers.forEach((value, key) => {
+            headersText.push(`${key}: ${value}`);
+        });
+        responseHeaders.textContent = headersText.join('\n');
+        
+        // 处理响应体
+        const contentType = response.headers.get('content-type') || '';
+        let responseBody;
+        
+        try {
+            if (contentType.includes('application/json')) {
+                responseBody = await response.text(); // 先获取文本
                 try {
-                    // 如果是 JSON，尝试解析以确保格式正确
-                    if (headers['Content-Type'] && headers['Content-Type'].includes('application/json') && body) {
-                        JSON.parse(body);
-                    }
+                    const jsonData = JSON.parse(responseBody);
+                    responseData.textContent = JSON.stringify(jsonData, null, 2);
                 } catch (e) {
-                    alert('JSON 格式错误: ' + e.message);
-                    return;
+                    responseData.textContent = `无效的JSON格式:\n${responseBody}`;
                 }
+            } else if (contentType.includes('text/')) {
+                responseBody = await response.text();
+                responseData.textContent = responseBody;
+            } else if (contentType.startsWith('image/')) {
+                const blob = await response.blob();
+                responseData.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                img.style.maxWidth = '100%';
+                responseData.appendChild(img);
+            } else if (contentType.includes('application/pdf')) {
+                const blob = await response.blob();
+                responseData.innerHTML = `
+                    <embed src="${URL.createObjectURL(blob)}" 
+                           type="application/pdf" 
+                           width="100%" 
+                           height="500px">
+                `;
+            } else {
+                const blob = await response.blob();
+                responseData.textContent = `二进制数据 (${contentType || '未知类型'}, ${blob.size}字节)`;
             }
-            
-            // 发送请求
-            try {
-                const startTime = Date.now();
-                const response = await fetch(url, {
-                    method,
-                    headers,
-                    body: method === 'GET' || method === 'HEAD' ? null : body
-                });
-                
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                
-                // 显示响应
-                responseContainer.style.display = 'block';
-                responseStatus.textContent = `${response.status} ${response.statusText}`;
-                responseStatus.style.color = response.ok ? '#2ecc71' : '#e74c3c';
-                responseTime.textContent = duration;
-                
-                // 显示响应头
-                const headersText = [];
-                response.headers.forEach((value, key) => {
-                    headersText.push(`${key}: ${value}`);
-                });
-                responseHeaders.textContent = headersText.join('\n');
-                
-                // 显示响应体
-                const contentType = response.headers.get('content-type') || '';
-                if (contentType.includes('application/json')) {
-                    const data = await response.json();
-                    responseData.textContent = JSON.stringify(data, null, 2);
-                } else if (contentType.includes('text/')) {
-                    responseData.textContent = await response.text();
-                } else {
-                    responseData.textContent = '二进制数据 (未显示)';
-                }
-                
-                // 保存到历史记录
-                saveToHistory(method, url, headers, body, response);
-            } catch (error) {
-                responseContainer.style.display = 'block';
-                responseStatus.textContent = `Error: ${error.message}`;
-                responseStatus.style.color = '#e74c3c';
-                responseHeaders.textContent = '';
-                responseData.textContent = error.stack || '';
-            }
+        } catch (e) {
+            responseData.textContent = `响应处理错误: ${e.message}`;
+        }
+        
+        // 保存到历史记录
+        saveToHistory(method, url, headers, body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: headersText,
+            body: responseBody || '无响应体',
+            duration
         });
         
+    } catch (error) {
+        responseContainer.style.display = 'block';
+        responseStatus.textContent = `Error: ${error.message}`;
+        responseStatus.style.color = '#e74c3c';
+        responseHeaders.textContent = '';
+        responseData.textContent = error.stack || '';
+    }
+});
+
+// 修改后的保存历史记录函数
+function saveToHistory(method, url, requestHeaders, requestBody, response) {
+    const history = JSON.parse(localStorage.getItem('apiHistory') || []);
+    
+    const entry = {
+        id: Date.now(),
+        method,
+        url,
+        requestHeaders,
+        requestBody,
+        responseStatus: response.status,
+        responseStatusText: response.statusText,
+        responseHeaders: response.headers || [],
+        responseBody: typeof response.body === 'string' ? response.body : '非文本数据',
+        duration: response.duration || 0,
+        timestamp: new Date().toISOString()
+    };
+    
+    // 限制历史记录数量
+    if (history.length >= 50) {
+        history.pop();
+    }
+    history.unshift(entry);
+    
+    localStorage.setItem('apiHistory', JSON.stringify(history));
+    renderHistory();
+} 
         // JSON 工具功能
         const jsonInput = document.getElementById('json-input');
         const jsonOutput = document.getElementById('json-output');

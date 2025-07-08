@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>科学计算工-全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .calculator {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .display {
+            background: #f9f9f9;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: right;
+            font-size: 1.8rem;
+            min-height: 80px;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .display .expression {
+            font-size: 1rem;
+            color: #7f8c8d;
+            min-height: 20px;
+        }
+        
+        .display .result {
+            font-size: 1.8rem;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        button {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #e0e0e0;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .number {
+            background: #f5f5f5;
+        }
+        
+        .operator {
+            background: #3498db;
+            color: white;
+        }
+        
+        .function {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .scientific {
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .equal {
+            background: #e74c3c;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .clear {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .result-area {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+       
+
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .buttons {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>科学计算工具箱</h1>
+    
+    <div class="tab-container">
+        <div class="tab active" data-tab="calculator">科学计算器</div>
+        <div class="tab" data-tab="converter">单位转换</div>
+        <div class="tab" data-tab="formulas">常用公式</div>
+        <div class="tab" data-tab="constants">常数</div>
+    </div>
+    
+    <!-- 科学计算器 -->
+    <div class="tool-card" id="calculator">
+        <div class="display">
+            <div class="expression" id="calc-expression"></div>
+            <div class="result" id="calc-result">0</div>
+        </div>
+        <div class="buttons">
+            <button class="clear" onclick="clearAll()">AC</button>
+            <button class="function" onclick="backspace()">⌫</button>
+            <button class="function" onclick="appendToDisplay('%')">%</button>
+            <button class="operator" onclick="appendToDisplay('/')">/</button>
+            <button class="scientific" onclick="appendToDisplay('Math.PI')">π</button>
+            
+            <button class="number" onclick="appendToDisplay('7')">7</button>
+            <button class="number" onclick="appendToDisplay('8')">8</button>
+            <button class="number" onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            <button class="scientific" onclick="appendToDisplay('Math.sqrt(')">√</button>
+            
+            <button class="number" onclick="appendToDisplay('4')">4</button>
+            <button class="number" onclick="appendToDisplay('5')">5</button>
+            <button class="number" onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            <button class="scientific" onclick="appendToDisplay('Math.pow(')">x^y</button>
+            
+            <button class="number" onclick="appendToDisplay('1')">1</button>
+            <button class="number" onclick="appendToDisplay('2')">2</button>
+            <button class="number" onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            <button class="scientific" onclick="appendToDisplay('Math.log(')">ln</button>
+            
+            <button class="number" onclick="appendToDisplay('0')">0</button>
+            <button class="number" onclick="appendToDisplay('.')">.</button>
+            <button class="equal" onclick="calculate()">=</button>
+            <button class="scientific" onclick="appendToDisplay('Math.sin(')">sin</button>
+            <button class="scientific" onclick="appendToDisplay('Math.cos(')">cos</button>
+        </div>
+    </div>
+    
+    <!-- 单位转换器 -->
+    <div class="tool-card" id="converter" style="display:none;">
+        <h3>单位转换器</h3>
+        <div class="input-group">
+            <label for="convert-value">数值</label>
+            <input type="number" id="convert-value" placeholder="输入数值">
+        </div>
+        <div class="input-group">
+            <label for="convert-from">从</label>
+            <select id="convert-from">
+                <option value="meter">米 (m)</option>
+                <option value="kilometer">千米 (km)</option>
+                <option value="centimeter">厘米 (cm)</option>
+                <option value="millimeter">毫米 (mm)</option>
+                <option value="mile">英里 (mi)</option>
+                <option value="foot">英尺 (ft)</option>
+                <option value="inch">英寸 (in)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="convert-to">到</label>
+            <select id="convert-to">
+                <option value="meter">米 (m)</option>
+                <option value="kilometer">千米 (km)</option>
+                <option value="centimeter">厘米 (cm)</option>
+                <option value="millimeter">毫米 (mm)</option>
+                <option value="mile">英里 (mi)</option>
+                <option value="foot">英尺 (ft)</option>
+                <option value="inch">英寸 (in)</option>
+            </select>
+        </div>
+        <button onclick="convertUnits()">转换</button>
+        <div class="result-area" id="convert-result"></div>
+    </div>
+    
+    <!-- 常用公式 -->
+    <div class="tool-card" id="formulas" style="display:none;">
+        <h3>常用科学公式</h3>
+        <div class="input-group">
+            <label for="formula-select">选择公式</label>
+            <select id="formula-select" onchange="showFormula()">
+                <option value="">-- 选择公式 --</option>
+                <option value="quadratic">二次方程求根</option>
+                <option value="newton">牛顿第二定律</option>
+                <option value="kinetic">动能公式</option>
+                <option value="gravitation">万有引力</option>
+                <option value="ohm">欧姆定律</option>
+            </select>
+        </div>
+        <div id="formula-inputs"></div>
+        <div class="result-area" id="formula-result"></div>
+    </div>
+    
+    <!-- 常数 -->
+    <div class="tool-card" id="constants" style="display:none;">
+        <h3>物理常数</h3>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="constant-search" placeholder="搜索常数名称 (如: 光速、普朗克...)">
+        </div>
+        
+        <div id="constants-container">
+            <!-- 基础物理常数 -->
+            <div class="constants-section">
+                <h4>基础物理常数</h4>
+                <div class="constants-grid">
+                    <div class="constant-item" data-name="光速">
+                        <strong>光速 (c):</strong> 299,792,458 m/s
+                    </div>
+                    <div class="constant-item" data-name="万有引力常数">
+                        <strong>万有引力常数 (G):</strong> 6.67430 × 10⁻¹¹ m³⋅kg⁻¹⋅s⁻²
+                    </div>
+                    <div class="constant-item" data-name="普朗克常数">
+                        <strong>普朗克常数 (h):</strong> 6.62607015 × 10⁻³⁴ J⋅Hz⁻¹
+                    </div>
+                    <div class="constant-item" data-name="阿伏伽德罗常数">
+                        <strong>阿伏伽德罗常数 (N<sub>A</sub>):</strong> 6.02214076 × 10²³ mol⁻¹
+                    </div>
+                    <div class="constant-item" data-name="电子质量">
+                        <strong>电子质量 (m<sub>e</sub>):</strong> 9.10938356 × 10⁻³¹ kg
+                    </div>
+                    <div class="constant-item" data-name="质子质量">
+                        <strong>质子质量 (m<sub>p</sub>):</strong> 1.6726219 × 10⁻²⁷ kg
+                    </div>
+                    <div class="constant-item" data-name="标准重力加速度">
+                        <strong>标准重力加速度 (g):</strong> 9.80665 m/s² (定义值)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 电磁学常数 -->
+            <div class="constants-section">
+                <h4>电磁学常数</h4>
+                <div class="constants-grid">
+                    <div class="constant-item" data-name="真空磁导率">
+                        <strong>真空磁导率 (μ₀):</strong> 4π × 10⁻⁷ N/A² = 1.25663706212 × 10⁻⁶ H/m
+                    </div>
+                    <div class="constant-item" data-name="真空电容率">
+                        <strong>真空电容率 (ε₀):</strong> 8.8541878128 × 10⁻¹² F/m
+                    </div>
+                    <div class="constant-item" data-name="基本电荷">
+                        <strong>基本电荷 (e):</strong> 1.602176634 × 10⁻¹⁹ C (精确值)
+                    </div>
+                    <div class="constant-item" data-name="磁通量子">
+                        <strong>磁通量子 (Φ₀):</strong> h/2e = 2.067833848 × 10⁻¹⁵ Wb
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 量子物理常数 -->
+            <div class="constants-section">
+                <h4>量子物理常数</h4>
+                <div class="constants-grid">
+                    <div class="constant-item" data-name="约化普朗克常数">
+                        <strong>约化普朗克常数 (ħ):</strong> 1.054571817 × 10⁻³⁴ J⋅s
+                    </div>
+                    <div class="constant-item" data-name="玻尔磁子">
+                        <strong>玻尔磁子 (μ<sub>B</sub>):</strong> 9.2740100783 × 10⁻²⁴ J/T
+                    </div>
+                    <div class="constant-item" data-name="精细结构常数">
+                        <strong>精细结构常数 (α):</strong> ≈1/137.035999084
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 热力学常数 -->
+            <div class="constants-section">
+                <h4>热力学常数</h4>
+                <div class="constants-grid">
+                    <div class="constant-item" data-name="玻尔兹曼常数">
+                        <strong>玻尔兹曼常数 (k):</strong> 1.380649 × 10⁻²³ J/K (精确值)
+                    </div>
+                    <div class="constant-item" data-name="理想气体常数">
+                        <strong>理想气体常数 (R):</strong> 8.314462618 J/(mol⋅K)
+                    </div>
+                    <div class="constant-item" data-name="斯特藩-玻尔兹曼常数">
+                        <strong>斯特藩-玻尔兹曼常数 (σ):</strong> 5.670374419 × 10⁻⁸ W⋅m⁻²⋅K⁻⁴
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 宇宙学常数 -->
+            <div class="constants-section">
+                <h4>宇宙学常数</h4>
+                <div class="constants-grid">
+                    <div class="constant-item" data-name="哈勃常数">
+                        <strong>哈勃常数 (H₀):</strong> 67.8 ± 0.9 (km/s)/Mpc
+                    </div>
+                    <div class="constant-item" data-name="宇宙临界密度">
+                        <strong>宇宙临界密度 (ρ<sub>crit</sub>):</strong> 9.47 × 10⁻²⁷ kg/m³
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 实用补充常数 -->
+            <div class="constants-section">
+                <h4>实用补充常数</h4>
+                <div class="constants-grid">
+                    <div class="constant-item" data-name="原子质量单位">
+                        <strong>原子质量单位 (u):</strong> 1.66053906660 × 10⁻²⁷ kg
+                    </div>
+                    <div class="constant-item" data-name="里德伯常数">
+                        <strong>里德伯常数 (R<sub>∞</sub>):</strong> 1.0973731568160 × 10⁷ m⁻¹
+                    </div>
+                    <div class="constant-item" data-name="电子伏特">
+                        <strong>电子伏特 (eV):</strong> 1.602176634 × 10⁻¹⁹ J (精确值)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>copyright © 2025 科学计算工具箱 | 为科研和工程提供专业计算工具</p>
+    </footer>
+    <style>
+        .search-container {
+            margin: 15px 0;
+            position: relative;
+        }
+
+        #constant-search {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #constant-search:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+
+        .constants-section {
+            margin-bottom: 25px;
+        }
+
+        .constants-section h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .constants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .constant-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 3px solid #3498db;
+        }
+
+        .constant-item.highlight {
+            background: #fffde7;
+            border-left-color: #f39c12;
+            animation: highlight 1s;
+        }
+
+        @keyframes highlight {
+            from { background: #fffde7; }
+            to { background: white; }
+        }
+
+        @media (max-width: 600px) {
+            .constants-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tool-card').forEach(c => c.style.display = 'none');
+                
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+        
+        // 科学计算器功能
+        let currentInput = '0';
+        let currentExpression = '';
+        
+        function updateDisplay() {
+            document.getElementById('calc-result').textContent = currentInput;
+            document.getElementById('calc-expression').textContent = currentExpression;
+        }
+        
+        function appendToDisplay(value) {
+            if (currentInput === '0' && value !== '.') {
+                currentInput = value;
+            } else {
+                currentInput += value;
+            }
+            
+            if (['Math.sin(', 'Math.cos(', 'Math.tan(', 'Math.log(', 'Math.sqrt(', 'Math.pow('].includes(value)) {
+                currentExpression += value;
+            } else {
+                currentExpression += value;
+            }
+            
+            updateDisplay();
+        }
+        
+        function clearAll() {
+            currentInput = '0';
+            currentExpression = '';
+            updateDisplay();
+        }
+        
+        function backspace() {
+            currentInput = currentInput.slice(0, -1);
+            currentExpression = currentExpression.slice(0, -1);
+            if (currentInput === '') {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+        
+        function calculate() {
+            try {
+                // 替换显示用的符号为JavaScript可执行的符号
+                let expression = currentExpression
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/%/g, '/100');
+                
+                // 处理未闭合的函数
+                if ((expression.match(/Math\.\w+\(/g) || []).length > 
+                    (expression.match(/\)/g) || []).length) {
+                    expression += ')';
+                }
+                
+                const result = eval(expression);
+                currentInput = result.toString();
+                currentExpression = result.toString();
+                updateDisplay();
+            } catch (e) {
+                currentInput = 'Error';
+                updateDisplay();
+                setTimeout(() => {
+                    currentInput = '0';
+                    currentExpression = '';
+                    updateDisplay();
+                }, 1000);
+            }
+        }
+        
+        // 单位转换功能
+        const unitConversions = {
+            meter: 1,
+            kilometer: 1000,
+            centimeter: 0.01,
+            millimeter: 0.001,
+            mile: 1609.344,
+            foot: 0.3048,
+            inch: 0.0254
+        };
+        
+        function convertUnits() {
+            const value = parseFloat(document.getElementById('convert-value').value);
+            const fromUnit = document.getElementById('convert-from').value;
+            const toUnit = document.getElementById('convert-to').value;
+            
+            if (isNaN(value)) {
+                document.getElementById('convert-result').textContent = '请输入有效数值';
+                return;
+            }
+            
+            const meters = value * unitConversions[fromUnit];
+            const result = meters / unitConversions[toUnit];
+            
+            document.getElementById('convert-result').textContent = 
+                `${value} ${fromUnit} = ${result.toFixed(6)} ${toUnit}`;
+        }
+        
+        // 公式计算功能
+        function showFormula() {
+            const formula = document.getElementById('formula-select').value;
+            const inputsDiv = document.getElementById('formula-inputs');
+            inputsDiv.innerHTML = '';
+            
+            switch(formula) {
+                case 'quadratic':
+                    inputsDiv.innerHTML = `
+                        <div class="input-group">
+                            <label for="quad-a">a (x²系数)</label>
+                            <input type="number" id="quad-a" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label for="quad-b">b (x系数)</label>
+                            <input type="number" id="quad-b" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label for="quad-c">c (常数项)</label>
+                            <input type="number" id="quad-c" step="any">
+                        </div>
+                        <button onclick="calculateQuadratic()">计算</button>
+                    `;
+                    break;
+                    
+                case 'newton':
+                    inputsDiv.innerHTML = `
+                        <div class="input-group">
+                            <label for="newton-mass">质量 (kg)</label>
+                            <input type="number" id="newton-mass" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label for="newton-acceleration">加速度 (m/s²)</label>
+                            <input type="number" id="newton-acceleration" step="any">
+                        </div>
+                        <button onclick="calculateNewton()">计算</button>
+                    `;
+                    break;
+                    
+                case 'kinetic':
+                    inputsDiv.innerHTML = `
+                        <div class="input-group">
+                            <label for="kinetic-mass">质量 (kg)</label>
+                            <input type="number" id="kinetic-mass" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label for="kinetic-velocity">速度 (m/s)</label>
+                            <input type="number" id="kinetic-velocity" step="any">
+                        </div>
+                        <button onclick="calculateKinetic()">计算</button>
+                    `;
+                    break;
+                case 'gravitation':
+                    inputsDiv.innerHTML = `
+                        <div class="input-group">
+                            <label for="grav-mass1">质量1 (kg)</label>
+                            <input type="number" id="grav-mass1" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label for="grav-mass2">质量2 (kg)</label>
+                            <input type="number" id="grav-mass2" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label for="grav-distance">距离 (m)</label>
+                            <input type="number" id="grav-distance" step="any">
+                        </div>
+                        <button onclick="calculateGravitation()">计算</button>
+                    `;
+                    break;
+                    
+                case 'ohm':
+                    inputsDiv.innerHTML = `
+                        <div class="input-group">
+                            <label>已知两个量，求第三个量</label>
+                            <select id="ohm-solve-for" onchange="updateOhmInputs()">
+                                <option value="voltage">求电压 (V)</option>
+                                <option value="current">求电流 (I)</option>
+                                <option value="resistance">求电阻 (R)</option>
+                            </select>
+                        </div>
+                        <div class="input-group" id="ohm-input1-container">
+                            <label for="ohm-current">电流 (A)</label>
+                            <input type="number" id="ohm-current" step="any">
+                        </div>
+                        <div class="input-group" id="ohm-input2-container">
+                            <label for="ohm-resistance">电阻 (Ω)</label>
+                            <input type="number" id="ohm-resistance" step="any">
+                        </div>
+                        <button onclick="calculateOhm()">计算</button>
+                    `;
+                    break;
+            }
+        }
+        function calculateGravitation() {
+            const G = 6.67430e-11; // 万有引力常数
+            const m1 = parseFloat(document.getElementById('grav-mass1').value);
+            const m2 = parseFloat(document.getElementById('grav-mass2').value);
+            const r = parseFloat(document.getElementById('grav-distance').value);
+            
+            if (isNaN(m1) || isNaN(m2) || isNaN(r) || r <= 0) {
+                document.getElementById('formula-result').textContent = '请输入有效正值';
+                return;
+            }
+            
+            const force = G * m1 * m2 / (r * r);
+            document.getElementById('formula-result').textContent = 
+                `万有引力 F = G·m₁·m₂/r² = ${force.toExponential(4)} N\n` +
+                `(G = 6.67430 × 10⁻¹¹ N·m²/kg²)`;
+        }
+        function updateOhmInputs() {
+            const solveFor = document.getElementById('ohm-solve-for').value;
+            
+            document.getElementById('ohm-input1-container').style.display = 'block';
+            document.getElementById('ohm-input2-container').style.display = 'block';
+            
+            switch(solveFor) {
+                case 'voltage':
+                    document.getElementById('ohm-input1-container').querySelector('label').textContent = '电流 (A)';
+                    document.getElementById('ohm-input1-container').querySelector('input').id = 'ohm-current';
+                    document.getElementById('ohm-input2-container').querySelector('label').textContent = '电阻 (Ω)';
+                    document.getElementById('ohm-input2-container').querySelector('input').id = 'ohm-resistance';
+                    break;
+                    
+                case 'current':
+                    document.getElementById('ohm-input1-container').querySelector('label').textContent = '电压 (V)';
+                    document.getElementById('ohm-input1-container').querySelector('input').id = 'ohm-voltage';
+                    document.getElementById('ohm-input2-container').querySelector('label').textContent = '电阻 (Ω)';
+                    document.getElementById('ohm-input2-container').querySelector('input').id = 'ohm-resistance';
+                    break;
+                    
+                case 'resistance':
+                    document.getElementById('ohm-input1-container').querySelector('label').textContent = '电压 (V)';
+                    document.getElementById('ohm-input1-container').querySelector('input').id = 'ohm-voltage';
+                    document.getElementById('ohm-input2-container').querySelector('label').textContent = '电流 (A)';
+                    document.getElementById('ohm-input2-container').querySelector('input').id = 'ohm-current';
+                    break;
+            }
+        }
+
+        function calculateOhm() {
+            const solveFor = document.getElementById('ohm-solve-for').value;
+            let result;
+            
+            try {
+                switch(solveFor) {
+                    case 'voltage':
+                        const I = parseFloat(document.getElementById('ohm-current').value);
+                        const R = parseFloat(document.getElementById('ohm-resistance').value);
+                        if (isNaN(I) || isNaN(R)) throw new Error();
+                        result = `电压 V = I × R = ${(I * R).toFixed(4)} V`;
+                        break;
+                        
+                    case 'current':
+                        const V = parseFloat(document.getElementById('ohm-voltage').value);
+                        const R2 = parseFloat(document.getElementById('ohm-resistance').value);
+                        if (isNaN(V) || isNaN(R2)) throw new Error();
+                        result = `电流 I = V / R = ${(V / R2).toFixed(4)} A`;
+                        break;
+                        
+                    case 'resistance':
+                        const V2 = parseFloat(document.getElementById('ohm-voltage').value);
+                        const I2 = parseFloat(document.getElementById('ohm-current').value);
+                        if (isNaN(V2) || isNaN(I2)) throw new Error();
+                        result = `电阻 R = V / I = ${(V2 / I2).toFixed(4)} Ω`;
+                        break;
+                }
+            } catch (e) {
+                document.getElementById('formula-result').textContent = '请输入有效数值';
+                return;
+            }
+            
+            document.getElementById('formula-result').textContent = result;
+        }
+        function calculateQuadratic() {
+            const a = parseFloat(document.getElementById('quad-a').value);
+            const b = parseFloat(document.getElementById('quad-b').value);
+            const c = parseFloat(document.getElementById('quad-c').value);
+            
+            if (isNaN(a) || isNaN(b) || isNaN(c)) {
+                document.getElementById('formula-result').textContent = '请输入有效数值';
+                return;
+            }
+            
+            const discriminant = b * b - 4 * a * c;
+            
+            if (discriminant < 0) {
+                document.getElementById('formula-result').textContent = '无实数解';
+            } else if (discriminant === 0) {
+                const root = -b / (2 * a);
+                document.getElementById('formula-result').textContent = `唯一实数解: x = ${root.toFixed(4)}`;
+            } else {
+                const root1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                const root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                document.getElementById('formula-result').textContent = 
+                    `两个实数解: x₁ = ${root1.toFixed(4)}, x₂ = ${root2.toFixed(4)}`;
+            }
+        }
+        
+        function calculateNewton() {
+            const mass = parseFloat(document.getElementById('newton-mass').value);
+            const acceleration = parseFloat(document.getElementById('newton-acceleration').value);
+            
+            if (isNaN(mass) || isNaN(acceleration)) {
+                document.getElementById('formula-result').textContent = '请输入有效数值';
+                return;
+            }
+            
+            const force = mass * acceleration;
+            document.getElementById('formula-result').textContent = 
+                `力 F = m × a = ${force.toFixed(4)} N`;
+        }
+        
+        function calculateKinetic() {
+            const mass = parseFloat(document.getElementById('kinetic-mass').value);
+            const velocity = parseFloat(document.getElementById('kinetic-velocity').value);
+            
+            if (isNaN(mass) || isNaN(velocity)) {
+                document.getElementById('formula-result').textContent = '请输入有效数值';
+                return;
+            }
+            
+            const energy = 0.5 * mass * velocity * velocity;
+            document.getElementById('formula-result').textContent = 
+                `动能 E = ½mv² = ${energy.toFixed(4)} J`;
+        }
+    </script>
+<script>
+    // 物理常数搜索功能
+    document.getElementById('constant-search').addEventListener('input', function() {
+        const searchTerm = this.value.trim().toLowerCase();
+        const constantItems = document.querySelectorAll('.constant-item');
+        let hasResults = false;
+        console.log(searchTerm)
+        if (searchTerm === '') {
+            // 搜索为空时显示所有常数
+            console.log("==None===")
+            constantItems.forEach(item => {
+                item.style.display = 'block';
+                item.classList.remove('highlight');
+            });
+            document.querySelectorAll('.constants-section').forEach(section => {
+                section.style.display = 'block';
+            });
+            return;
+        }
+        
+        // 搜索匹配的常数
+        constantItems.forEach(item => {
+            const name = item.getAttribute('data-name').toLowerCase();
+            
+            if (name.includes(searchTerm)) {
+                item.style.display = 'block';
+                item.classList.add('highlight');
+                hasResults = true;
+                // 显示父级section
+                item.closest('.constants-section').style.display = 'block';
+            } else {
+                item.style.display = 'none';
+                item.classList.remove('highlight');
+            }
+        });
+        
+        // 隐藏没有匹配结果的section
+        document.querySelectorAll('.constants-section').forEach(section => {
+            const hasVisibleItems = section.querySelector('.constant-item[style="display: block;"]');
+            section.style.display = hasVisibleItems ? 'block' : 'none';
+        });
+        
+        // 处理没有搜索结果的情况
+        if (!hasResults) {
+            document.getElementById('constants-container').innerHTML = `
+                <div style="text-align:center; padding:30px; color:#7f8c8d;">
+                    没有找到匹配的物理常数<br>
+                    尝试使用其他关键词，如"光速"、"普朗克"等
+                </div>
+            `;
+        }
+    });
+
+    // 高亮动画结束后移除高亮类
+    document.querySelectorAll('.constant-item').forEach(item => {
+        item.addEventListener('animationend', function() {
+            this.classList.remove('highlight');
+        });
+    });
+</script>
+<style>
+    .search-container {
+        margin: 15px 0;
+        position: relative;
+    }
+
+    #constant-search {
+        width: 100%;
+        padding: 10px 15px 10px 40px;
+        font-size: 1rem;
+        border: 2px solid #ddd;
+        border-radius: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    #constant-search:focus {
+        outline: none;
+        border-color: #3498db;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7f8c8d;
+    }
+
+    .constants-section {
+        margin-bottom: 25px;
+    }
+
+    .constants-section h4 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .constants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+    }
+
+    .constant-item {
+        background: white;
+        padding: 12px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border-left: 3px solid #3498db;
+    }
+
+    .constant-item.highlight {
+        background: #fffde7;
+        border-left-color: #f39c12;
+        animation: highlight 1s;
+    }
+
+    @keyframes highlight {
+        from { background: #fffde7; }
+        to { background: white; }
+    }
+
+    @media (max-width: 600px) {
+        .constants-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</body>
+</html>

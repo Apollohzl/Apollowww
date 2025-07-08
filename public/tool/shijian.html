@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .result-area {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        
+        .timezone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .timezone-card {
+            padding: 10px;
+            background: #f0f7ff;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .timezone-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>时间全能工具箱</h1>
+    
+    <div class="tab-container">
+        <div class="tab active" data-tab="converter">时间转换</div>
+        <div class="tab" data-tab="timezone">时区计算</div>
+        <div class="tab" data-tab="calculator">时间计算</div>
+        <div class="tab" data-tab="formatter">格式化</div>
+    </div>
+    
+    <!-- 时间转换工具 -->
+    <div class="tool-card" id="converter">
+        <h3>时间戳转换</h3>
+        <div class="input-group">
+            <label for="timestamp-input">Unix时间戳 (秒)</label>
+            <input type="text" id="timestamp-input" placeholder="例如：1625097600">
+            <button id="convert-to-date">转换为日期</button>
+            <button id="get-current-timestamp">获取当前时间戳</button>
+        </div>
+        <div class="input-group">
+            <label for="date-input">日期时间</label>
+            <input type="datetime-local" id="date-input">
+            <button id="convert-to-timestamp">转换为时间戳</button>
+        </div>
+        <div class="result-area" id="conversion-result"></div>
+    </div>
+    
+    <!-- 时区计算工具 -->
+    <div class="tool-card" id="timezone" style="display:none;">
+        <h3>时区转换器</h3>
+        <div class="input-group">
+            <label for="timezone-from">从时区</label>
+            <select id="timezone-from">
+                <option value="local">本地时区</option>
+                <!-- 时区选项将通过JS动态生成 -->
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="timezone-to">到时区</label>
+            <select id="timezone-to">
+                <option value="UTC">UTC</option>
+                <!-- 时区选项将通过JS动态生成 -->
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="timezone-date">日期时间</label>
+            <input type="datetime-local" id="timezone-date">
+            <button id="convert-timezone">转换时区</button>
+        </div>
+        <div class="result-area" id="timezone-result"></div>
+        
+        <h3 style="margin-top:30px;">世界时钟</h3>
+        <div class="timezone-grid" id="world-clock">
+            <!-- 世界时钟将通过JS动态生成 -->
+        </div>
+    </div>
+    
+    <!-- 时间计算工具 -->
+    <div class="tool-card" id="calculator" style="display:none;">
+        <h3>时间计算器</h3>
+        <div class="input-group">
+            <label for="calc-date1">起始日期</label>
+            <input type="datetime-local" id="calc-date1">
+        </div>
+        <div class="input-group">
+            <label for="calc-date2">结束日期</label>
+            <input type="datetime-local" id="calc-date2">
+            <button id="calc-difference">计算时间差</button>
+        </div>
+        <div class="result-area" id="calc-result"></div>
+        
+        <div class="input-group" style="margin-top:20px;">
+            <label for="calc-base-date">基准日期</label>
+            <input type="datetime-local" id="calc-base-date">
+        </div>
+        <div class="input-group">
+            <label for="calc-add-time">添加时间</label>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="calc-add-days" placeholder="天" style="flex:1;">
+                <input type="number" id="calc-add-hours" placeholder="小时" style="flex:1;">
+                <input type="number" id="calc-add-minutes" placeholder="分钟" style="flex:1;">
+            </div>
+            <button id="calc-add">添加时间</button>
+            <button id="calc-subtract">减去时间</button>
+        </div>
+        <div class="result-area" id="calc-add-result"></div>
+    </div>
+    
+    <!-- 时间格式化工具 -->
+    <div class="tool-card" id="formatter" style="display:none;">
+        <h3>时间格式化</h3>
+        <div class="input-group">
+            <label for="format-input-date">输入日期</label>
+            <input type="datetime-local" id="format-input-date">
+        </div>
+        <div class="input-group">
+            <label for="format-pattern">格式化模式</label>
+            <input type="text" id="format-pattern" placeholder="例如：YYYY-MM-DD HH:mm:ss">
+            <button id="format-now">当前时间</button>
+            <button id="format-execute">格式化</button>
+        </div>
+        <div class="result-area" id="format-result"></div>
+        
+        <div style="margin-top:20px;">
+            <h4>常用格式示例：</h4>
+            <ul style="columns:2; list-style:none; padding:0;">
+                <li>YYYY-MM-DD → 2023-06-15</li>
+                <li>MM/DD/YYYY → 06/15/2023</li>
+                <li>DD MMM YYYY → 15 Jun 2023</li>
+                <li>HH:mm:ss → 14:30:45</li>
+                <li>hh:mm A → 02:30 PM</li>
+                <li>YYYY-MM-DDTHH:mm:ssZ → 2023-06-15T14:30:45Z</li>
+                <li>X → Unix时间戳(秒)</li>
+                <li>x → Unix时间戳(毫秒)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <footer>
+        <p>copyright © 2025 时间全能工具箱 | 为您提供专业的时间计算服务</p>
+    </footer>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tool-card').forEach(c => c.style.display = 'none');
+                
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+        
+        // 初始化时间输入为当前时间
+        function initDateTimeInputs() {
+            const now = new Date();
+            const localDateTime = now.toISOString().slice(0, 16);
+            
+            // 设置所有datetime-local输入框的默认值
+            document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
+                input.value = localDateTime;
+            });
+            
+            // 显示当前时间戳
+            document.getElementById('conversion-result').textContent = 
+                `当前时间: ${formatDate(now)}\n当前时间戳: ${Math.floor(now.getTime()/1000)} (秒) | ${now.getTime()} (毫秒)`;
+        }
+        
+        // 日期格式化函数
+        function formatDate(date, format = 'YYYY-MM-DD HH:mm:ss') {
+            const pad = num => num.toString().padStart(2, '0');
+            
+            const replacements = {
+                'YYYY': date.getFullYear(),
+                'MM': pad(date.getMonth() + 1),
+                'DD': pad(date.getDate()),
+                'HH': pad(date.getHours()),
+                'mm': pad(date.getMinutes()),
+                'ss': pad(date.getSeconds()),
+                'SSS': pad(date.getMilliseconds(), 3),
+                'ddd': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()],
+                'MMM': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()]
+            };
+            
+            let result = format;
+            for (const [key, value] of Object.entries(replacements)) {
+                result = result.replace(key, value);
+            }
+            
+            // 处理12小时制
+            result = result.replace(/hh/g, pad(date.getHours() % 12 || 12));
+            result = result.replace(/A/g, date.getHours() < 12 ? 'AM' : 'PM');
+            
+            // 处理Unix时间戳
+            result = result.replace(/X/g, Math.floor(date.getTime()/1000));
+            result = result.replace(/x/g, date.getTime());
+            
+            return result;
+        }
+        
+        // 时间戳转换功能
+        document.getElementById('convert-to-date').addEventListener('click', () => {
+            const timestamp = document.getElementById('timestamp-input').value.trim();
+            if (!timestamp) return;
+            
+            let date;
+            if (/^\d{10}$/.test(timestamp)) {
+                date = new Date(parseInt(timestamp) * 1000);
+            } else if (/^\d{13}$/.test(timestamp)) {
+                date = new Date(parseInt(timestamp));
+            } else {
+                document.getElementById('conversion-result').textContent = '错误: 时间戳应为10位(秒)或13位(毫秒)数字';
+                return;
+            }
+            
+            document.getElementById('conversion-result').textContent = 
+                `本地时间: ${formatDate(date)}\nUTC时间: ${date.toUTCString()}\nISO格式: ${date.toISOString()}`;
+        });
+        
+        document.getElementById('get-current-timestamp').addEventListener('click', () => {
+            const now = new Date();
+            document.getElementById('timestamp-input').value = Math.floor(now.getTime()/1000);
+            document.getElementById('conversion-result').textContent = 
+                `当前时间: ${formatDate(now)}\n当前时间戳: ${Math.floor(now.getTime()/1000)} (秒) | ${now.getTime()} (毫秒)`;
+        });
+        
+        document.getElementById('convert-to-timestamp').addEventListener('click', () => {
+            const dateStr = document.getElementById('date-input').value;
+            if (!dateStr) return;
+            
+            const date = new Date(dateStr);
+            document.getElementById('conversion-result').textContent = 
+                `时间戳: ${Math.floor(date.getTime()/1000)} (秒)\n${date.getTime()} (毫秒)`;
+        });
+        
+        // 时区功能
+        function populateTimezones() {
+            const timezones = [
+                'UTC',
+                'America/New_York',
+                'America/Chicago',
+                'America/Denver',
+                'America/Los_Angeles',
+                'Europe/London',
+                'Europe/Paris',
+                'Asia/Tokyo',
+                'Asia/Shanghai',
+                'Asia/Dubai',
+                'Australia/Sydney'
+            ];
+            
+            const fromSelect = document.getElementById('timezone-from');
+            const toSelect = document.getElementById('timezone-to');
+            
+            timezones.forEach(tz => {
+                const option1 = document.createElement('option');
+                option1.value = tz;
+                option1.textContent = tz;
+                fromSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = tz;
+                option2.textContent = tz;
+                toSelect.appendChild(option2);
+            });
+        }
+        
+        function updateWorldClock() {
+            const clockContainer = document.getElementById('world-clock');
+            clockContainer.innerHTML = '';
+            
+            const timezones = [
+                'UTC',
+                'America/New_York',
+                'Europe/London',
+                'Asia/Tokyo',
+                'Asia/Shanghai',
+                'Australia/Sydney'
+            ];
+            
+            timezones.forEach(tz => {
+                const card = document.createElement('div');
+                card.className = 'timezone-card';
+                
+                try {
+                    const options = {
+                        timeZone: tz,
+                        hour12: false,
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    };
+                    
+                    const formatter = new Intl.DateTimeFormat('zh-CN', options);
+                    const dateStr = formatter.format(new Date());
+                    
+                    card.innerHTML = `
+                        <strong>${tz}</strong>
+                        <div>${dateStr}</div>
+                    `;
+                } catch (e) {
+                    card.innerHTML = `
+                        <strong>${tz}</strong>
+                        <div>时区错误</div>
+                    `;
+                }
+                
+                clockContainer.appendChild(card);
+            });
+            
+            setTimeout(updateWorldClock, 1000);
+        }
+        
+        document.getElementById('convert-timezone').addEventListener('click', () => {
+            const fromTz = document.getElementById('timezone-from').value;
+            const toTz = document.getElementById('timezone-to').value;
+            const dateStr = document.getElementById('timezone-date').value;
+            
+            if (!dateStr) return;
+            
+            try {
+                let date;
+                if (fromTz === 'local') {
+                    date = new Date(dateStr);
+                } else {
+                    const localDate = new Date(dateStr);
+                    const localOffset = localDate.getTimezoneOffset() * 60000;
+                    const utcTime = localDate.getTime() + localOffset;
+                    
+                    // 转换为源时区时间
+                    const fromOptions = { timeZone: fromTz, hour12: false };
+                    const fromFormatter = new Intl.DateTimeFormat('zh-CN', fromOptions);
+                    const fromParts = fromFormatter.formatToParts(new Date(utcTime));
+                    
+                    const year = fromParts.find(p => p.type === 'year').value;
+                    const month = fromParts.find(p => p.type === 'month').value.padStart(2, '0');
+                    const day = fromParts.find(p => p.type === 'day').value.padStart(2, '0');
+                    const hour = fromParts.find(p => p.type === 'hour').value.padStart(2, '0');
+                    const minute = fromParts.find(p => p.type === 'minute').value.padStart(2, '0');
+                    
+                    date = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
+                }
+                
+                // 转换为目标时区
+                const toOptions = { 
+                    timeZone: toTz, 
+                    hour12: false,
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                };
+                
+                const toFormatter = new Intl.DateTimeFormat('zh-CN', toOptions);
+                const toDateStr = toFormatter.format(date);
+                
+                document.getElementById('timezone-result').textContent = 
+                    `转换结果 (${toTz}): ${toDateStr}`;
+            } catch (e) {
+                document.getElementById('timezone-result').textContent = 
+                    `时区转换错误: ${e.message}`;
+            }
+        });
+        
+        // 时间计算功能
+        document.getElementById('calc-difference').addEventListener('click', () => {
+            const date1Str = document.getElementById('calc-date1').value;
+            const date2Str = document.getElementById('calc-date2').value;
+            
+            if (!date1Str || !date2Str) return;
+            
+            const date1 = new Date(date1Str);
+            const date2 = new Date(date2Str);
+            
+            const diffMs = Math.abs(date2 - date1);
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+            
+            let result = `时间差: ${diffDays} 天 ${diffHours} 小时 ${diffMinutes} 分钟 ${diffSeconds} 秒\n`;
+            result += `总毫秒数: ${diffMs}\n`;
+            result += `总秒数: ${Math.floor(diffMs/1000)}\n`;
+            result += `总分钟数: ${Math.floor(diffMs/(1000*60))}\n`;
+            result += `总小时数: ${Math.floor(diffMs/(1000*60*60))}\n`;
+            result += `总天数: ${diffDays}`;
+            
+            document.getElementById('calc-result').textContent = result;
+        });
+        
+        document.getElementById('calc-add').addEventListener('click', () => {
+            calculateTimeOperation('add');
+        });
+        
+        document.getElementById('calc-subtract').addEventListener('click', () => {
+            calculateTimeOperation('subtract');
+        });
+        
+        function calculateTimeOperation(operation) {
+            const baseDateStr = document.getElementById('calc-base-date').value;
+            if (!baseDateStr) return;
+            
+            const days = parseInt(document.getElementById('calc-add-days').value) || 0;
+            const hours = parseInt(document.getElementById('calc-add-hours').value) || 0;
+            const minutes = parseInt(document.getElementById('calc-add-minutes').value) || 0;
+            
+            let date = new Date(baseDateStr);
+            
+            if (operation === 'add') {
+                date.setDate(date.getDate() + days);
+                date.setHours(date.getHours() + hours);
+                date.setMinutes(date.getMinutes() + minutes);
+            } else {
+                date.setDate(date.getDate() - days);
+                date.setHours(date.getHours() - hours);
+                date.setMinutes(date.getMinutes() - minutes);
+            }
+            
+            document.getElementById('calc-add-result').textContent = 
+                `计算结果: ${formatDate(date)}\nISO格式: ${date.toISOString()}`;
+        }
+        
+        // 时间格式化功能
+        document.getElementById('format-now').addEventListener('click', () => {
+            const now = new Date();
+            document.getElementById('format-input-date').value = now.toISOString().slice(0, 16);
+            document.getElementById('format-result').textContent = 
+                `当前时间: ${formatDate(now)}`;
+        });
+        
+        document.getElementById('format-execute').addEventListener('click', () => {
+            const dateStr = document.getElementById('format-input-date').value;
+            const pattern = document.getElementById('format-pattern').value.trim();
+            
+            if (!dateStr) return;
+            
+            const date = new Date(dateStr);
+            if (pattern) {
+                document.getElementById('format-result').textContent = formatDate(date, pattern);
+            } else {
+                document.getElementById('format-result').textContent = 
+                    `默认格式: ${formatDate(date)}\nISO格式: ${date.toISOString()}\nUTC格式: ${date.toUTCString()}`;
+            }
+        });
+        
+        // 初始化
+        initDateTimeInputs();
+        populateTimezones();
+        updateWorldClock();
+    </script>
+</body>
+</html>

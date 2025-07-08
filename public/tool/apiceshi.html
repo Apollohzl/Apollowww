@@ -318,8 +318,7 @@
     <div class="tab-container">
         <div class="tab active" data-tab="request">API 请求</div>
         <div class="tab" data-tab="json">JSON 工具</div>
-        <div class="tab" data-tab="encode">编码/解码</div>
-        <div class="tab" data-tab="history">历史记录</div>
+        <div class="tab" data-tab="encode">编码/解码</div>  
         <div class="tab" data-tab="tools">其他工具</div>
     </div>
     
@@ -475,12 +474,7 @@
         </div>
     </div>
     
-    <!-- 历史记录标签页 -->
-    <div class="tab-content" id="history">
-        <h2>请求历史记录</h2>
-        <button id="clear-history" class="danger">清空历史记录</button>
-        <div id="history-list"></div>
-    </div>
+    
     
     <!-- 其他工具标签页 -->
     <div class="tab-content" id="tools">
@@ -549,6 +543,19 @@
                 document.getElementById(tabId).classList.add('active');
             });
         });
+        
+        // API 请求功能
+        const requestMethod = document.getElementById('request-method');
+        const requestUrl = document.getElementById('request-url');
+        const requestHeaders = document.getElementById('request-headers');
+        const requestBody = document.getElementById('request-body');
+        const requestParams = document.getElementById('request-params');
+        const sendRequestBtn = document.getElementById('send-request');
+        const responseContainer = document.getElementById('response-container');
+        const responseStatus = document.getElementById('response-status');
+        const responseTime = document.getElementById('response-time');
+        const responseHeaders = document.getElementById('response-headers');
+        const responseData = document.getElementById('response-data');
         
        // 发送请求
 sendRequestBtn.addEventListener('click', async () => {
@@ -662,13 +669,7 @@ sendRequestBtn.addEventListener('click', async () => {
         }
         
         // 保存到历史记录
-        saveToHistory(method, url, headers, body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: headersText,
-            body: responseBody || '无响应体',
-            duration
-        });
+        
         
     } catch (error) {
         responseContainer.style.display = 'block';
@@ -679,33 +680,8 @@ sendRequestBtn.addEventListener('click', async () => {
     }
 });
 
-// 修改后的保存历史记录函数
-function saveToHistory(method, url, requestHeaders, requestBody, response) {
-    const history = JSON.parse(localStorage.getItem('apiHistory') || []);
-    
-    const entry = {
-        id: Date.now(),
-        method,
-        url,
-        requestHeaders,
-        requestBody,
-        responseStatus: response.status,
-        responseStatusText: response.statusText,
-        responseHeaders: response.headers || [],
-        responseBody: typeof response.body === 'string' ? response.body : '非文本数据',
-        duration: response.duration || 0,
-        timestamp: new Date().toISOString()
-    };
-    
-    // 限制历史记录数量
-    if (history.length >= 50) {
-        history.pop();
-    }
-    history.unshift(entry);
-    
-    localStorage.setItem('apiHistory', JSON.stringify(history));
-    renderHistory();
-} 
+
+        
         // JSON 工具功能
         const jsonInput = document.getElementById('json-input');
         const jsonOutput = document.getElementById('json-output');
@@ -1007,81 +983,7 @@ function saveToHistory(method, url, requestHeaders, requestBody, response) {
             }
         });
         
-        // 历史记录功能
-        function saveToHistory(method, url, headers, body, response) {
-            const history = JSON.parse(localStorage.getItem('apiHistory') || []);
-            
-            const entry = {
-                id: Date.now(),
-                method,
-                url,
-                headers,
-                body,
-                status: response.status,
-                statusText: response.statusText,
-                timestamp: new Date().toISOString()
-            };
-            
-            history.unshift(entry);
-            if (history.length > 50) history.pop(); // 限制历史记录数量
-            
-            localStorage.setItem('apiHistory', JSON.stringify(history));
-            renderHistory();
-        }
-        
-        function renderHistory() {
-            const historyList = document.getElementById('history-list');
-            const history = JSON.parse(localStorage.getItem('apiHistory') || '[]');
-            
-            historyList.innerHTML = '';
-            history.forEach(entry => {
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.innerHTML = `
-                    <span class="history-method ${entry.method.toLowerCase()}">${entry.method}</span>
-                    <span>${entry.url}</span>
-                    <span style="float: right; color: ${entry.status >= 400 ? '#e74c3c' : '#2ecc71'}">${entry.status}</span>
-                `;
-                
-                item.addEventListener('click', () => {
-                    loadHistoryEntry(entry);
-                    document.querySelector('.tab[data-tab="request"]').click();
-                });
-                
-                historyList.appendChild(item);
-            });
-        }
-        
-        function loadHistoryEntry(entry) {
-            requestMethod.value = entry.method;
-            requestUrl.value = entry.url;
-            
-            // 清空现有头
-            requestHeaders.innerHTML = '';
-            Object.entries(entry.headers).forEach(([key, value]) => {
-                const headerRow = document.createElement('div');
-                headerRow.className = 'header-row';
-                headerRow.innerHTML = `
-                    <input type="text" placeholder="Header 名称" value="${key}">
-                    <input type="text" placeholder="Header 值" value="${value}">
-                    <button class="danger remove-header">×</button>
-                `;
-                requestHeaders.appendChild(headerRow);
-                
-                headerRow.querySelector('.remove-header').addEventListener('click', () => {
-                    headerRow.remove();
-                });
-            });
-            
-            requestBody.value = entry.body || '';
-        }
-        
-        document.getElementById('clear-history').addEventListener('click', () => {
-            if (confirm('确定要清空所有历史记录吗？')) {
-                localStorage.removeItem('apiHistory');
-                renderHistory();
-            }
-        });
+
         
         // 修改开发者工具的功能，将输出重定向到 tools-output
         document.getElementById('timestamp-now').addEventListener('click', () => {
@@ -1218,9 +1120,6 @@ function saveToHistory(method, url, requestHeaders, requestBody, response) {
             }
             return 'mock data';
         }
-        
-        // 初始化
-        renderHistory();
         
         // 清空请求
         document.getElementById('clear-request').addEventListener('click', () => {

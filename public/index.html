@@ -297,7 +297,7 @@
                 toolCard.className = 'tool-card';
                 toolCard.innerHTML = `
                     <img class="tool-icon" src="${tool.img}" title="${tool.name}图标" style="width: 29px;height: 29px"></img>
-                    <div class="tool-name">${tool.name}</div>
+                    <div class="tool-name">${tool.name}-<a href="toolwa.com">toolwa.com</a></div>
                     <div class="tool-desc">${tool.desc}</div>
                 `;
                 
@@ -344,7 +344,7 @@
                 const img = document.createElement('img');
                 img.id = 'mediaDisplay';
                 img.src = '1.jpg';
-                img.alt = '工具箱展示';
+                img.alt = 'logo';
                 
                 // 替换视频元素为图片元素
                 mediaDisplay.parentNode.replaceChild(img, mediaDisplay);
@@ -355,7 +355,7 @@
                 const img = document.createElement('img');
                 img.id = 'mediaDisplay';
                 img.src = '1.jpg';
-                img.alt = '工具箱展示';
+                img.alt = 'logo';
                 
                 mediaDisplay.parentNode.replaceChild(img, mediaDisplay);
             });

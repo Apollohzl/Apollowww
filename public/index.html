@@ -249,49 +249,28 @@
             <div class="search-icon">🔍</div>
         </div>
         
-        <div class="tools-count" id="toolsCount">共 20 个工具</div>
+        <div class="tools-count" id="toolsCount">共 n 个工具</div>
         
         <div class="tools-grid" id="toolsContainer">
             <!-- 工具卡片将通过JavaScript动态生成 -->
         </div>
         
         <footer>
-            <p>© 2023 全能工具箱 | 为您提供便捷的在线工具服务</p>
+            <p>© 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
         </footer>
     </div>
-
+    <script src="/public/tool/index.min.js"></script>
     <script>
-        // 工具数据
-        const tools = [
-            { icon: '📝', name: '文本处理', desc: '文本格式化、字数统计、编码转换等', tags: '文本,处理,格式化', path: 'tool/wenbenchuli.html' },
-            { icon: '🔢', name: '二维码生成', desc: '二维码', tags: '加密,解密,安全', path: 'tool/erweima.html' },
-            { icon: '🌐', name: 'IP查询', desc: '查询IP地址信息与地理位置', tags: 'ip,网络,查询', path: 'tool/ipchaxun.html' },
-            { icon: '📊', name: 'JSON格式化', desc: 'JSON数据格式化与验证', tags: 'json,数据,格式化', path: 'tool/jsongeshihua.html' },
-            { icon: '🔍', name: '正则测试', desc: '正则表达式在线测试工具', tags: '正则,表达式,测试', path: 'tool/zhengzebiaodashi.html' },
-            { icon: '📋', name: 'Markdown编辑器', desc: '在线Markdown编辑与预览', tags: 'markdown,编辑,写作', path: 'tool/mdbianji.html' },
-            { icon: '🐍', name: 'Python编辑器', desc: '在线Python运行编辑', tags: 'Python,编辑,运行', path: 'tool/pythonyunxing.html' },
-            { icon: '🎨', name: '流体模拟器-来自网络', desc: '<a href="https://github.com/PavelDoGreat/WebGL-Fluid-Simulation.git">Github开源地址</a>', tags: '模拟，流体，来自github', path: 'WebGL-Fluid-Simulation/index.html'},
-            { icon: '📦', name: '开发者工具', desc: 'api请求,解码工具, 生成工具', tags: 'api,测试,http', path: 'tool/apiceshi.html' },
-            { icon: '📅', name: '时间转换', desc: '日期时间转换与时区计算', tags: '时间,日期,时区', path: 'tool/shijian.html' },
-            { icon: '🧮', name: '科学计算', desc: '高级科学计算器', tags: '计算,科学,数学', path: 'tool/kexuejisuan.html' },
-            { icon: '🎨', name: '配色工具', desc: '颜色选择与调色板生成', tags: '颜色,配色,设计', path: 'tool/peisegongju.html' },
-            { icon: '📄', name: 'PDF转换', desc: 'PDF与其他格式互转', tags: 'pdf,转换,文档', path: 'tool/pdfzhuanhuan.html' },
-            { icon: '🔤', name: '文字转语音', desc: '将文字转换为语音输出', tags: '文字,语音,tts', path: 'tool/wenzizhuanvoyin.html' },
-            { icon: '📈', name: '图表生成', desc: '在线生成各种数据图表', tags: '图表,数据,可视化', path: 'tool/tubiaoshengcheng.html' },
-            { icon: '🔗', name: '短链接', desc: '生成短链接与二维码', tags: '链接,短链,二维码', path: 'tool/duanlianjie.html' },
-            { icon: '📱', name: 'UA解析', desc: '用户代理字符串解析', tags: 'ua,解析,浏览器', path: 'tool/uajiexi.html' },
-            { icon: '🔢', name: '进制转换', desc: '二进制、十进制、十六进制转换', tags: '进制,转换,数学', path: 'tool/jinzhizhuanhuan.html' },
-            { icon: '🎲', name: '随机生成', desc: '随机数、密码、数据生成', tags: '随机,生成,密码', path: 'tool/suijishengcheng.html' }
-        ];
+      
+        const countElement = document.getElementById('toolsCount');
 
         // 初始化工具列表
-        function renderTools(toolsToRender) {
+        function renderTools(toolsToRender,tools1ToRender) {
             const container = document.getElementById('toolsContainer');
-            const countElement = document.getElementById('toolsCount');
             
             container.innerHTML = '';
             
-            if (toolsToRender.length === 0) {
+            if (toolsToRender.length === 0 && tools1ToRender.length === 0) {
                 container.innerHTML = '<div class="no-results">没有找到匹配的工具</div>';
                 countElement.textContent = '没有找到工具';
                 return;
@@ -313,8 +292,24 @@
                 
                 container.appendChild(toolCard);
             });
+            tools1ToRender.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.innerHTML = `
+                    <img class="tool-icon" src="${tool.img}" title="${tool.name}图标" style="width: 29px;height: 29px"></img>
+                    <div class="tool-name">${tool.name}</div>
+                    <div class="tool-desc">${tool.desc}</div>
+                `;
+                
+                // 添加点击事件，跳转到对应工具页面
+                toolCard.addEventListener('click', () => {
+                    window.location.href = tool.path;
+                });
+                
+                container.appendChild(toolCard);
+            });
             
-            countElement.textContent = `共 ${toolsToRender.length} 个工具`;
+            countElement.textContent = `共 ${(toolsToRender+tools1ToRender).length} 个工具`;
         }
 
         // 搜索功能
@@ -322,7 +317,7 @@
             const searchTerm = e.target.value.toLowerCase();
             
             if (searchTerm.trim() === '') {
-                renderTools(tools);
+                renderTools(tools,tools1);
                 return;
             }
             
@@ -331,8 +326,13 @@
                        tool.desc.toLowerCase().includes(searchTerm) ||
                        tool.tags.toLowerCase().includes(searchTerm);
             });
+            const filteredTools1 = tools1.filter(tool => {
+                return tool.name.toLowerCase().includes(searchTerm) || 
+                       tool.desc.toLowerCase().includes(searchTerm) ||
+                       tool.tags.toLowerCase().includes(searchTerm);
+            });
             
-            renderTools(filteredTools);
+            renderTools(filteredTools,filteredTools1);
         });
 
         // 视频播放结束后切换为图片
@@ -367,7 +367,7 @@
         });
 
         // 初始渲染
-        renderTools(tools);
+        renderTools(tools,tools1);
     </script>
     <script>
         function wait(ms) {

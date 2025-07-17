@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UA解析 - 全能工具箱</title>
+    <script src="https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.35/dist/ua-parser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tool-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .intro {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .tag {
+            background: #e0f7fa;
+            color: #00838f;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .input-area {
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #bdbdbd;
+        }
+        
+        .result-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-section {
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 10px;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+        
+        .result-value {
+            word-break: break-all;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            color: #7f8c8d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1><span class="tool-icon">📱</span>UA解析</h1>
+    <p class="intro">解析用户代理字符串，获取浏览器、设备和操作系统信息</p>
+    
+    <div class="tags">
+        <span class="tag">UA</span>
+        <span class="tag">解析</span>
+        <span class="tag">浏览器</span>
+    </div>
+    
+    <div class="input-area">
+        <textarea id="uaInput" placeholder="请输入或粘贴User-Agent字符串..."></textarea>
+        <div class="buttons">
+            <button id="parseBtn" class="btn btn-primary">解析UA</button>
+            <button id="myUABtn" class="btn btn-secondary">获取我的UA</button>
+            <button id="clearBtn" class="btn btn-secondary">清空</button>
+        </div>
+    </div>
+    
+    <div class="status" id="statusInfo">准备就绪</div>
+    
+    <div class="result-container" id="resultContainer" style="display: none;">
+        <div class="result-section">
+            <div class="result-title">📱 设备信息</div>
+            <div class="result-grid" id="deviceInfo">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <div class="result-title">🌐 浏览器信息</div>
+            <div class="result-grid" id="browserInfo">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <div class="result-title">💻 操作系统信息</div>
+            <div class="result-grid" id="osInfo">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <div class="result-title">🔍 原始UA</div>
+            <div id="rawUA" style="word-break: break-all; padding: 10px; background: #f5f5f5; border-radius: 4px;"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <script>
+        // 获取DOM元素
+        const uaInput = document.getElementById('uaInput');
+        const parseBtn = document.getElementById('parseBtn');
+        const myUABtn = document.getElementById('myUABtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusInfo = document.getElementById('statusInfo');
+        const resultContainer = document.getElementById('resultContainer');
+        const deviceInfo = document.getElementById('deviceInfo');
+        const browserInfo = document.getElementById('browserInfo');
+        const osInfo = document.getElementById('osInfo');
+        const rawUA = document.getElementById('rawUA');
+        
+        // 初始化UA解析器
+        const parser = new UAParser();
+        
+        // 解析UA字符串
+        function parseUA() {
+            const uaString = uaInput.value.trim();
+            
+            if (!uaString) {
+                updateStatus('请输入UA字符串', 'error');
+                return;
+            }
+            
+            try {
+                // 设置UA并解析
+                parser.setUA(uaString);
+                const result = parser.getResult();
+                
+                // 显示解析结果
+                displayResult(result);
+                updateStatus('解析成功', 'success');
+                resultContainer.style.display = 'block';
+            } catch (error) {
+                console.error('UA解析错误:', error);
+                updateStatus(`解析失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示解析结果
+        function displayResult(result) {
+            // 清空现有结果
+            deviceInfo.innerHTML = '';
+            browserInfo.innerHTML = '';
+            osInfo.innerHTML = '';
+            
+            // 设备信息
+            addResultRow(deviceInfo, '设备类型', result.device.type || '未知');
+            addResultRow(deviceInfo, '设备型号', result.device.model || '未知');
+            addResultRow(deviceInfo, '设备厂商', result.device.vendor || '未知');
+            
+            // 浏览器信息
+            addResultRow(browserInfo, '浏览器名称', result.browser.name || '未知');
+            addResultRow(browserInfo, '浏览器版本', result.browser.version || '未知');
+            addResultRow(browserInfo, '浏览器引擎', result.engine.name || '未知');
+            addResultRow(browserInfo, '引擎版本', result.engine.version || '未知');
+            
+            // 操作系统信息
+            addResultRow(osInfo, '操作系统', result.os.name || '未知');
+            addResultRow(osInfo, '系统版本', result.os.version || '未知');
+            
+            // 原始UA
+            rawUA.textContent = parser.getUA();
+        }
+        
+        // 添加结果行
+        function addResultRow(container, label, value) {
+            const row = document.createElement('div');
+            row.className = 'result-label';
+            row.textContent = label;
+            container.appendChild(row);
+            
+            const valueCell = document.createElement('div');
+            valueCell.className = 'result-value';
+            valueCell.textContent = value || '未知';
+            container.appendChild(valueCell);
+        }
+        
+        // 获取当前浏览器的UA
+        function getMyUA() {
+            uaInput.value = navigator.userAgent;
+            updateStatus('已获取当前浏览器UA', 'info');
+        }
+        
+        // 清空输入
+        function clearInput() {
+            uaInput.value = '';
+            resultContainer.style.display = 'none';
+            updateStatus('已清空', 'info');
+        }
+        
+        // 更新状态信息
+        function updateStatus(message, type = 'info') {
+            statusInfo.textContent = message;
+            statusInfo.style.backgroundColor = '#f8f9fa';
+            statusInfo.style.color = '#7f8c8d';
+            
+            if (type === 'success') {
+                statusInfo.style.backgroundColor = '#e8f5e9';
+                statusInfo.style.color = '#2e7d32';
+            } else if (type === 'error') {
+                statusInfo.style.backgroundColor = '#ffebee';
+                statusInfo.style.color = '#c62828';
+            } else if (type === 'info') {
+                statusInfo.style.backgroundColor = '#e3f2fd';
+                statusInfo.style.color = '#1565c0';
+            }
+        }
+        
+        // 事件监听
+        parseBtn.addEventListener('click', parseUA);
+        myUABtn.addEventListener('click', getMyUA);
+        clearBtn.addEventListener('click', clearInput);
+        
+        // 示例UA（可选）
+        const exampleUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1';
+        uaInput.placeholder = exampleUA;
+    </script>
+</body>
+</html>

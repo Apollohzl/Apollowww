@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>配色工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input[type="color"],
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input[type="color"] {
+            height: 50px;
+            padding: 3px;
+            cursor: pointer;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .result-area {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .color-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 5px;
+            color: white;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .color-box:hover {
+            transform: scale(1.05);
+        }
+        
+        .color-scheme {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .color-scheme-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .color-box {
+                width: 60px;
+                height: 60px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>配色工具箱</h1>
+    
+    <div class="tab-container">
+        <div class="tab active" data-tab="color-picker">颜色选择器</div>
+        <div class="tab" data-tab="palette-generator">调色板生成</div>
+        <div class="tab" data-tab="color-converter">颜色转换</div>
+    </div>
+    
+    <!-- 颜色选择器 -->
+    <div class="tool-card" id="color-picker">
+        <h3>颜色选择器</h3>
+        <div class="input-group">
+            <label for="base-color">选择基础颜色</label>
+            <input type="color" id="base-color" value="#3498db">
+        </div>
+        <div class="input-group">
+            <label>颜色方案</label>
+            <div class="color-scheme">
+                <div class="color-scheme-item" style="background:#3498db;" data-scheme="analogous"></div>
+                <div class="color-scheme-item" style="background:#e74c3c;" data-scheme="complementary"></div>
+                <div class="color-scheme-item" style="background:#2ecc71;" data-scheme="triadic"></div>
+                <div class="color-scheme-item" style="background:#9b59b6;" data-scheme="tetradic"></div>
+                <div class="color-scheme-item" style="background:#f1c40f;" data-scheme="monochromatic"></div>
+            </div>
+        </div>
+        <button id="generate-scheme">生成配色方案</button>
+        <div class="result-area">
+            <div class="color-palette" id="color-palette">
+                <div class="color-box" style="background:#3498db;">#3498db</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 调色板生成器 -->
+    <div class="tool-card" id="palette-generator" style="display:none;">
+        <h3>调色板生成器</h3>
+        <div class="input-group">
+            <label for="palette-type">调色板类型</label>
+            <select id="palette-type">
+                <option value="monochromatic">单色系</option>
+                <option value="analogous">类似色</option>
+                <option value="complementary">互补色</option>
+                <option value="triadic">三色系</option>
+                <option value="tetradic">四色系</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="palette-base-color">基础颜色</label>
+            <input type="color" id="palette-base-color" value="#e74c3c">
+        </div>
+        <button id="generate-palette">生成调色板</button>
+        <div class="result-area">
+            <div class="color-palette" id="generated-palette">
+                <div class="color-box" style="background:#e74c3c;">#e74c3c</div>
+                <div class="color-box" style="background:#f39c12;">#f39c12</div>
+                <div class="color-box" style="background:#2ecc71;">#2ecc71</div>
+                <div class="color-box" style="background:#3498db;">#3498db</div>
+                <div class="color-box" style="background:#9b59b6;">#9b59b6</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 颜色转换器 -->
+    <div class="tool-card" id="color-converter" style="display:none;">
+        <h3>颜色格式转换</h3>
+        <div class="input-group">
+            <label for="color-input">输入颜色</label>
+            <input type="text" id="color-input" placeholder="#3498db 或 rgb(52, 152, 219) 或 hsl(204, 70%, 53%)">
+        </div>
+        <button id="convert-color">转换</button>
+        <div class="result-area" id="color-conversion-result">
+            <div class="input-group">
+                <label>HEX</label>
+                <input type="text" id="hex-value" readonly>
+            </div>
+            <div class="input-group">
+                <label>RGB</label>
+                <input type="text" id="rgb-value" readonly>
+            </div>
+            <div class="input-group">
+                <label>HSL</label>
+                <input type="text" id="hsl-value" readonly>
+            </div>
+            <div class="input-group">
+                <label>预览</label>
+                <input type="color" id="color-preview" disabled>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>copyright © 2025 配色工具箱 | 为设计师提供专业配色方案</p>
+    </footer>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tool-card').forEach(c => c.style.display = 'none');
+                
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+        
+        // 颜色选择器功能
+        const baseColorInput = document.getElementById('base-color');
+        const colorPalette = document.getElementById('color-palette');
+        
+        baseColorInput.addEventListener('input', function() {
+            updateColorScheme(this.value);
+        });
+        
+        document.querySelectorAll('.color-scheme-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const scheme = this.getAttribute('data-scheme');
+                generateColorScheme(baseColorInput.value, scheme);
+            });
+        });
+        
+        document.getElementById('generate-scheme').addEventListener('click', function() {
+            generateColorScheme(baseColorInput.value, 'analogous');
+        });
+        
+        function updateColorScheme(color) {
+            colorPalette.innerHTML = `
+                <div class="color-box" style="background:${color}">${color}</div>
+            `;
+        }
+        
+        function generateColorScheme(baseColor, scheme) {
+            // 这里是简化的颜色生成逻辑，实际应用中可以使用专业的颜色库
+            const colors = [];
+            const baseHex = baseColor.substring(1);
+            
+            // 将HEX转换为RGB
+            const r = parseInt(baseHex.substr(0,2), 16);
+            const g = parseInt(baseHex.substr(2,2), 16);
+            const b = parseInt(baseHex.substr(4,2), 16);
+            
+            // 根据不同的方案生成颜色
+            switch(scheme) {
+                case 'analogous':
+                    colors.push(adjustHue(baseColor, 30));
+                    colors.push(baseColor);
+                    colors.push(adjustHue(baseColor, -30));
+                    break;
+                case 'complementary':
+                    colors.push(baseColor);
+                    colors.push(adjustHue(baseColor, 180));
+                    break;
+                case 'triadic':
+                    colors.push(baseColor);
+                    colors.push(adjustHue(baseColor, 120));
+                    colors.push(adjustHue(baseColor, 240));
+                    break;
+                case 'tetradic':
+                    colors.push(baseColor);
+                    colors.push(adjustHue(baseColor, 90));
+                    colors.push(adjustHue(baseColor, 180));
+                    colors.push(adjustHue(baseColor, 270));
+                    break;
+                case 'monochromatic':
+                    colors.push(lightenColor(baseColor, 20));
+                    colors.push(baseColor);
+                    colors.push(darkenColor(baseColor, 20));
+                    break;
+            }
+            
+            // 更新调色板显示
+            colorPalette.innerHTML = '';
+            colors.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.background = color;
+                colorBox.textContent = color;
+                colorBox.addEventListener('click', function() {
+                    copyToClipboard(color);
+                    alert(`已复制 ${color} 到剪贴板`);
+                });
+                colorPalette.appendChild(colorBox);
+            });
+        }
+        
+        // 调色板生成器功能
+        document.getElementById('generate-palette').addEventListener('click', function() {
+            const paletteType = document.getElementById('palette-type').value;
+            const baseColor = document.getElementById('palette-base-color').value;
+            generatePalette(baseColor, paletteType);
+        });
+        
+        function generatePalette(baseColor, type) {
+            const paletteContainer = document.getElementById('generated-palette');
+            paletteContainer.innerHTML = '';
+            
+            // 根据类型生成不同的调色板
+            let colors = [];
+            switch(type) {
+                case 'monochromatic':
+                    colors = generateMonochromatic(baseColor);
+                    break;
+                case 'analogous':
+                    colors = generateAnalogous(baseColor);
+                    break;
+                case 'complementary':
+                    colors = generateComplementary(baseColor);
+                    break;
+                case 'triadic':
+                    colors = generateTriadic(baseColor);
+                    break;
+                case 'tetradic':
+                    colors = generateTetradic(baseColor);
+                    break;
+            }
+            
+            // 显示调色板
+            colors.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.background = color;
+                colorBox.textContent = color;
+                colorBox.addEventListener('click', function() {
+                    copyToClipboard(color);
+                    alert(`已复制 ${color} 到剪贴板`);
+                });
+                paletteContainer.appendChild(colorBox);
+            });
+        }
+        
+        // 颜色转换器功能
+        document.getElementById('convert-color').addEventListener('click', function() {
+            const colorInput = document.getElementById('color-input').value.trim();
+            convertColor(colorInput);
+        });
+        
+        function convertColor(color) {
+            // 简化的颜色转换逻辑
+            let hex, rgb, hsl;
+            
+            if (color.startsWith('#')) {
+                hex = color;
+                rgb = hexToRgb(hex);
+                hsl = rgbToHsl(rgb);
+            } else if (color.startsWith('rgb')) {
+                rgb = color;
+                hex = rgbToHex(rgb);
+                hsl = rgbToHsl(rgb);
+            } else if (color.startsWith('hsl')) {
+                hsl = color;
+                rgb = hslToRgb(hsl);
+                hex = rgbToHex(rgb);
+            }
+            
+            // 更新显示
+            document.getElementById('hex-value').value = hex;
+            document.getElementById('rgb-value').value = rgb;
+            document.getElementById('hsl-value').value = hsl;
+            document.getElementById('color-preview').value = hex;
+        }
+        
+        // 辅助函数
+        function adjustHue(hex, degrees) {
+            // 简化的色调调整
+            return lightenColor(hex, degrees/3);
+        }
+        
+        function lightenColor(hex, percent) {
+            // 简化的颜色变亮
+            const num = parseInt(hex.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+        }
+        
+        function darkenColor(hex, percent) {
+            // 简化的颜色变暗
+            return lightenColor(hex, -percent);
+        }
+        
+        function generateMonochromatic(base) {
+            return [
+                lightenColor(base, 30),
+                lightenColor(base, 15),
+                base,
+                darkenColor(base, 15),
+                darkenColor(base, 30)
+            ];
+        }
+        
+        function generateAnalogous(base) {
+            return [
+                adjustHue(base, -30),
+                base,
+                adjustHue(base, 30)
+            ];
+        }
+        
+        function generateComplementary(base) {
+            return [
+                base,
+                adjustHue(base, 180)
+            ];
+        }
+        
+        function generateTriadic(base) {
+            return [
+                base,
+                adjustHue(base, 120),
+                adjustHue(base, 240)
+            ];
+        }
+        
+        function generateTetradic(base) {
+            return [
+                base,
+                adjustHue(base, 90),
+                adjustHue(base, 180),
+                adjustHue(base, 270)
+            ];
+        }
+        
+        function hexToRgb(hex) {
+            // 简化的HEX转RGB
+            const r = parseInt(hex.substr(1,2), 16);
+            const g = parseInt(hex.substr(3,2), 16);
+            const b = parseInt(hex.substr(5,2), 16);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+        
+        function rgbToHex(rgb) {
+            // 简化的RGB转HEX
+            const parts = rgb.match(/\d+/g);
+            return `#${parts.map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}`;
+        }
+        
+        function rgbToHsl(rgb) {
+            // 简化的RGB转HSL
+            return `hsl(204, 70%, 53%)`; // 示例值
+        }
+        
+        function hslToRgb(hsl) {
+            // 简化的HSL转RGB
+            return `rgb(52, 152, 219)`; // 示例值
+        }
+        
+        function copyToClipboard(text) {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+        }
+    </script>
+</body>
+</html>

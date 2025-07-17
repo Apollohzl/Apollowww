@@ -430,5 +430,54 @@
         fetchHitokoto();
         
     </script>
+<script>
+    // 计算运行时间并每秒更新
+    function updateUptime() {
+        // 设置起始时间 (2024年12月27日 18:45:00)
+        const startDate = new Date('2024-12-27T18:45:00');
+        const now = new Date();
+        
+        // 计算时间差（毫秒）
+        const diff = now - startDate;
+        
+        // 计算天数
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        
+        // 计算剩余时间
+        let remaining = diff % (1000 * 60 * 60 * 24);
+        
+        // 计算小时
+        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        remaining = remaining % (1000 * 60 * 60);
+        
+        // 计算分钟
+        const minutes = Math.floor(remaining / (1000 * 60));
+        remaining = remaining % (1000 * 60);
+        
+        // 计算秒数
+        const seconds = Math.floor(remaining / 1000);
+        
+        // 更新DOM
+        const uptimeElement = document.getElementById('uptime');
+        if (uptimeElement) {
+            uptimeElement.textContent = `hzl.ken520.top已安全运行${days}天${hours}小时${minutes}分${seconds}秒`;
+        }
+    }
+    
+    // 页面加载后立即执行一次，然后每秒更新
+    document.addEventListener('DOMContentLoaded', function() {
+        // 创建uptime元素并添加到footer
+        const footer = document.querySelector('footer');
+        const uptimeElement = document.createElement('p');
+        uptimeElement.id = 'uptime';
+        footer.insertBefore(uptimeElement, footer.firstChild);
+        
+        // 初始更新
+        updateUptime();
+        
+        // 设置定时器每秒更新
+        setInterval(updateUptime, 1000);
+    });
+</script>
 </body>
 </html>

@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>图表生成 - 全能工具箱</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tool-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .intro {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .tag {
+            background: #e0f7fa;
+            color: #00838f;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: start; /* 顶部对齐 */
+        }
+        
+        .control-panel {
+            height: calc(100vh - 200px); /* 与图表容器相同 */
+            overflow-y: auto; /* 内容超出时滚动 */
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 200px); /* 固定高度，减去页眉页脚 */
+            min-height: 500px; /* 最小高度保证 */
+            max-height: 800px; /* 最大高度限制 */
+            overflow: auto; /* 内容超出时滚动 */
+            position: relative; /* 为canvas定位做准备 */
+        }
+        #chartCanvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-height: calc(100vh - 300px); /* 减去容器padding和其他元素 */
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title i {
+            font-size: 1.2rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #bdbdbd;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .color-input {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: none;
+            background: none;
+        }
+        
+        .color-value {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.8rem;
+        }
+        
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            color: #7f8c8d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1><span class="tool-icon">📈</span>图表生成</h1>
+    <p class="intro">在线创建专业的数据可视化图表，支持多种图表类型和数据格式</p>
+    
+    <div class="tags">
+        <span class="tag">数据可视化</span>
+        <span class="tag">图表</span>
+        <span class="tag">数据分析</span>
+        <span class="tag">Excel</span>
+    </div>
+    
+    <div class="container">
+        <div class="control-panel">
+            <div class="section">
+                <div class="section-title"><i>📊</i> 图表类型</div>
+                <select id="chartType">
+                    <option value="bar">柱状图</option>
+                    <option value="line">折线图</option>
+                    <option value="pie">饼图</option>
+                    <option value="doughnut">环形图</option>
+                    <option value="radar">雷达图</option>
+                    <option value="polarArea">极地区域图</option>
+                    <option value="bubble">气泡图</option>
+                    <option value="scatter">散点图</option>
+                </select>
+            </div>
+            
+            <div class="section">
+                <div class="section-title"><i>📋</i> 数据输入</div>
+                <label for="dataInput">输入数据 (CSV/JSON格式):</label>
+                <textarea id="dataInput" placeholder='CSV格式示例:
+月份,销售额,成本
+1月,12000,8000
+2月,15000,9000
+3月,18000,10000
+
+或JSON格式示例:
+{
+  "labels": ["1月", "2月", "3月"],
+  "datasets": [
+    {
+      "label": "销售额",
+      "data": [12000, 15000, 18000]
+    }
+  ]
+}'></textarea>
+                <button id="parseDataBtn" class="btn">解析数据</button>
+                <button id="importExcelBtn" class="btn btn-secondary">导入Excel/CSV文件</button>
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+            </div>
+            
+            <div class="section">
+                <div class="section-title"><i>🎨</i> 图表样式</div>
+                <label for="chartTitle">图表标题:</label>
+                <input type="text" id="chartTitle" placeholder="我的图表">
+                
+                <label>背景颜色:</label>
+                <div class="color-picker">
+                    <input type="color" id="bgColor" class="color-input" value="#ffffff">
+                    <span class="color-value" id="bgColorValue">#ffffff</span>
+                </div>
+                
+                <label>边框颜色:</label>
+                <div class="color-picker">
+                    <input type="color" id="borderColor" class="color-input" value="#3498db">
+                    <span class="color-value" id="borderColorValue">#3498db</span>
+                </div>
+                
+                <label for="borderWidth">边框宽度:</label>
+                <input type="range" id="borderWidth" min="0" max="10" value="2">
+            </div>
+            
+            <div class="section">
+                <div class="section-title"><i>⚙️</i> 图表选项</div>
+                <label>
+                    <input type="checkbox" id="showLegend" checked> 显示图例
+                </label>
+                <label>
+                    <input type="checkbox" id="showGrid" checked> 显示网格线
+                </label>
+                <label>
+                    <input type="checkbox" id="animateChart" checked> 启用动画
+                </label>
+                <label>
+                    <input type="checkbox" id="water" checked> PDF网站水印
+                </label>
+            </div>
+            
+            <div class="section">
+                <div class="section-title"><i>💾</i> 导出图表</div>
+                <button id="exportPNGBtn" class="btn btn-secondary">导出PNG图片</button>
+                <button id="exportJPGBtn" class="btn btn-secondary">导出JPG图片</button>
+                <button id="exportPDFBtn" class="btn btn-secondary">导出PDF文档</button>
+                <button id="exportCSVBtn" class="btn btn-secondary">导出CSV数据</button>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="status" id="statusInfo">请输入数据并选择图表类型</div>
+            <canvas id="chartCanvas"></canvas>
+            
+            <div class="section" id="dataPreviewSection" style="display: none;">
+                <div class="section-title"><i>🔍</i> 数据预览</div>
+                <table class="data-table" id="dataPreview">
+                    <thead>
+                        <tr>
+                            <th>标签</th>
+                            <th>数据集1</th>
+                            <th>数据集2</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+    </footer>
+
+    <script>
+// 获取DOM元素
+const chartTypeSelect = document.getElementById('chartType');
+const dataInput = document.getElementById('dataInput');
+const parseDataBtn = document.getElementById('parseDataBtn');
+const importExcelBtn = document.getElementById('importExcelBtn');
+const excelFileInput = document.getElementById('excelFileInput');
+const chartTitleInput = document.getElementById('chartTitle');
+const bgColorInput = document.getElementById('bgColor');
+const bgColorValue = document.getElementById('bgColorValue');
+const borderColorInput = document.getElementById('borderColor');
+const borderColorValue = document.getElementById('borderColorValue');
+const borderWidthInput = document.getElementById('borderWidth');
+const showLegendCheckbox = document.getElementById('showLegend');
+const showGridCheckbox = document.getElementById('showGrid');
+const animateChartCheckbox = document.getElementById('animateChart');
+const waterCheckbox = document.getElementById('water');
+const exportPNGBtn = document.getElementById('exportPNGBtn');
+const exportJPGBtn = document.getElementById('exportJPGBtn');
+const exportPDFBtn = document.getElementById('exportPDFBtn');
+const exportCSVBtn = document.getElementById('exportCSVBtn');
+const statusInfo = document.getElementById('statusInfo');
+const chartCanvas = document.getElementById('chartCanvas');
+const dataPreviewSection = document.getElementById('dataPreviewSection');
+const dataPreview = document.getElementById('dataPreview');
+
+// 图表实例
+let chart = null;
+let chartData = {
+    labels: [],
+    datasets: []
+};
+
+// 初始化颜色显示
+bgColorValue.textContent = bgColorInput.value;
+borderColorValue.textContent = borderColorInput.value;
+
+// 颜色选择器事件
+bgColorInput.addEventListener('input', () => {
+    bgColorValue.textContent = bgColorInput.value;
+    updateChart();
+});
+
+borderColorInput.addEventListener('input', () => {
+    borderColorValue.textContent = borderColorInput.value;
+    updateChart();
+});
+
+borderWidthInput.addEventListener('input', updateChart);
+
+// 图表选项事件
+chartTitleInput.addEventListener('input', updateChart);
+showLegendCheckbox.addEventListener('change', updateChart);
+showGridCheckbox.addEventListener('change', updateChart);
+animateChartCheckbox.addEventListener('change', updateChart);
+
+// 图表类型变化事件
+chartTypeSelect.addEventListener('change', () => {
+    if (chartData.labels.length > 0) {
+        renderChart();
+    }
+});
+
+// 解析数据按钮事件
+parseDataBtn.addEventListener('click', parseData);
+
+// 导入Excel按钮事件
+importExcelBtn.addEventListener('click', () => {
+    excelFileInput.click();
+});
+
+excelFileInput.addEventListener('change', handleExcelImport);
+
+// 导出按钮事件
+exportPNGBtn.addEventListener('click', () => exportChart('png'));
+exportJPGBtn.addEventListener('click', () => exportChart('jpeg'));
+exportPDFBtn.addEventListener('click', () => exportChart('pdf'));
+exportCSVBtn.addEventListener('click', exportDataAsCSV);
+
+// 解析数据函数
+function parseData() {
+    const dataText = dataInput.value.trim();
+    
+    if (!dataText) {
+        updateStatus('请输入数据', 'error');
+        return;
+    }
+
+    try {
+        // 尝试解析为JSON
+        if (dataText.startsWith('{') || dataText.startsWith('[')) {
+            const jsonData = JSON.parse(dataText);
+            
+            if (jsonData.labels && jsonData.datasets) {
+                // 完整的Chart.js格式数据
+                chartData = jsonData;
+            } else if (Array.isArray(jsonData)) {
+                // 简单数组格式
+                chartData = convertArrayToChartData(jsonData);
+            } else {
+                throw new Error('不支持的JSON格式');
+            }
+        } else {
+            // 尝试解析为CSV
+            chartData = parseCSVData(dataText);
+        }
+        
+        renderChart();
+        updateDataPreview();
+        updateStatus('数据解析成功', 'success');
+    } catch (error) {
+        console.error('数据解析错误:', error);
+        updateStatus(`数据解析失败: ${error.message}`, 'error');
+    }
+}
+
+// 解析CSV数据
+function parseCSVData(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    const headers = lines[0].split(',').map(h => h.trim());
+    
+    if (headers.length < 2) {
+        throw new Error('CSV需要至少两列数据');
+    }
+    
+    const result = {
+        labels: [],
+        datasets: []
+    };
+    
+    // 第一列作为标签
+    result.labels = lines.slice(1).map(line => {
+        const values = line.split(',');
+        return values[0].trim();
+    });
+    
+    // 其他列作为数据集
+    for (let i = 1; i < headers.length; i++) {
+        const dataset = {
+            label: headers[i],
+            data: [],
+            backgroundColor: getRandomColor(),
+            borderColor: borderColorInput.value,
+            borderWidth: parseInt(borderWidthInput.value)
+        };
+        
+        lines.slice(1).forEach(line => {
+            const values = line.split(',');
+            const numValue = parseFloat(values[i].trim());
+            dataset.data.push(isNaN(numValue) ? 0 : numValue);
+        });
+        
+        result.datasets.push(dataset);
+    }
+    
+    return result;
+}
+
+// 处理Excel导入
+function handleExcelImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            if (jsonData.length < 2) {
+                throw new Error('Excel文件需要至少两行数据');
+            }
+            
+            // 转换为CSV格式并填入输入框
+            let csvText = jsonData.map(row => row.join(',')).join('\n');
+            dataInput.value = csvText;
+            
+            // 自动解析
+            parseData();
+        } catch (error) {
+            console.error('Excel导入错误:', error);
+            updateStatus(`Excel导入失败: ${error.message}`, 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// 渲染图表
+function renderChart() {
+    if (chart) {
+        chart.destroy();
+    }
+    
+    const ctx = chartCanvas.getContext('2d');
+    const chartType = chartTypeSelect.value;
+    
+    // 设置canvas的实际尺寸
+    chartCanvas.width = chartCanvas.offsetWidth;
+    chartCanvas.height = chartCanvas.offsetHeight;
+    
+    chart = new Chart(ctx, {
+        type: chartType,
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: chartTitleInput.value || '我的图表',
+                    font: {
+                        size: 18
+                    }
+                },
+                legend: {
+                    display: showLegendCheckbox.checked,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: showGridCheckbox.checked
+                    }
+                },
+                y: {
+                    grid: {
+                        display: showGridCheckbox.checked
+                    },
+                    beginAtZero: true
+                }
+            },
+            animation: {
+                animate: animateChartCheckbox.checked
+            },
+            backgroundColor: bgColorInput.value
+        }
+    });
+}
+
+// 更新图表
+function updateChart() {
+    if (!chart) return;
+    
+    // 更新图表数据
+    chart.data.datasets.forEach(dataset => {
+        dataset.borderColor = borderColorInput.value;
+        dataset.borderWidth = parseInt(borderWidthInput.value);
+    });
+    
+    // 更新图表选项
+    chart.options.plugins.title.text = chartTitleInput.value || '我的图表';
+    chart.options.plugins.legend.display = showLegendCheckbox.checked;
+    
+    if (chart.options.scales) {
+        chart.options.scales.x.grid.display = showGridCheckbox.checked;
+        chart.options.scales.y.grid.display = showGridCheckbox.checked;
+    }
+    
+    chart.options.animation.animate = animateChartCheckbox.checked;
+    chart.update();
+}
+
+// 更新数据预览
+function updateDataPreview() {
+    if (chartData.labels.length === 0 || chartData.datasets.length === 0) {
+        dataPreviewSection.style.display = 'none';
+        return;
+    }
+    
+    dataPreviewSection.style.display = 'block';
+    const tbody = dataPreview.querySelector('tbody');
+    tbody.innerHTML = '';
+    
+    const maxRows = Math.min(10, chartData.labels.length);
+    const maxCols = Math.min(3, chartData.datasets.length);
+    
+    for (let i = 0; i < maxRows; i++) {
+        const row = document.createElement('tr');
+        
+        // 添加标签单元格
+        const labelCell = document.createElement('td');
+        labelCell.textContent = chartData.labels[i] || '';
+        row.appendChild(labelCell);
+        
+        // 添加数据单元格
+        for (let j = 0; j < maxCols; j++) {
+            const dataCell = document.createElement('td');
+            dataCell.textContent = chartData.datasets[j]?.data[i] || '';
+            row.appendChild(dataCell);
+        }
+        
+        tbody.appendChild(row);
+    }
+}
+
+// 导出图表
+async function exportChart(format) {
+    if (!chart) {
+        updateStatus('没有可导出的图表', 'error');
+        return;
+    }
+
+    try {
+        if (format === 'pdf') {
+            // 加载PDF库
+            const { jsPDF } = window.jspdf || await loadPDFLibrary();
+            
+            if (!jsPDF) {
+                throw new Error('PDF导出库加载失败');
+            }
+            
+            updateStatus('正在生成PDF...', 'info');
+            
+            // 获取图表图像数据
+            const image = chartCanvas.toDataURL('image/png');
+            
+            // 创建PDF文档 (A4尺寸)
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm'
+            });
+            
+            // 计算图片在PDF中的尺寸 (保持宽高比)
+            const imgWidth = 297; // A4横向可用宽度(297-20边距)
+            const imgHeight = 210;
+            console.log(imgWidth, imgHeight);
+            // 添加图片到PDF
+            pdf.addImage(image, 'PNG', 0, 0, imgWidth, imgHeight);
+            
+            // 添加标题
+            pdf.setFontSize(20);
+            // pdf.text(chartTitleInput.value || 'Data Analysis Charts', 148, 10, { align: 'center' });
+            
+            // 添加页脚信息
+            pdf.setFontSize(10);
+            if (waterCheckbox.checked){
+                pdf.text(`Made @Apollo hzl.ken520.top: ${new Date().toLocaleString()}`, 10, 190);
+            }
+            // 保存文件
+            pdf.save(`chart_${new Date().toISOString().slice(0, 10)}.pdf`);
+            
+            updateStatus('PDF导出成功', 'success');
+        } 
+        else {
+            // PNG/JPG导出
+            const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+            const extension = format === 'jpeg' ? 'jpg' : 'png';
+            
+            const image = chartCanvas.toDataURL(mimeType);
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = `chart_${new Date().toISOString().slice(0, 10)}.${extension}`;
+            link.click();
+            
+            updateStatus(`图表已导出为${format.toUpperCase()}`, 'success');
+        }
+    } catch (error) {
+        console.error('导出错误:', error);
+        updateStatus(`导出失败: ${error.message}`, 'error');
+    }
+}
+
+// 动态加载PDF库
+function loadPDFLibrary() {
+    return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => resolve(window.jspdf);
+        script.onerror = () => resolve(null);
+        document.head.appendChild(script);
+    });
+}
+
+// 导出数据为CSV
+function exportDataAsCSV() {
+    if (chartData.labels.length === 0) {
+        updateStatus('没有可导出的数据', 'error');
+        return;
+    }
+
+    try {
+        // 1. 添加UTF-8 BOM头（\uFEFF）
+        let csvContent = '\uFEFF'; // 关键点：BOM头
+        
+        // 2. 添加表头（中文列名）
+        csvContent += '标签';
+        chartData.datasets.forEach(dataset => {
+            csvContent += `,${dataset.label}`;
+        });
+        csvContent += '\n';
+        
+        // 3. 添加数据行
+        for (let i = 0; i < chartData.labels.length; i++) {
+            csvContent += chartData.labels[i];
+            chartData.datasets.forEach(dataset => {
+                csvContent += `,${dataset.data[i] || ''}`;
+            });
+            csvContent += '\n';
+        }
+
+        // 4. 创建Blob时指定UTF-8编码
+        const blob = new Blob([csvContent], { 
+            type: 'text/csv;charset=utf-8;' 
+        });
+
+        // 5. 触发下载
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `数据导出_${new Date().toLocaleDateString()}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        updateStatus('CSV导出成功（UTF-8 BOM格式）', 'success');
+    } catch (error) {
+        console.error('CSV导出错误:', error);
+        updateStatus(`CSV导出失败: ${error.message}`, 'error');
+    }
+}
+
+// 更新状态信息
+function updateStatus(message, type = 'info') {
+    statusInfo.textContent = message;
+    statusInfo.style.backgroundColor = '#f8f9fa';
+    statusInfo.style.color = '#7f8c8d';
+    
+    if (type === 'success') {
+        statusInfo.style.backgroundColor = '#e8f5e9';
+        statusInfo.style.color = '#2e7d32';
+    } else if (type === 'error') {
+        statusInfo.style.backgroundColor = '#ffebee';
+        statusInfo.style.color = '#c62828';
+    }
+}
+
+// 辅助函数：生成随机颜色
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color + '80'; // 添加透明度
+}
+
+// 辅助函数：将数组转换为图表数据格式
+function convertArrayToChartData(array) {
+    const result = {
+        labels: [],
+        datasets: []
+    };
+    
+    if (Array.isArray(array[0])) {
+        // 二维数组
+        result.labels = array.map((_, index) => `项目 ${index + 1}`);
+        result.datasets.push({
+            label: '数据集 1',
+            data: array.flat(),
+            backgroundColor: getRandomColor(),
+            borderColor: borderColorInput.value,
+            borderWidth: parseInt(borderWidthInput.value)
+        });
+    } else {
+        // 一维数组
+        result.labels = array.map((_, index) => `项目 ${index + 1}`);
+        result.datasets.push({
+            label: '数据集 1',
+            data: array,
+            backgroundColor: getRandomColor(),
+            borderColor: borderColorInput.value,
+            borderWidth: parseInt(borderWidthInput.value)
+        });
+    }
+    
+    return result;
+}
+
+// 初始化图表容器高度
+function initChartContainerHeight() {
+    const container = document.querySelector('.container');
+    const controlPanel = document.querySelector('.control-panel');
+    const chartContainer = document.querySelector('.chart-container');
+    
+    if (container && controlPanel && chartContainer) {
+        const height = Math.max(controlPanel.offsetHeight, 500);
+        chartContainer.style.height = `${height}px`;
+    }
+}
+
+// 页面加载完成后初始化
+window.addEventListener('load', () => {
+    initChartContainerHeight();
+    updateStatus('准备就绪');
+});
+
+// 窗口大小改变时重新计算高度
+window.addEventListener('resize', initChartContainerHeight);
+    </script>
+</body>
+</html>

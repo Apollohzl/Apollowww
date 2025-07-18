@@ -14,7 +14,7 @@
     <link rel="mask-icon" type="image/x-icon"
         href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
         color="#111">
-    <title>🎵 音乐搜索下载器 - 全能工具箱</title>
+    <title>波点音乐搜索下载器 - 星之阁</title>
     <style>
         * {
             margin: 0;
@@ -38,7 +38,12 @@
             margin: 30px 0;
             color: #2c3e50;
         }
-        
+        .xingzhige{
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
         .search-container {
             background: white;
             border-radius: 8px;
@@ -235,8 +240,9 @@
     </style>
 </head>
 <body>
-    <h1>🎵 音乐搜索下载器</h1>
-    
+    <h1>🎵 波点音乐搜索下载器 🎵 </h1>
+    <p class="xingzhige" onclick="xingzhige()">星之阁API</p>
+    <p><img src="https://h5s.kuwo.cn/www/kw-www/img/logo.ce08bf7.png" alt="波点音乐图片"></img></p>
     <div class="search-container">
         <div class="search-box">
             <input type="text" class="search-input" id="searchInput" placeholder="输入歌曲名或歌手名..." autocomplete="off">
@@ -257,7 +263,11 @@
         <p onclick="window.location.href = '../money0.1.jpg';">点击赞助<a href="https://space.bilibili.com/1519941537">bilibili: @apollo小黄</a></p>
         <p><a href="../beian.html">粤ICP备52018458号-6</a></p>
     </footer>
-
+    <script>
+        function xingzhige(){
+            window.location.href = 'https://api.xingzhige.com/';
+        }
+    </script>
     <script>
         // 搜索功能
         document.getElementById('searchBtn').addEventListener('click', searchMusic);

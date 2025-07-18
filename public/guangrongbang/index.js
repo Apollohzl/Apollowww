@@ -1,6 +1,11 @@
 const people = [
-    {'name': '张三', 'money': 100},
-        {'name': '王五', 'money': 300},
-        {'name': '李四', 'money': 200},
-        {'name': '李四', 'money': 200}
+    {'name':'玥涵^.','money':1.12},
+    {'name':'玳霖','money':0.09},
+    {'name':'刘煜南','money':5.05},
+    {'name':'bilibili','money':1.61},
+    {'name':'黄文淼','money':0.01},
+    {'name':'文跃琪','money':0.09},
+    {'name':'依佳','money':0.09},
+    {'name':'谢雅蕊','money':0.14},
+    {'name':'张赞东','money':1.66},
 ]

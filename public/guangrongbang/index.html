@@ -155,6 +155,7 @@
     </div>
 
     <script src="index.js"></script>
+    
     <script>
         // 获取数据并排序
         const sortedPeople = [...people].sort((a, b) => b.money - a.money);
@@ -184,13 +185,7 @@
             donorList.appendChild(donorItem);
         });
         
-        // 更新日期
-        const now = new Date();
-        document.getElementById('updateDate').textContent = now.toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        
     </script>
 </body>
 </html>

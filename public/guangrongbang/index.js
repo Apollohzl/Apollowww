@@ -9,3 +9,9 @@ const people = [
     {'name':'谢雅蕊','money':0.14},
     {'name':'张赞东','money':1.66},
 ]
+const update = {
+    'time':'2025年1月31日'
+}
+const updatetime = document.getElementById('updateDate')
+updatetime.innerHTML = '';
+updatetime.innerHTML = update.time;

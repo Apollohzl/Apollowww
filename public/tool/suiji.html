@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>随机生成工具 - 全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .generator-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #6c5ce7;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+        }
+        
+        button {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #5649c0;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #6c5ce7;
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .option-btn {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .food-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .food-item {
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .selected-food {
+            background: #6c5ce7;
+            color: white;
+        }
+        
+        .answer-book {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 30px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px dashed #6c5ce7;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            grid-column: 1 / -1;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            grid-column: 1 / -1;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+            background: #f1f1f1;
+        }
+        
+        .tab.active {
+            background: white;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+            color: #6c5ce7;
+        }
+        
+        .tab-content {
+            display: none;
+            grid-column: 1 / -1;
+        }
+        
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .password-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .password-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .password-option input {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .password-option label {
+            margin-bottom: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container, 
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tab {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎲 随机生成工具</h1>
+    
+    <div class="main-container">
+        <div class="tabs">
+            <div class="tab active" data-tab="random">随机数</div>
+            <div class="tab" data-tab="password">密码生成</div>
+            <div class="tab" data-tab="food">今天吃什么</div>
+            <div class="tab" data-tab="money">今日消费</div>
+            <div class="tab" data-tab="decision">决策助手</div>
+            <div class="tab" data-tab="answer">答案之书</div>
+        </div>
+        
+        <div class="tab-content active" id="random-tab">
+            <div class="generator-section">
+                <h2>随机数生成</h2>
+                
+                <div class="input-group">
+                    <label for="minValue">最小值</label>
+                    <input type="number" id="minValue" value="1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="maxValue">最大值</label>
+                    <input type="number" id="maxValue" value="100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="randomCount">生成数量</label>
+                    <input type="number" id="randomCount" value="1" min="1" max="100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="allowRepeat">允许重复</label>
+                    <select id="allowRepeat">
+                        <option value="true">是</option>
+                        <option value="false">否</option>
+                    </select>
+                </div>
+                
+                <button id="generateRandomBtn">生成随机数</button>
+                <button class="clear-btn" id="clearRandomBtn">清空</button>
+                
+                <div class="result" id="randomResult">
+                    <strong>结果:</strong> <span id="randomResultValue"></span>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>随机数据生成</h2>
+                
+                <div class="input-group">
+                    <label for="dataType">数据类型</label>
+                    <select id="dataType">
+                        <option value="name">姓名</option>
+                        <option value="phone">手机号</option>
+                        <option value="email">电子邮箱</option>
+                        <option value="address">地址</option>
+                        <option value="date">日期</option>
+                        <option value="color">颜色</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="dataCount">生成数量</label>
+                    <input type="number" id="dataCount" value="5" min="1" max="50">
+                </div>
+                
+                <button id="generateDataBtn">生成数据</button>
+                
+                <div class="result">
+                    <strong>结果:</strong>
+                    <textarea id="dataResult" rows="5" readonly></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="password-tab">
+            <div class="generator-section">
+                <h2>密码生成器</h2>
+                
+                <div class="input-group">
+                    <label for="passwordLength">密码长度</label>
+                    <input type="number" id="passwordLength" value="12" min="4" max="64">
+                </div>
+                
+                <div class="password-options">
+                    <div class="password-option">
+                        <input type="checkbox" id="includeUpper" checked>
+                        <label for="includeUpper">包含大写字母 (A-Z)</label>
+                    </div>
+                    
+                    <div class="password-option">
+                        <input type="checkbox" id="includeLower" checked>
+                        <label for="includeLower">包含小写字母 (a-z)</label>
+                    </div>
+                    
+                    <div class="password-option">
+                        <input type="checkbox" id="includeNumbers" checked>
+                        <label for="includeNumbers">包含数字 (0-9)</label>
+                    </div>
+                    
+                    <div class="password-option">
+                        <input type="checkbox" id="includeSymbols" checked>
+                        <label for="includeSymbols">包含符号 (!@#$%^&*)</label>
+                    </div>
+                    
+                    <div class="password-option">
+                        <input type="checkbox" id="excludeSimilar">
+                        <label for="excludeSimilar">排除相似字符 (1,l,I,0,O)</label>
+                    </div>
+                    
+                    <div class="password-option">
+                        <input type="checkbox" id="excludeAmbiguous">
+                        <label for="excludeAmbiguous">排除模糊字符 ({ } [ ] ( ) / \ ' " ` ~ , ; : . &lt; &gt;)</label>
+                    </div>
+                </div>
+                
+                <button id="generatePasswordBtn">生成密码</button>
+                <button id="generateMultiplePasswordsBtn">生成多个密码</button>
+                
+                <div class="result" id="passwordResult">
+                    <strong>生成的密码:</strong> <span id="passwordResultValue"></span>
+                </div>
+                
+                <div class="result" id="multiplePasswordsResult" style="display: none;">
+                    <strong>生成的密码:</strong>
+                    <textarea id="multiplePasswordsResultValue" rows="5" readonly></textarea>
+                </div>
+                
+                <div class="result">
+                    <strong>密码强度:</strong>
+                    <div style="margin-top: 10px;">
+                        <div id="passwordStrengthBar" style="height: 10px; background: #eee; border-radius: 5px; overflow: hidden;">
+                            <div id="passwordStrengthFill" style="height: 100%; width: 0%; background: #e74c3c; transition: width 0.3s, background 0.3s;"></div>
+                        </div>
+                        <div id="passwordStrengthText" style="margin-top: 5px; font-size: 0.9rem; color: #777;">非常弱</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>密码强度检测</h2>
+                
+                <div class="input-group">
+                    <label for="passwordToCheck">输入密码检测强度</label>
+                    <input type="text" id="passwordToCheck" placeholder="输入要检测的密码">
+                </div>
+                
+                <button id="checkPasswordBtn">检测强度</button>
+                
+                <div class="result">
+                    <strong>检测结果:</strong>
+                    <div style="margin-top: 10px;">
+                        <div id="checkPasswordStrengthBar" style="height: 10px; background: #eee; border-radius: 5px; overflow: hidden;">
+                            <div id="checkPasswordStrengthFill" style="height: 100%; width: 0%; background: #e74c3c; transition: width 0.3s, background 0.3s;"></div>
+                        </div>
+                        <div id="checkPasswordStrengthText" style="margin-top: 5px; font-size: 0.9rem; color: #777;">未检测</div>
+                    </div>
+                </div>
+                
+                <div class="result">
+                    <strong>密码建议:</strong>
+                    <ul id="passwordSuggestions" style="margin-top: 10px; padding-left: 20px;">
+                        <li>密码长度至少8位</li>
+                        <li>包含大小写字母、数字和符号</li>
+                        <li>避免使用常见单词和个人信息</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="food-tab">
+            <div class="generator-section full-width">
+                <h2>今天吃什么</h2>
+                
+                <div class="input-group">
+                    <label for="foodOptions">输入你的备选食物（每行一个）</label>
+                    <textarea id="foodOptions" rows="5" placeholder="例如：
+红烧肉
+宫保鸡丁
+鱼香肉丝
+水煮鱼
+麻婆豆腐"></textarea>
+                </div>
+                
+                <button id="randomFoodBtn">随机选择</button>
+                <button id="addMoreFoodBtn">添加更多食物</button>
+                <button class="clear-btn" id="clearFoodBtn">清空</button>
+                
+                <div class="result" id="foodResult" style="text-align: center; font-size: 1.5rem;">
+                    <strong>今天吃:</strong> <span id="foodResultValue" style="color: #6c5ce7;"></span>
+                </div>
+                
+                <h3 style="margin-top: 20px;">常见食物列表</h3>
+                <div class="food-list" id="commonFoodList">
+                    <!-- 常见食物将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="money-tab">
+            <div class="generator-section">
+                <h2>今日消费限额</h2>
+                
+                <div class="input-group">
+                    <label for="monthlyBudget">月预算 (元)</label>
+                    <input type="number" id="monthlyBudget" value="3000" min="100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="daysInMonth">本月天数</label>
+                    <input type="number" id="daysInMonth" value="30" min="28" max="31">
+                </div>
+                
+                <div class="input-group">
+                    <label for="daysPassed">已过天数</label>
+                    <input type="number" id="daysPassed" value="15" min="1" max="31">
+                </div>
+                
+                <div class="input-group">
+                    <label for="spentSoFar">已花费 (元)</label>
+                    <input type="number" id="spentSoFar" value="1600" min="0">
+                </div>
+                
+                <button id="calculateMoneyBtn">计算今日限额</button>
+                
+                <div class="result" id="moneyResult">
+                    <strong>结果:</strong>
+                    <p id="moneyResultValue"></p>
+                    <p id="moneySuggestion"></p>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>随机消费金额</h2>
+                
+                <div class="input-group">
+                    <label for="minAmount">最小金额 (元)</label>
+                    <input type="number" id="minAmount" value="10" min="1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="maxAmount">最大金额 (元)</label>
+                    <input type="number" id="maxAmount" value="100" min="1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="decimalPlaces">小数位数</label>
+                    <select id="decimalPlaces">
+                        <option value="0">无小数</option>
+                        <option value="1">1位小数</option>
+                        <option value="2" selected>2位小数</option>
+                    </select>
+                </div>
+                
+                <button id="generateAmountBtn">生成金额</button>
+                <button id="generateMultipleAmountsBtn">生成多个金额</button>
+                
+                <div class="result" id="amountResult">
+                    <strong>金额:</strong> <span id="amountResultValue"></span>
+                </div>
+                
+                <div class="result" id="multipleAmountsResult" style="display: none;">
+                    <strong>金额列表:</strong>
+                    <textarea id="multipleAmountsResultValue" rows="5" readonly></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="decision-tab">
+            <div class="generator-section">
+                <h2>决策助手</h2>
+                
+                <div class="input-group">
+                    <label for="decisionQuestion">你的问题</label>
+                    <input type="text" id="decisionQuestion" placeholder="例如：我应该接受这份工作吗？">
+                </div>
+                
+                <div class="input-group">
+                    <label for="decisionOptions">选项（每行一个）</label>
+                    <textarea id="decisionOptions" rows="5" placeholder="例如：
+接受
+拒绝
+再考虑一下"></textarea>
+                </div>
+                
+                <button id="makeDecisionBtn">帮我决定</button>
+                <button class="clear-btn" id="clearDecisionBtn">清空</button>
+                
+                <div class="result" id="decisionResult" style="text-align: center; font-size: 1.5rem;">
+                    <strong>决定:</strong> <span id="decisionResultValue" style="color: #6c5ce7;"></span>
+                </div>
+            </div>
+            
+            <div class="generator-section">
+                <h2>硬币抛掷</h2>
+                
+                <div class="input-group">
+                    <label for="coinQuestion">你的问题（可选）</label>
+                    <input type="text" id="coinQuestion" placeholder="例如：我应该今天去购物吗？">
+                </div>
+                
+                <button id="flipCoinBtn">抛硬币</button>
+                
+                <div class="result" style="text-align: center;">
+                    <div id="coinResult" style="font-size: 5rem; margin: 20px 0;">🎲</div>
+                    <p id="coinResultText" style="font-size: 1.2rem;"></p>
+                </div>
+                
+                <div class="result">
+                    <strong>抛硬币历史:</strong>
+                    <div id="coinHistory" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;">
+                        <!-- 抛硬币历史记录将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="answer-tab">
+            <div class="generator-section full-width">
+                <h2>答案之书</h2>
+                
+                <div class="input-group">
+                    <label for="answerQuestion">你的问题</label>
+                    <input type="text" id="answerQuestion" placeholder="例如：我会成功吗？">
+                </div>
+                
+                <button id="getAnswerBtn">获取答案</button>
+                
+                <div class="answer-book" id="answerResult">
+                    在这里将显示你的答案...
+                </div>
+                
+                <div class="result">
+                    <strong>答案库:</strong>
+                    <p>答案之书包含各种可能的回答，从肯定到否定，以及中立的建议。</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+            <p onclick="window.location.href = '../money0.1.jpg';">点击赞助<a href="https://space.bilibili.com/1519941537">bilibili: @apollo小黄</a></p>
+            <p><a href="../beian.html">粤ICP备52018458号-6</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // 随机数生成功能
+        document.getElementById('generateRandomBtn').addEventListener('click', function() {
+            const min = parseInt(document.getElementById('minValue').value) || 0;
+            const max = parseInt(document.getElementById('maxValue').value) || 100;
+            const count = parseInt(document.getElementById('randomCount').value) || 1;
+            const allowRepeat = document.getElementById('allowRepeat').value === 'true';
+            
+            if (min > max) {
+                alert('最小值不能大于最大值');
+                return;
+            }
+            
+            if (count < 1) {
+                alert('生成数量至少为1');
+                return;
+            }
+            
+            if (!allowRepeat && (max - min + 1) < count) {
+                alert('范围太小，无法生成不重复的随机数');
+                return;
+            }
+            
+            try {
+                let result = [];
+                if (allowRepeat) {
+                    for (let i = 0; i < count; i++) {
+                        result.push(Math.floor(Math.random() * (max - min + 1)) + min);
+                    }
+                } else {
+                    // 生成不重复随机数
+                    let pool = [];
+                    for (let i = min; i <= max; i++) {
+                        pool.push(i);
+                    }
+                    
+                    for (let i = 0; i < count; i++) {
+                        const index = Math.floor(Math.random() * pool.length);
+                        result.push(pool.splice(index, 1)[0]);
+                    }
+                }
+                
+                document.getElementById('randomResultValue').textContent = result.join(', ');
+            } catch (e) {
+                alert('生成失败: ' + e.message);
+            }
+        });
+        
+        // 随机数据生成功能
+        document.getElementById('generateDataBtn').addEventListener('click', function() {
+            const dataType = document.getElementById('dataType').value;
+            const count = parseInt(document.getElementById('dataCount').value) || 1;
+            
+            if (count < 1 || count > 50) {
+                alert('生成数量应在1-50之间');
+                return;
+            }
+            
+            try {
+                let result = [];
+                for (let i = 0; i < count; i++) {
+                    switch (dataType) {
+                        case 'name':
+                            result.push(generateRandomName());
+                            break;
+                        case 'phone':
+                            result.push(generateRandomPhone());
+                            break;
+                        case 'email':
+                            result.push(generateRandomEmail());
+                            break;
+                        case 'address':
+                            result.push(generateRandomAddress());
+                            break;
+                        case 'date':
+                            result.push(generateRandomDate());
+                            break;
+                        case 'color':
+                            result.push(generateRandomColor());
+                            break;
+                    }
+                }
+                
+                document.getElementById('dataResult').value = result.join('\n');
+            } catch (e) {
+                alert('生成失败: ' + e.message);
+            }
+        });
+        
+        // 随机数据生成函数
+        function generateRandomName() {
+            const familyNames = ['张', '王', '李', '赵', '刘', '陈', '杨', '黄', '吴', '周'];
+            const givenNames = ['伟', '芳', '娜', '秀英', '敏', '静', '丽', '强', '磊', '洋'];
+            const familyName = familyNames[Math.floor(Math.random() * familyNames.length)];
+            const givenName = givenNames[Math.floor(Math.random() * givenNames.length)];
+            return familyName + givenName;
+        }
+        
+        function generateRandomPhone() {
+            const prefixes = ['130', '131', '132', '133', '135', '136', '137', '138', '139', '150', '151', '152', '155', '156', '157', '158', '159', '180', '181', '182', '183', '185', '186', '187', '188', '189'];
+            const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+            let suffix = '';
+            for (let i = 0; i < 8; i++) {
+                suffix += Math.floor(Math.random() * 10);
+            }
+            return prefix + suffix;
+        }
+        
+        function generateRandomEmail() {
+            const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'qq.com', '163.com', '126.com', 'sina.com'];
+            const name = generateRandomName().toLowerCase();
+            const domain = domains[Math.floor(Math.random() * domains.length)];
+            return name + '@' + domain;
+        }
+        
+        function generateRandomAddress() {
+            const provinces = ['北京', '上海', '天津', '重庆', '河北', '山西', '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽', '福建', '江西', '山东', '河南', '湖北', '湖南', '广东', '海南', '四川', '贵州', '云南', '陕西', '甘肃', '青海'];
+            const cities = ['市', '区', '县'];
+            const streets = ['街', '路', '大道', '巷', '胡同'];
+            const province = provinces[Math.floor(Math.random() * provinces.length)];
+            const city = cities[Math.floor(Math.random() * cities.length)];
+            const street = streets[Math.floor(Math.random() * streets.length)];
+            const number = Math.floor(Math.random() * 100) + 1;
+            return province + city + number + street;
+        }
+        
+        function generateRandomDate() {
+            const start = new Date(2000, 0, 1);
+            const end = new Date();
+            const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+            return randomDate.toLocaleDateString();
+        }
+        
+        function generateRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+        
+        // 密码生成功能
+        document.getElementById('generatePasswordBtn').addEventListener('click', function() {
+            generatePassword(false);
+        });
+        
+        document.getElementById('generateMultiplePasswordsBtn').addEventListener('click', function() {
+            generatePassword(true);
+        });
+        
+        function generatePassword(multiple) {
+            const length = parseInt(document.getElementById('passwordLength').value) || 12;
+            const includeUpper = document.getElementById('includeUpper').checked;
+            const includeLower = document.getElementById('includeLower').checked;
+            const includeNumbers = document.getElementById('includeNumbers').checked;
+            const includeSymbols = document.getElementById('includeSymbols').checked;
+            const excludeSimilar = document.getElementById('excludeSimilar').checked;
+            const excludeAmbiguous = document.getElementById('excludeAmbiguous').checked;
+            
+            if (length < 4 || length > 64) {
+                alert('密码长度应在4-64之间');
+                return;
+            }
+            
+            if (!includeUpper && !includeLower && !includeNumbers && !includeSymbols) {
+                alert('至少选择一种字符类型');
+                return;
+            }
+            
+            try {
+                let chars = '';
+                if (includeUpper) chars += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+                if (includeLower) chars += 'abcdefghijkmnopqrstuvwxyz';
+                if (includeNumbers) chars += '23456789';
+                if (includeSymbols) chars += '!@#$%^&*';
+                
+                if (excludeSimilar) {
+                    chars = chars.replace(/[1lLIioO0]/g, '');
+                }
+                
+                if (excludeAmbiguous) {
+                    chars = chars.replace(/[{}[\]()\/\\'"`~,;:.<>]/g, '');
+                }
+                
+                if (chars.length === 0) {
+                    alert('没有可用的字符，请调整选项');
+                    return;
+                }
+                
+                if (multiple) {
+                    let passwords = [];
+                    for (let i = 0; i < 5; i++) {
+                        let password = '';
+                        for (let j = 0; j < length; j++) {
+                            password += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        passwords.push(password);
+                    }
+                    
+                    document.getElementById('passwordResult').style.display = 'none';
+                    document.getElementById('multiplePasswordsResult').style.display = 'block';
+                    document.getElementById('multiplePasswordsResultValue').value = passwords.join('\n');
+                    checkPasswordStrength(passwords[0], 'check');
+                } else {
+                    let password = '';
+                    for (let i = 0; i < length; i++) {
+                        password += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                    
+                    document.getElementById('passwordResult').style.display = 'block';
+                    document.getElementById('multiplePasswordsResult').style.display = 'none';
+                    document.getElementById('passwordResultValue').textContent = password;
+                    checkPasswordStrength(password, 'password');
+                }
+            } catch (e) {
+                alert('生成失败: ' + e.message);
+            }
+        }
+        
+        // 密码强度检测功能
+        document.getElementById('checkPasswordBtn').addEventListener('click', function() {
+            const password = document.getElementById('passwordToCheck').value;
+            checkPasswordStrength(password, 'check');
+        });
+        
+        function checkPasswordStrength(password, prefix) {
+            let strength = 0;
+            let suggestions = [];
+            
+            // 长度评分
+            if (password.length >= 12) strength += 2;
+            else if (password.length >= 8) strength += 1;
+            else suggestions.push('增加密码长度（至少8位）');
+            
+            // 字符种类评分
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSymbol = /[^A-Za-z0-9]/.test(password);
+            
+            let typeCount = 0;
+            if (hasUpper) typeCount++;
+            if (hasLower) typeCount++;
+            if (hasNumber) typeCount++;
+            if (hasSymbol) typeCount++;
+            
+            strength += typeCount - 1;
+            
+            if (typeCount < 3) {
+                suggestions.push('使用更多类型的字符（大小写字母、数字、符号）');
+            }
+            
+            // 常见模式检测
+            if (/password|123456|qwerty|abc123/i.test(password)) {
+                strength = Math.max(0, strength - 2);
+                suggestions.push('避免使用常见密码模式');
+            }
+            
+            // 重复字符检测
+            if (/(.)\1{2,}/.test(password)) {
+                strength = Math.max(0, strength - 1);
+                suggestions.push('避免重复字符');
+            }
+            
+            // 最终评分 (0-4)
+            strength = Math.max(0, Math.min(4, strength));
+            
+            // 更新UI
+            const strengthText = ['非常弱', '弱', '中等', '强', '非常强'][strength];
+            const strengthColor = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#27ae60'][strength];
+            const strengthPercent = (strength + 1) * 20;
+            
+            document.getElementById(`${prefix}PasswordStrengthFill`).style.width = strengthPercent + '%';
+            document.getElementById(`${prefix}PasswordStrengthFill`).style.background = strengthColor;
+            document.getElementById(`${prefix}PasswordStrengthText`).textContent = strengthText;
+            document.getElementById(`${prefix}PasswordStrengthText`).style.color = strengthColor;
+            
+            if (prefix === 'check') {
+                const suggestionsEl = document.getElementById('passwordSuggestions');
+                suggestionsEl.innerHTML = '';
+                
+                if (suggestions.length === 0) {
+                    suggestionsEl.innerHTML = '<li>密码强度良好</li>';
+                } else {
+                    suggestions.forEach(suggestion => {
+                        const li = document.createElement('li');
+                        li.textContent = suggestion;
+                        suggestionsEl.appendChild(li);
+                    });
+                }
+            }
+        }
+        
+        // 今天吃什么功能
+        document.getElementById('randomFoodBtn').addEventListener('click', function() {
+            const foodOptionsText = document.getElementById('foodOptions').value.trim();
+            let foodOptions = [];
+            
+            if (foodOptionsText) {
+                foodOptions = foodOptionsText.split('\n').filter(food => food.trim());
+            } else {
+                // 如果没有输入，使用常见食物列表
+                const commonFoods = document.querySelectorAll('.common-food-item');
+                commonFoods.forEach(food => {
+                    if (food.classList.contains('selected-food')) {
+                        foodOptions.push(food.textContent);
+                    }
+                });
+            }
+            
+            if (foodOptions.length === 0) {
+                alert('请添加食物选项或选择常见食物');
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * foodOptions.length);
+            document.getElementById('foodResultValue').textContent = foodOptions[randomIndex];
+            
+            // 高亮显示选中的常见食物
+            document.querySelectorAll('.common-food-item').forEach(food => {
+                food.classList.remove('selected-food');
+                if (food.textContent === foodOptions[randomIndex]) {
+                    food.classList.add('selected-food');
+                }
+            });
+        });
+        
+        document.getElementById('addMoreFoodBtn').addEventListener('click', function() {
+            const newFood = prompt('请输入要添加的食物:');
+            if (newFood && newFood.trim()) {
+                const foodOptions = document.getElementById('foodOptions');
+                if (foodOptions.value.trim()) {
+                    foodOptions.value += '\n' + newFood.trim();
+                } else {
+                    foodOptions.value = newFood.trim();
+                }
+            }
+        });
+        
+        // 生成常见食物列表
+        function generateCommonFoodList() {
+            const commonFoods = [
+                '红烧肉', '宫保鸡丁', '鱼香肉丝', '水煮鱼', '麻婆豆腐',
+                '回锅肉', '糖醋排骨', '清蒸鱼', '炒青菜', '西红柿炒鸡蛋',
+                '酸辣土豆丝', '青椒炒肉', '红烧排骨', '炒饭', '炒面',
+                '饺子', '包子', '馒头', '面条', '火锅', '烧烤', '寿司',
+                '披萨', '汉堡', '炸鸡', '沙拉', '三明治', '牛排', '意面'
+            ];
+            
+            const foodListEl = document.getElementById('commonFoodList');
+            commonFoods.forEach(food => {
+                const foodItem = document.createElement('div');
+                foodItem.className = 'food-item common-food-item';
+                foodItem.textContent = food;
+                foodItem.addEventListener('click', function() {
+                    this.classList.toggle('selected-food');
+                });
+                foodListEl.appendChild(foodItem);
+            });
+        }
+        
+        // 今日消费限额功能
+        document.getElementById('calculateMoneyBtn').addEventListener('click', function() {
+            const monthlyBudget = parseFloat(document.getElementById('monthlyBudget').value) || 0;
+            const daysInMonth = parseInt(document.getElementById('daysInMonth').value) || 30;
+            const daysPassed = parseInt(document.getElementById('daysPassed').value) || 1;
+            const spentSoFar = parseFloat(document.getElementById('spentSoFar').value) || 0;
+            
+            if (monthlyBudget <= 0) {
+                alert('请输入有效的月预算');
+                return;
+            }
+            
+            if (daysPassed < 1 || daysPassed > daysInMonth) {
+                alert('已过天数应在1到本月天数之间');
+                return;
+            }
+            
+            if (spentSoFar < 0) {
+                alert('已花费金额不能为负数');
+                return;
+            }
+            
+            const dailyBudget = monthlyBudget / daysInMonth;
+            const remainingDays = daysInMonth - daysPassed;
+            const remainingBudget = monthlyBudget - spentSoFar;
+            const todayBudget = remainingBudget / remainingDays;
+            
+            let suggestion = '';
+            if (todayBudget < dailyBudget * 0.7) {
+                suggestion = '建议：今天要节约开支哦！';
+            } else if (todayBudget > dailyBudget * 1.3) {
+                suggestion = '建议：今天可以稍微多花一点！';
+            } else {
+                suggestion = '建议：按计划消费即可';
+            }
+            
+            document.getElementById('moneyResultValue').innerHTML = `
+                今日建议消费: <strong>${todayBudget.toFixed(2)}</strong> 元<br>
+                平均每日预算: ${dailyBudget.toFixed(2)} 元<br>
+                剩余天数: ${remainingDays} 天<br>
+                剩余预算: ${remainingBudget.toFixed(2)} 元
+            `;
+            
+            document.getElementById('moneySuggestion').textContent = suggestion;
+        });
+        
+        // 随机金额生成功能
+        document.getElementById('generateAmountBtn').addEventListener('click', function() {
+            generateRandomAmount(false);
+        });
+        
+        document.getElementById('generateMultipleAmountsBtn').addEventListener('click', function() {
+            generateRandomAmount(true);
+        });
+        
+        function generateRandomAmount(multiple) {
+            const minAmount = parseFloat(document.getElementById('minAmount').value) || 0;
+            const maxAmount = parseFloat(document.getElementById('maxAmount').value) || 100;
+            const decimalPlaces = parseInt(document.getElementById('decimalPlaces').value) || 2;
+            
+            if (minAmount < 0 || maxAmount < 0) {
+                alert('金额不能为负数');
+                return;
+            }
+            
+            if (minAmount > maxAmount) {
+                alert('最小金额不能大于最大金额');
+                return;
+            }
+            
+            try {
+                if (multiple) {
+                    let amounts = [];
+                    for (let i = 0; i < 5; i++) {
+                        const amount = minAmount + Math.random() * (maxAmount - minAmount);
+                        amounts.push(amount.toFixed(decimalPlaces));
+                    }
+                    
+                    document.getElementById('amountResult').style.display = 'none';
+                    document.getElementById('multipleAmountsResult').style.display = 'block';
+                    document.getElementById('multipleAmountsResultValue').value = amounts.join('\n');
+                } else {
+                    const amount = minAmount + Math.random() * (maxAmount - minAmount);
+                    
+                    document.getElementById('amountResult').style.display = 'block';
+                    document.getElementById('multipleAmountsResult').style.display = 'none';
+                    document.getElementById('amountResultValue').textContent = amount.toFixed(decimalPlaces);
+                }
+            } catch (e) {
+                alert('生成失败: ' + e.message);
+            }
+        }
+        
+        // 决策助手功能
+        document.getElementById('makeDecisionBtn').addEventListener('click', function() {
+            const question = document.getElementById('decisionQuestion').value.trim();
+            const optionsText = document.getElementById('decisionOptions').value.trim();
+            const options = optionsText.split('\n').filter(option => option.trim());
+            
+            if (options.length < 2) {
+                alert('请至少提供两个选项');
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * options.length);
+            let result = options[randomIndex];
+            
+            if (question) {
+                result = `对于"${question}"，建议选择: ${result}`;
+            }
+            
+            document.getElementById('decisionResultValue').textContent = result;
+        });
+        
+        // 抛硬币功能
+        document.getElementById('flipCoinBtn').addEventListener('click', function() {
+            const question = document.getElementById('coinQuestion').value.trim();
+            const result = Math.random() < 0.5 ? '正面' : '反面';
+            const coinSymbol = result === '正面' ? '🔼' : '🔽';
+            
+            document.getElementById('coinResult').textContent = coinSymbol;
+            
+            let resultText = result;
+            if (question) {
+                resultText = `对于"${question}"，结果是: ${result}`;
+            }
+            
+            document.getElementById('coinResultText').textContent = resultText;
+            
+            // 添加到历史记录
+            const historyItem = document.createElement('div');
+            historyItem.textContent = coinSymbol;
+            historyItem.style.fontSize = '1.5rem';
+            historyItem.style.cursor = 'pointer';
+            historyItem.title = new Date().toLocaleTimeString();
+            document.getElementById('coinHistory').prepend(historyItem);
+            
+            // 限制历史记录数量
+            if (document.getElementById('coinHistory').children.length > 10) {
+                document.getElementById('coinHistory').lastChild.remove();
+            }
+        });
+        
+        // 答案之书功能
+        document.getElementById('getAnswerBtn').addEventListener('click', function() {
+            const question = document.getElementById('answerQuestion').value.trim();
+            const answers = [
+                "是", "否", "毫无疑问", "当然", "毫无疑问是的", 
+                "如我所见，是的", "很可能", "前景很好", "是的", "迹象表明是的",
+                "回复模糊，请再试一次", "稍后再问", "现在最好不要告诉你", "现在无法预测", "集中精力再问一次",
+                "不要指望它", "我的回复是不", "我的消息来源说不", "前景不太好", "非常可疑",
+                "随它去吧", "让时间来决定", "跟随你的心", "相信你的直觉", "答案就在你心中",
+                "这取决于你", "需要更多努力", "保持耐心", "机会稍纵即逝", "行动胜于空想",
+                "与他人合作会有好结果", "寻求他人建议", "换个角度看问题", "保持开放心态", "结果会让你惊喜",
+                "不是现在", "等待更好时机", "重新考虑你的选择", "坚持就会有结果", "别太在意结果"
+            ];
+            
+            const randomAnswer = answers[Math.floor(Math.random() * answers.length)];
+            let result = randomAnswer;
+            
+            if (question) {
+                result = `问题: ${question}\n\n答案: ${randomAnswer}`;
+            }
+            
+            document.getElementById('answerResult').innerHTML = result.replace(/\n/g, '<br>');
+            
+            // 添加动画效果
+            const answerEl = document.getElementById('answerResult');
+            answerEl.style.animation = 'none';
+            void answerEl.offsetWidth; // 触发重绘
+            answerEl.style.animation = 'fadeIn 0.5s';
+        });
+        
+        // 清空按钮功能
+        document.getElementById('clearRandomBtn').addEventListener('click', function() {
+            document.getElementById('minValue').value = '1';
+            document.getElementById('maxValue').value = '100';
+            document.getElementById('randomCount').value = '1';
+            document.getElementById('randomResultValue').textContent = '';
+        });
+        
+        document.getElementById('clearFoodBtn').addEventListener('click', function() {
+            document.getElementById('foodOptions').value = '';
+            document.getElementById('foodResultValue').textContent = '';
+            document.querySelectorAll('.common-food-item').forEach(item => {
+                item.classList.remove('selected-food');
+            });
+        });
+        
+        document.getElementById('clearDecisionBtn').addEventListener('click', function() {
+            document.getElementById('decisionQuestion').value = '';
+            document.getElementById('decisionOptions').value = '';
+            document.getElementById('decisionResultValue').textContent = '';
+        });
+        
+        // 标签切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // 移除所有active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 添加active类到当前标签和内容
+                this.classList.add('active');
+                document.getElementById(tabId + '-tab').classList.add('active');
+            });
+        });
+        
+        // 初始化常见食物列表
+        generateCommonFoodList();
+        
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: scale(0.9); }
+                to { opacity: 1; transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

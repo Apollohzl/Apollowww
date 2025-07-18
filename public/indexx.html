@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小黄の数字宇宙工作室-全能工具箱</title>
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <script src="https://cmp.gatekeeperconsent.com/min.js" data-cfasync="false"></script>
+    <script src="https://the.gatekeeperconsent.com/cmp.min.js" data-cfasync="false"></script>
+    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
+    <script>
+        window.ezstandalone = window.ezstandalone || {};
+        ezstandalone.cmd = ezstandalone.cmd || [];
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* 新增的登录按钮样式 */
+        .login-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            z-index: 10;
+        }
+        
+        .login-btn:hover {
+            background: #2980b9;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .slogan {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .media-container {
+            max-width: 800px;
+            height: 450px;
+            margin: 0 auto 30px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: #000;
+        }
+        
+        #mediaDisplay {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .text {
+            opacity: 1;
+            will-change: auto;
+            transform: none;
+            text-shadow: skyblue 2px 2px 1px;
+            text-align: center;
+            position: relative; /* 使 cursor 和 bottom-text 相对其定位 */
+        }
+
+        .main-content {
+            flex: 3;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: 135px; 
+            overflow: auto;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 30px auto;
+            position: relative;
+        }
+        
+        #searchInput {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        #searchInput:focus {
+            border-color: #3498db;
+            box-shadow: 0 2px 15px rgba(52, 152, 219, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+        
+        .tools-count {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-icon {
+            font-size: 24px;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .tool-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .tool-desc {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1 / -1;
+            color: #7f8c8d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .media-container {
+                height: 300px;
+            }
+            
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .tool-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 新增的登录按钮 -->
+        <button class="login-btn" id="loginBtn">登录</button>
+        
+        <header>
+            <div class="logo">全能工具箱</div>
+            <div class="slogan">一站式在线工具集合</div>
+            <div class="slogan">小小作者没钱买服务器，求捐一下吧~</div>
+            
+            
+            <div class="media-container"  oncontextmenu="return false;">
+                <video id="mediaDisplay" autoplay muted>
+                    <source src="1.mp4" type="video/mp4">
+                    您的浏览器不支持视频播放
+                </video>
+            </div>
+            <div class="main-content">
+                <p  class="text" id="get_text">...</p>
+                <p  class="text" id="get_from">--.....</p>
+            </div>
+            
+        </header>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索工具...">
+            <div class="search-icon">🔍</div>
+        </div>
+        
+        <div class="tools-count" id="toolsCount">共 n 个工具</div>
+        
+        <div class="tools-grid" id="toolsContainer">
+            <!-- 工具卡片将通过JavaScript动态生成 -->
+        </div>
+        
+        <footer>
+            <p>© 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+            <p><a href="beian.html">粤ICP备52018458号-6</a></p>
+        </footer>
+    </div>
+    <script src="/tool/index.min.js"></script>
+    <script>
+      
+        const countElement = document.getElementById('toolsCount');
+
+        // 初始化工具列表
+        function renderTools(toolsToRender,tools1ToRender) {
+            const container = document.getElementById('toolsContainer');
+            
+            container.innerHTML = '';
+            
+            if (toolsToRender.length === 0 && tools1ToRender.length === 0) {
+                container.innerHTML = '<div class="no-results">没有找到匹配的工具</div>';
+                countElement.textContent = '没有找到工具';
+                return;
+            }
+            
+            toolsToRender.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.innerHTML = `
+                    <div class="tool-icon">${tool.icon}</div>
+                    <div class="tool-name">${tool.name}</div>
+                    <div class="tool-desc">${tool.desc}</div>
+                `;
+                
+                // 添加点击事件，跳转到对应工具页面
+                toolCard.addEventListener('click', () => {
+                    window.location.href = tool.path;
+                });
+                
+                container.appendChild(toolCard);
+            });
+            tools1ToRender.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.innerHTML = `
+                    <img class="tool-icon" src="${tool.img}" title="${tool.name}图标" style="width: 29px;height: 29px"></img>
+                    <div class="tool-name">${tool.name}-<a href="toolwa.com">toolwa.com</a></div>
+                    <div class="tool-desc">${tool.desc}</div>
+                `;
+                
+                // 添加点击事件，跳转到对应工具页面
+                toolCard.addEventListener('click', () => {
+                    window.location.href = tool.path;
+                });
+                
+                container.appendChild(toolCard);
+            });
+            
+            countElement.textContent = `共 ${toolsToRender.length+tools1ToRender.length} 个工具`;
+        }
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                renderTools(tools,tools1);
+                return;
+            }
+            
+            const filteredTools = tools.filter(tool => {
+                return tool.name.toLowerCase().includes(searchTerm) || 
+                       tool.desc.toLowerCase().includes(searchTerm) ||
+                       tool.tags.toLowerCase().includes(searchTerm);
+            });
+            const filteredTools1 = tools1.filter(tool => {
+                return tool.name.toLowerCase().includes(searchTerm) || 
+                       tool.desc.toLowerCase().includes(searchTerm) ||
+                       tool.tags.toLowerCase().includes(searchTerm);
+            });
+            
+            renderTools(filteredTools,filteredTools1);
+        });
+
+        // 视频播放结束后切换为图片
+        document.addEventListener('DOMContentLoaded', function() {
+            const mediaDisplay = document.getElementById('mediaDisplay');
+            
+            mediaDisplay.addEventListener('ended', function() {
+                // 视频播放结束后，创建并替换为图片元素
+                const img = document.createElement('img');
+                img.id = 'mediaDisplay';
+                img.src = '1.jpg';
+                img.alt = 'logo';
+                
+                // 替换视频元素为图片元素
+                mediaDisplay.parentNode.replaceChild(img, mediaDisplay);
+            });
+            
+            // 如果视频加载失败，直接显示图片
+            mediaDisplay.addEventListener('error', function() {
+                const img = document.createElement('img');
+                img.id = 'mediaDisplay';
+                img.src = '1.jpg';
+                img.alt = 'logo';
+                
+                mediaDisplay.parentNode.replaceChild(img, mediaDisplay);
+            });
+            
+            // 登录按钮点击事件
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                window.location.href = 'index1.html';
+            });
+        });
+
+        // 初始渲染
+        renderTools(tools,tools1);
+    </script>
+    <script>
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function fetchHitokoto() {
+            while(true){
+                try {
+                    const response = await fetch('https://international.v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=e&c=f&c=g&c=h&c=i&c=j&c=k&c=l');
+                    const data = await response.json();
+                    const hitokoto = data.hitokoto;
+                    const from = "--《" + data.from + "》";
+                    document.getElementById("get_from").textContent = '';
+                    document.getElementById("get_text").textContent = '';
+                    const get_text = document.getElementById('get_text');
+                    await toput(hitokoto, get_text);  
+                    document.getElementById("get_from").textContent = from;
+                    await waittext(hitokoto,20,get_text); 
+                    
+                    document.getElementById("get_from").textContent = '';
+                    await reput(hitokoto,get_text);
+                    
+                    await waittext("",23,get_text);
+                    document.getElementById("get_text").textContent ='';
+                } catch (error) {
+                    document.getElementById("get_from").textContent ='...';
+                    document.getElementById("get_text").textContent ='...';
+                    await wait(10000);
+                }
+            }
+        }
+
+        async function toput(text, element) {
+            for (let i = 0; i < text.length; i++) {
+                if (i%2==0){
+                    element.textContent = text.slice(0, i + 1)+"|"; // 显示到当前字符
+                    await wait(150); 
+                }else{
+                    element.textContent = text.slice(0, i + 1)+""; // 显示到当前字符
+                    await wait(150); 
+                }
+                
+            }
+        }
+        async function waittext(text,ci,element,waittime=190){
+            for (let i=0;i<ci;i++){
+                element.textContent = text+"|";
+                await wait(waittime);
+                element.textContent = text;
+                await wait(waittime);
+            }
+        }
+        async function reput(text, element) {
+            for (let i = text.length; i >0; i--) {
+                element.textContent = text.slice(0, i-1)+"|"; // 显示到当前字符
+                await wait(100); 
+            }
+        }
+        fetchHitokoto();
+        
+    </script>
+<script>
+    // 计算运行时间并每秒更新
+    function updateUptime() {
+        // 设置起始时间 (2024年12月27日 18:45:00)
+        const startDate = new Date('2024-12-27T18:45:00');
+        const now = new Date();
+        
+        // 计算时间差（毫秒）
+        const diff = now - startDate;
+        
+        // 计算天数
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        
+        // 计算剩余时间
+        let remaining = diff % (1000 * 60 * 60 * 24);
+        
+        // 计算小时
+        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        remaining = remaining % (1000 * 60 * 60);
+        
+        // 计算分钟
+        const minutes = Math.floor(remaining / (1000 * 60));
+        remaining = remaining % (1000 * 60);
+        
+        // 计算秒数
+        const seconds = Math.floor(remaining / 1000);
+        
+        // 更新DOM
+        const uptimeElement = document.getElementById('uptime');
+        if (uptimeElement) {
+            uptimeElement.textContent = `hzl.ken520.top已安全运行${days}天${hours}小时${minutes}分${seconds}秒`;
+        }
+    }
+    
+    // 页面加载后立即执行一次，然后每秒更新
+    document.addEventListener('DOMContentLoaded', function() {
+        // 创建uptime元素并添加到footer
+        const footer = document.querySelector('footer');
+        const uptimeElement = document.createElement('p');
+        uptimeElement.id = 'uptime';
+        footer.insertBefore(uptimeElement, footer.firstChild);
+        
+        // 初始更新
+        updateUptime();
+        
+        // 设置定时器每秒更新
+        setInterval(updateUptime, 1000);
+    });
+</script>
+</body>
+</html>

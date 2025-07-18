@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>用户注册</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="container">
+        <h1>用户注册</h1>
+        <form id="registerForm">
+            <div>
+                <label for="username">用户名:</label>
+                <input type="text" id="username" required>
+            </div>
+            <div>
+                <label for="password">密码:</label>
+                <input type="password" id="password" required>
+            </div>
+            <div>
+                <label for="email">邮箱(可选):</label>
+                <input type="email" id="email">
+            </div>
+            <button type="submit">注册</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <!-- 引入 LeanCloud SDK -->
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+    <script>
+        // 初始化 LeanCloud SDK
+        AV.init({
+            appId: 'XNHZIbsBW0FcZW7qwYTC6AWn-MdYXbMMI',          // 替换为你的 App ID
+            appKey: 'TADJ0WerH7mHPzvzqvHPWEX9'      // 替换为你的 App Key
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            // 创建用户对象
+            const user = new AV.User();
+            user.setUsername(username);
+            user.setPassword(password);
+            
+            // 可选：设置邮箱
+            if (email) {
+                user.setEmail(email);
+            }
+            
+            // 注册用户
+            user.signUp().then(function(loggedInUser) {
+                // 注册成功
+                showMessage('注册成功！用户ID: ' + loggedInUser.id, 'success');
+                
+                // 可以在这里跳转到登录页面或其他页面
+                // window.location.href = 'login.html';
+            }).catch(function(error) {
+                // 注册失败
+                let errorMsg = '注册失败: ';
+                switch(error.code) {
+                    case 202:
+                        errorMsg += '用户名已被占用';
+                        break;
+                    case 203:
+                        errorMsg += '电子邮箱地址已被占用';
+                        break;
+                    case 217:
+                        errorMsg += '用户名不能为空';
+                        break;
+                    case 218:
+                        errorMsg += '密码不能为空';
+                        break;
+                    default:
+                        errorMsg += error.message;
+                }
+                showMessage(errorMsg, 'error');
+            });
+        });
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = type; // 可以添加CSS样式
+        }
+    </script>
+</body>
+</html>

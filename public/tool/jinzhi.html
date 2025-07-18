@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进制转换工具 - 全能工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 30px 0;
+            color: #2c3e50;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .converter-section, .operations-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .bit-operations {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .bit-btn {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .ascii-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .ascii-table th, .ascii-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .ascii-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .ascii-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            grid-column: 1 / -1;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            grid-column: 1 / -1;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+            background: #f1f1f1;
+        }
+        
+        .tab.active {
+            background: white;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            grid-column: 1 / -1;
+        }
+        
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container, 
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tab {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🔢 进制转换工具</h1>
+    
+    <div class="main-container">
+        <div class="tabs">
+            <div class="tab active" data-tab="converter">进制转换</div>
+            <div class="tab" data-tab="operations">位运算</div>
+            <div class="tab" data-tab="ascii">ASCII码表</div>
+            <div class="tab" data-tab="floating">浮点数</div>
+        </div>
+        
+        <div class="tab-content active" id="converter-tab">
+            <div class="converter-section">
+                <h2>进制转换</h2>
+                
+                <div class="input-group">
+                    <label for="inputValue">输入值</label>
+                    <input type="text" id="inputValue" placeholder="输入要转换的数字">
+                </div>
+                
+                <div class="input-group">
+                    <label for="fromBase">从</label>
+                    <select id="fromBase">
+                        <option value="2">二进制 (2)</option>
+                        <option value="8">八进制 (8)</option>
+                        <option value="10" selected>十进制 (10)</option>
+                        <option value="16">十六进制 (16)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="toBase">转换为</label>
+                    <select id="toBase">
+                        <option value="2">二进制 (2)</option>
+                        <option value="8">八进制 (8)</option>
+                        <option value="10">十进制 (10)</option>
+                        <option value="16" selected>十六进制 (16)</option>
+                    </select>
+                </div>
+                
+                <button id="convertBtn">转换</button>
+                <button class="clear-btn" id="clearConverterBtn">清空</button>
+                
+                <div class="result" id="conversionResult">
+                    <strong>结果:</strong> <span id="resultValue"></span>
+                </div>
+            </div>
+            
+            <div class="converter-section">
+                <h2>批量转换</h2>
+                
+                <div class="input-group">
+                    <label for="batchInput">输入多个数字（每行一个）</label>
+                    <textarea id="batchInput" rows="5" placeholder="每行输入一个数字"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="batchFromBase">从</label>
+                    <select id="batchFromBase">
+                        <option value="2">二进制 (2)</option>
+                        <option value="8">八进制 (8)</option>
+                        <option value="10" selected>十进制 (10)</option>
+                        <option value="16">十六进制 (16)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="batchToBase">转换为</label>
+                    <select id="batchToBase">
+                        <option value="2">二进制 (2)</option>
+                        <option value="8">八进制 (8)</option>
+                        <option value="10">十进制 (10)</option>
+                        <option value="16" selected>十六进制 (16)</option>
+                    </select>
+                </div>
+                
+                <button id="batchConvertBtn">批量转换</button>
+                <button class="clear-btn" id="clearBatchBtn">清空</button>
+                
+                <div class="result">
+                    <strong>结果:</strong>
+                    <textarea id="batchResult" rows="5" readonly></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="operations-tab">
+            <div class="operations-section">
+                <h2>位运算</h2>
+                
+                <div class="input-group">
+                    <label for="bitValue1">第一个数值</label>
+                    <input type="text" id="bitValue1" placeholder="输入第一个数字">
+                </div>
+                
+                <div class="input-group">
+                    <label for="bitBase1">进制</label>
+                    <select id="bitBase1">
+                        <option value="2">二进制 (2)</option>
+                        <option value="8">八进制 (8)</option>
+                        <option value="10" selected>十进制 (10)</option>
+                        <option value="16">十六进制 (16)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="bitValue2">第二个数值（可选）</label>
+                    <input type="text" id="bitValue2" placeholder="输入第二个数字（用于二元运算）">
+                </div>
+                
+                <div class="input-group">
+                    <label for="bitBase2">进制</label>
+                    <select id="bitBase2">
+                        <option value="2">二进制 (2)</option>
+                        <option value="8">八进制 (8)</option>
+                        <option value="10" selected>十进制 (10)</option>
+                        <option value="16">十六进制 (16)</option>
+                    </select>
+                </div>
+                
+                <div class="bit-operations">
+                    <button class="bit-btn" data-op="not">NOT (~)</button>
+                    <button class="bit-btn" data-op="and">AND (&)</button>
+                    <button class="bit-btn" data-op="or">OR (|)</button>
+                    <button class="bit-btn" data-op="xor">XOR (^)</button>
+                    <button class="bit-btn" data-op="leftShift">左移 (&lt;&lt;)</button>
+                    <button class="bit-btn" data-op="rightShift">右移 (&gt;&gt;)</button>
+                    <button class="bit-btn" data-op="zeroRightShift">无符号右移 (&gt;&gt;&gt;)</button>
+                </div>
+                
+                <div class="result" id="bitResult">
+                    <strong>结果:</strong> <span id="bitResultValue"></span>
+                </div>
+            </div>
+            
+            <div class="operations-section">
+                <h2>位运算说明</h2>
+                <div class="result">
+                    <h3>位运算符说明：</h3>
+                    <p><strong>NOT (~)</strong>: 按位取反，0变1，1变0</p>
+                    <p><strong>AND (&)</strong>: 两个操作数的对应位都为1时，结果位才为1</p>
+                    <p><strong>OR (|)</strong>: 两个操作数的对应位有一个为1时，结果位就为1</p>
+                    <p><strong>XOR (^)</strong>: 两个操作数的对应位不同时，结果位为1</p>
+                    <p><strong>左移 (&lt;&lt;)</strong>: 将第一个操作数的二进制表示向左移动指定位数，右边补0</p>
+                    <p><strong>右移 (&gt;&gt;)</strong>: 将第一个操作数的二进制表示向右移动指定位数，左边补符号位</p>
+                    <p><strong>无符号右移 (&gt;&gt;&gt;)</strong>: 将第一个操作数的二进制表示向右移动指定位数，左边补0</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="ascii-tab">
+            <div class="operations-section full-width">
+                <h2>ASCII码表</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <div class="input-group">
+                            <label for="asciiInput">输入字符查找ASCII码</label>
+                            <input type="text" id="asciiInput" placeholder="输入字符">
+                            <button id="findAsciiBtn">查找</button>
+                        </div>
+                        
+                        <div class="result" id="asciiResult">
+                            <strong>结果:</strong> <span id="asciiResultValue"></span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="asciiCodeInput">输入ASCII码查找字符</label>
+                            <input type="text" id="asciiCodeInput" placeholder="输入ASCII码（十进制）">
+                            <button id="findCharBtn">查找</button>
+                        </div>
+                        
+                        <div class="result" id="charResult">
+                            <strong>结果:</strong> <span id="charResultValue"></span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3>控制字符 (0-31)</h3>
+                        <table class="ascii-table">
+                            <thead>
+                                <tr>
+                                    <th>十进制</th>
+                                    <th>十六进制</th>
+                                    <th>缩写</th>
+                                    <th>描述</th>
+                                </tr>
+                            </thead>
+                            <tbody id="asciiControlTableBody">
+                                <!-- 控制字符表格内容将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 20px;">可打印字符 (32-127)</h3>
+                <table class="ascii-table">
+                    <thead>
+                        <tr>
+                            <th>十进制</th>
+                            <th>十六进制</th>
+                            <th>字符</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asciiTableBody">
+                        <!-- ASCII表内容将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="floating-tab">
+            <div class="operations-section">
+                <h2>IEEE 754浮点数转换</h2>
+                
+                <div class="input-group">
+                    <label for="floatInput">输入浮点数</label>
+                    <input type="text" id="floatInput" placeholder="输入十进制浮点数">
+                </div>
+                
+                <div class="input-group">
+                    <label for="floatType">浮点类型</label>
+                    <select id="floatType">
+                        <option value="32">单精度 (32位)</option>
+                        <option value="64" selected>双精度 (64位)</option>
+                    </select>
+                </div>
+                
+                <button id="convertFloatBtn">转换为二进制</button>
+                
+                <div class="result" id="floatResult">
+                    <strong>IEEE 754表示:</strong> <span id="floatResultValue"></span>
+                </div>
+            </div>
+            
+            <div class="operations-section">
+                <h2>从二进制转换</h2>
+                
+                <div class="input-group">
+                    <label for="binaryFloatInput">输入IEEE 754二进制</label>
+                    <input type="text" id="binaryFloatInput" placeholder="输入二进制表示">
+                </div>
+                
+                <div class="input-group">
+                    <label for="binaryFloatType">浮点类型</label>
+                    <select id="binaryFloatType">
+                        <option value="32">单精度 (32位)</option>
+                        <option value="64" selected>双精度 (64位)</option>
+                    </select>
+                </div>
+                
+                <button id="convertBinaryFloatBtn">转换为浮点数</button>
+                
+                <div class="result" id="binaryFloatResult">
+                    <strong>十进制值:</strong> <span id="binaryFloatResultValue"></span>
+                </div>
+                
+                <div class="result" style="margin-top: 20px;">
+                    <h3>IEEE 754浮点数格式说明</h3>
+                    <p><strong>单精度 (32位):</strong></p>
+                    <p>1位符号位 | 8位指数位 | 23位尾数位</p>
+                    <p><strong>双精度 (64位):</strong></p>
+                    <p>1位符号位 | 11位指数位 | 52位尾数位</p>
+                    <p>指数使用偏移表示法（单精度偏移127，双精度偏移1023）</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+        </footer>
+    </div>
+
+    <script>
+        // 进制转换功能
+        document.getElementById('convertBtn').addEventListener('click', function() {
+            const inputValue = document.getElementById('inputValue').value.trim();
+            const fromBase = parseInt(document.getElementById('fromBase').value);
+            const toBase = parseInt(document.getElementById('toBase').value);
+            
+            if (!inputValue) {
+                alert('请输入要转换的数字');
+                return;
+            }
+            
+            try {
+                // 先转换为十进制
+                let decimalValue;
+                if (fromBase === 10) {
+                    decimalValue = parseFloat(inputValue);
+                } else {
+                    decimalValue = parseInt(inputValue, fromBase);
+                }
+                
+                // 从十进制转换为目标进制
+                let result;
+                if (toBase === 10) {
+                    result = decimalValue.toString();
+                } else if (toBase === 2) {
+                    result = decimalValue.toString(2);
+                } else if (toBase === 8) {
+                    result = decimalValue.toString(8);
+                } else if (toBase === 16) {
+                    result = decimalValue.toString(16).toUpperCase();
+                }
+                
+                document.getElementById('resultValue').textContent = result;
+            } catch (e) {
+                alert('转换失败: ' + e.message);
+            }
+        });
+        
+        // 批量转换功能
+        document.getElementById('batchConvertBtn').addEventListener('click', function() {
+            const batchInput = document.getElementById('batchInput').value.trim();
+            const fromBase = parseInt(document.getElementById('batchFromBase').value);
+            const toBase = parseInt(document.getElementById('batchToBase').value);
+            
+            if (!batchInput) {
+                alert('请输入要转换的数字');
+                return;
+            }
+            
+            const lines = batchInput.split('\n');
+            let results = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                try {
+                    // 先转换为十进制
+                    let decimalValue;
+                    if (fromBase === 10) {
+                        decimalValue = parseFloat(line);
+                    } else {
+                        decimalValue = parseInt(line, fromBase);
+                    }
+                    
+                    // 从十进制转换为目标进制
+                    let result;
+                    if (toBase === 10) {
+                        result = decimalValue.toString();
+                    } else if (toBase === 2) {
+                        result = decimalValue.toString(2);
+                    } else if (toBase === 8) {
+                        result = decimalValue.toString(8);
+                    } else if (toBase === 16) {
+                        result = decimalValue.toString(16).toUpperCase();
+                    }
+                    
+                    results.push(result);
+                } catch (e) {
+                    results.push('错误: ' + e.message);
+                }
+            }
+            
+            document.getElementById('batchResult').value = results.join('\n');
+        });
+        
+        // 位运算功能
+        document.querySelectorAll('.bit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const op = this.getAttribute('data-op');
+                const value1 = document.getElementById('bitValue1').value.trim();
+                const base1 = parseInt(document.getElementById('bitBase1').value);
+                const value2 = document.getElementById('bitValue2').value.trim();
+                const base2 = parseInt(document.getElementById('bitBase2').value);
+                
+                if (!value1) {
+                    alert('请输入第一个数字');
+                    return;
+                }
+                
+                try {
+                    // 转换为十进制
+                    let num1 = base1 === 10 ? parseInt(value1) : parseInt(value1, base1);
+                    
+                    let result;
+                    let operation = '';
+                    
+                    switch (op) {
+                        case 'not':
+                            result = ~num1;
+                            operation = `~${num1}`;
+                            break;
+                        case 'and':
+                            if (!value2) {
+                                alert('请输入第二个数字');
+                                return;
+                            }
+                            let num2 = base2 === 10 ? parseInt(value2) : parseInt(value2, base2);
+                            result = num1 & num2;
+                            operation = `${num1} & ${num2}`;
+                            break;
+                        case 'or':
+                            if (!value2) {
+                                alert('请输入第二个数字');
+                                return;
+                            }
+                            num2 = base2 === 10 ? parseInt(value2) : parseInt(value2, base2);
+                            result = num1 | num2;
+                            operation = `${num1} | ${num2}`;
+                            break;
+                        case 'xor':
+                            if (!value2) {
+                                alert('请输入第二个数字');
+                                return;
+                            }
+                            num2 = base2 === 10 ? parseInt(value2) : parseInt(value2, base2);
+                            result = num1 ^ num2;
+                            operation = `${num1} ^ ${num2}`;
+                            break;
+                        case 'leftShift':
+                            if (!value2) {
+                                alert('请输入位移位数');
+                                return;
+                            }
+                            num2 = base2 === 10 ? parseInt(value2) : parseInt(value2, base2);
+                            result = num1 << num2;
+                            operation = `${num1} << ${num2}`;
+                            break;
+                        case 'rightShift':
+                            if (!value2) {
+                                alert('请输入位移位数');
+                                return;
+                            }
+                            num2 = base2 === 10 ? parseInt(value2) : parseInt(value2, base2);
+                            result = num1 >> num2;
+                            operation = `${num1} >> ${num2}`;
+                            break;
+                        case 'zeroRightShift':
+                            if (!value2) {
+                                alert('请输入位移位数');
+                                return;
+                            }
+                            num2 = base2 === 10 ? parseInt(value2) : parseInt(value2, base2);
+                            result = num1 >>> num2;
+                            operation = `${num1} >>> ${num2}`;
+                            break;
+                    }
+                    
+                    // 显示结果
+                    const resultText = `运算: ${operation}
+十进制: ${result}
+十六进制: 0x${result.toString(16).toUpperCase()}
+八进制: 0${result.toString(8)}
+二进制: 0b${result.toString(2)}`;
+                    
+                    document.getElementById('bitResultValue').innerHTML = resultText.replace(/\n/g, '<br>');
+                } catch (e) {
+                    alert('计算失败: ' + e.message);
+                }
+            });
+        });
+        
+        // ASCII码表功能
+        function generateAsciiTable() {
+            const tableBody = document.getElementById('asciiTableBody');
+            const controlTableBody = document.getElementById('asciiControlTableBody');
+            tableBody.innerHTML = '';
+            controlTableBody.innerHTML = '';
+            
+            // ASCII控制字符描述
+            const controlChars = [
+                "空字符", "标题开始", "正文开始", "正文结束", "传输结束", "查询", "确认", "响铃",
+                "退格", "水平制表", "换行", "垂直制表", "换页", "回车", "移出", "移入",
+                "数据链路转义", "设备控制1", "设备控制2", "设备控制3", "设备控制4", "拒绝应答", "同步空闲", "传输块结束",
+                "取消", "媒体结束", "替换", "转义", "文件分隔符", "组分隔符", "记录分隔符", "单元分隔符"
+            ];
+            
+            // 生成控制字符表格 (0-31)
+            for (let i = 0; i <= 31; i++) {
+                const row = document.createElement('tr');
+                
+                const decCell = document.createElement('td');
+                decCell.textContent = i;
+                row.appendChild(decCell);
+                
+                const hexCell = document.createElement('td');
+                hexCell.textContent = '0x' + i.toString(16).toUpperCase().padStart(2, '0');
+                row.appendChild(hexCell);
+                
+                const charCell = document.createElement('td');
+                charCell.textContent = '^' + String.fromCharCode(i + 64);
+                row.appendChild(charCell);
+                
+                const descCell = document.createElement('td');
+                descCell.textContent = controlChars[i] || '-';
+                row.appendChild(descCell);
+                
+                controlTableBody.appendChild(row);
+            }
+            
+            // 生成可打印ASCII字符 (32-126)
+            for (let i = 32; i <= 126; i++) {
+                const row = document.createElement('tr');
+                
+                const decCell = document.createElement('td');
+                decCell.textContent = i;
+                row.appendChild(decCell);
+                
+                const hexCell = document.createElement('td');
+                hexCell.textContent = '0x' + i.toString(16).toUpperCase();
+                row.appendChild(hexCell);
+                
+                const charCell = document.createElement('td');
+                charCell.textContent = String.fromCharCode(i);
+                row.appendChild(charCell);
+                
+                const descCell = document.createElement('td');
+                // 添加一些常见字符的描述
+                if (i === 32) descCell.textContent = '空格';
+                else if (i === 33) descCell.textContent = '感叹号';
+                else if (i === 34) descCell.textContent = '双引号';
+                else if (i === 35) descCell.textContent = '井号';
+                else if (i === 36) descCell.textContent = '美元符号';
+                else if (i === 37) descCell.textContent = '百分号';
+                else if (i === 38) descCell.textContent = '和号';
+                else if (i === 39) descCell.textContent = '单引号';
+                else if (i === 40) descCell.textContent = '左括号';
+                else if (i === 41) descCell.textContent = '右括号';
+                else if (i === 42) descCell.textContent = '星号';
+                else if (i === 43) descCell.textContent = '加号';
+                else if (i === 44) descCell.textContent = '逗号';
+                else if (i === 45) descCell.textContent = '连字符';
+                else if (i === 46) descCell.textContent = '句点';
+                else if (i === 47) descCell.textContent = '斜杠';
+                else if (i >= 48 && i <= 57) descCell.textContent = '数字 ' + String.fromCharCode(i);
+                else if (i === 58) descCell.textContent = '冒号';
+                else if (i === 59) descCell.textContent = '分号';
+                else if (i === 60) descCell.textContent = '小于号';
+                else if (i === 61) descCell.textContent = '等号';
+                else if (i === 62) descCell.textContent = '大于号';
+                else if (i === 63) descCell.textContent = '问号';
+                else if (i === 64) descCell.textContent = 'At符号';
+                else if (i >= 65 && i <= 90) descCell.textContent = '大写字母 ' + String.fromCharCode(i);
+                else if (i === 91) descCell.textContent = '左方括号';
+                else if (i === 92) descCell.textContent = '反斜杠';
+                else if (i === 93) descCell.textContent = '右方括号';
+                else if (i === 94) descCell.textContent = '脱字符';
+                else if (i === 95) descCell.textContent = '下划线';
+                else if (i === 96) descCell.textContent = '反引号';
+                else if (i >= 97 && i <= 122) descCell.textContent = '小写字母 ' + String.fromCharCode(i);
+                else if (i === 123) descCell.textContent = '左花括号';
+                else if (i === 124) descCell.textContent = '竖线';
+                else if (i === 125) descCell.textContent = '右花括号';
+                else if (i === 126) descCell.textContent = '波浪号';
+                else descCell.textContent = '-';
+                
+                row.appendChild(descCell);
+                
+                tableBody.appendChild(row);
+            }
+            
+            // 添加DEL字符 (127)
+            const delRow = document.createElement('tr');
+            delRow.innerHTML = `
+                <td>127</td>
+                <td>0x7F</td>
+                <td>DEL</td>
+                <td>删除字符</td>
+            `;
+            tableBody.appendChild(delRow);
+        }
+        
+        // 查找ASCII码
+        document.getElementById('findAsciiBtn').addEventListener('click', function() {
+            const input = document.getElementById('asciiInput').value.trim();
+            if (!input || input.length === 0) {
+                alert('请输入要查找的字符');
+                return;
+            }
+            
+            const char = input[0];
+            const code = char.charCodeAt(0);
+            
+            document.getElementById('asciiResultValue').textContent = 
+                `字符: "${char}", ASCII码: ${code} (十进制), 0x${code.toString(16).toUpperCase()} (十六进制)`;
+        });
+        
+        // 查找字符
+        document.getElementById('findCharBtn').addEventListener('click', function() {
+            const input = document.getElementById('asciiCodeInput').value.trim();
+            if (!input) {
+                alert('请输入ASCII码');
+                return;
+            }
+            
+            const code = parseInt(input);
+            if (isNaN(code) || code < 0 || code > 127) {
+                alert('请输入0-127之间的有效ASCII码');
+                return;
+            }
+            
+            const char = code === 127 ? 'DEL' : String.fromCharCode(code);
+            
+            document.getElementById('charResultValue').textContent = 
+                `ASCII码: ${code}, 字符: "${char}"`;
+        });
+        
+        // IEEE 754浮点数转换
+        document.getElementById('convertFloatBtn').addEventListener('click', function() {
+            const input = document.getElementById('floatInput').value.trim();
+            const floatType = document.getElementById('floatType').value;
+            
+            if (!input) {
+                alert('请输入浮点数');
+                return;
+            }
+            
+            try {
+                const num = parseFloat(input);
+                let binaryStr;
+                
+                if (floatType === '32') {
+                    // 单精度浮点数
+                    const buffer = new ArrayBuffer(4);
+                    const view = new DataView(buffer);
+                    view.setFloat32(0, num, false); // false表示大端字节序
+                    const uint32 = view.getUint32(0, false);
+                    binaryStr = uint32.toString(2).padStart(32, '0');
+                    
+                    // 格式化为符号位+指数位+尾数位
+                    const sign = binaryStr[0];
+                    const exponent = binaryStr.substr(1, 8);
+                    const mantissa = binaryStr.substr(9);
+                    
+                    document.getElementById('floatResultValue').textContent = 
+                        `${sign} ${exponent} ${mantissa} (符号位 指数位 尾数位)`;
+                } else {
+                    // 双精度浮点数
+                    const buffer = new ArrayBuffer(8);
+                    const view = new DataView(buffer);
+                    view.setFloat64(0, num, false); // false表示大端字节序
+                    
+                    // 获取高低32位
+                    const high32 = view.getUint32(0, false);
+                    const low32 = view.getUint32(4, false);
+                    
+                    // 合并为64位二进制字符串
+                    const highStr = high32.toString(2).padStart(32, '0');
+                    const lowStr = low32.toString(2).padStart(32, '0');
+                    binaryStr = highStr + lowStr;
+                    
+                    // 格式化为符号位+指数位+尾数位
+                    const sign = binaryStr[0];
+                    const exponent = binaryStr.substr(1, 11);
+                    const mantissa = binaryStr.substr(12);
+                    
+                    document.getElementById('floatResultValue').textContent = 
+                        `${sign} ${exponent} ${mantissa} (符号位 指数位 尾数位)`;
+                }
+            } catch (e) {
+                alert('转换失败: ' + e.message);
+            }
+        });
+        
+        // 从IEEE 754二进制转换为浮点数
+        document.getElementById('convertBinaryFloatBtn').addEventListener('click', function() {
+            const input = document.getElementById('binaryFloatInput').value.trim();
+            const floatType = document.getElementById('binaryFloatType').value;
+            
+            if (!input) {
+                alert('请输入二进制表示');
+                return;
+            }
+            
+            try {
+                // 移除所有空格
+                const binaryStr = input.replace(/\s+/g, '');
+                
+                if (floatType === '32' && binaryStr.length !== 32) {
+                    alert('单精度浮点数需要32位二进制');
+                    return;
+                }
+                
+                if (floatType === '64' && binaryStr.length !== 64) {
+                    alert('双精度浮点数需要64位二进制');
+                    return;
+                }
+                
+                let num;
+                
+                if (floatType === '32') {
+                    // 单精度
+                    const buffer = new ArrayBuffer(4);
+                    const view = new DataView(buffer);
+                    const uint32 = parseInt(binaryStr, 2);
+                    view.setUint32(0, uint32, false);
+                    num = view.getFloat32(0, false);
+                } else {
+                    // 双精度
+                    const buffer = new ArrayBuffer(8);
+                    const view = new DataView(buffer);
+                    
+                    // 分为高低32位
+                    const high32 = parseInt(binaryStr.substr(0, 32), 2);
+                    const low32 = parseInt(binaryStr.substr(32), 2);
+                    
+                    view.setUint32(0, high32, false);
+                    view.setUint32(4, low32, false);
+                    num = view.getFloat64(0, false);
+                }
+                
+                document.getElementById('binaryFloatResultValue').textContent = num;
+            } catch (e) {
+                alert('转换失败: ' + e.message);
+            }
+        });
+        
+        // 清空按钮功能
+        document.getElementById('clearConverterBtn').addEventListener('click', function() {
+            document.getElementById('inputValue').value = '';
+            document.getElementById('resultValue').textContent = '';
+        });
+        
+        document.getElementById('clearBatchBtn').addEventListener('click', function() {
+            document.getElementById('batchInput').value = '';
+            document.getElementById('batchResult').value = '';
+        });
+        
+        // 标签切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // 移除所有active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 添加active类到当前标签和内容
+                this.classList.add('active');
+                document.getElementById(tabId + '-tab').classList.add('active');
+            });
+        });
+        
+        // 初始化ASCII码表
+        generateAsciiTable();
+    </script>
+</body>
+</html>

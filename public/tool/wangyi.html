@@ -14,7 +14,7 @@
     <link rel="mask-icon" type="image/x-icon"
         href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
         color="#111">
-    <title>波点音乐搜索下载器 - 星之阁</title>
+    <title>网易音乐搜索下载器 - 星之阁</title>
     <style>
         * {
             margin: 0;
@@ -240,9 +240,9 @@
     </style>
 </head>
 <body>
-    <h1>🎵 波点音乐搜索下载器 🎵 </h1>
+    <h1>🎵 网易音乐搜索下载器 🎵 </h1>
     <p class="xingzhige" onclick="xingzhige()">星之阁API</p>
-    <p><img src="https://h5s.kuwo.cn/apps/bd-www/logofe3559ed.png" alt="波点音乐图片"></img></p>
+    <p><img src="https://pic3.zhimg.com/80/v2-92d475f7a6938a51f5024fb1114e652a_qhd.jpg" alt="网易音乐图片"></img></p>
     <div class="search-container">
         <div class="search-box">
             <input type="text" class="search-input" id="searchInput" placeholder="输入歌曲名或歌手名..." autocomplete="off">
@@ -332,7 +332,7 @@
     }
     
     function fetchSongData(name, index) {
-        const url = `https://api.xingzhige.com/API/Kuwo_BD_new/?key=hATRmkK3nuzaUuyb-TXIhA76kfmqZwfYA_hR6PbaYG0=&name=${encodeURIComponent(name)}&n=${index}`;
+        const url = `https://api.xingzhige.com/API/NetEase_CloudMusic_new/?key=hATRmkK3nuzaUuyb-TXIhA76kfmqZwfYA_hR6PbaYG0=&name=${encodeURIComponent(name)}&n=${index}`;
         
         return fetch(url)
             .then(response => {

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
+    <title>数字宇宙加载中...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+        
+        .universe {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 4rem;
+            font-weight: bold;
+            font-family: 'Arial', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px #3498db, 
+                         0 0 30px #3498db, 
+                         0 0 45px #3498db;
+            opacity: 0;
+            z-index: 10;
+            background: linear-gradient(90deg, #3498db, #8e44ad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.7));
+        }
+        
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #3498db;
+            border-radius: 50%;
+            box-shadow: 0 0 15px 3px currentColor;
+            opacity: 0;
+            transform-origin: center;
+        }
+        
+        .ring {
+            position: absolute;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+            opacity: 0;
+            transform-origin: center;
+            background: radial-gradient(circle, transparent 60%, rgba(52, 152, 219, 0.2) 100%);
+        }
+        
+        .loading-text {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Arial', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            opacity: 0;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .progress {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #3498db, #8e44ad);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+            transition: width 0.1s linear;
+        }
+        
+        .light-beam {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                                      transparent 0%, 
+                                      rgba(52, 152, 219, 0.8) 30%, 
+                                      transparent 100%);
+            transform-origin: bottom center;
+            opacity: 0;
+        }
+        
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transform-origin: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="universe" id="universe">
+        <div class="center-logo" id="logo">小黄の数字宇宙工作室 LOADING</div>
+        <div class="loading-text" id="loadingText">SYSTEM INITIALIZATION...</div>
+        <div class="progress-container">
+            <div class="progress" id="progress"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script>
+        // 创建背景星空
+        function createStars() {
+            const universe = document.getElementById('universe');
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // 随机大小
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // 随机透明度
+                star.style.opacity = Math.random() * 0.8 + 0.2;
+                
+                universe.appendChild(star);
+                
+                // 闪烁动画
+                gsap.to(star, {
+                    opacity: Math.random() * 0.5,
+                    duration: Math.random() * 3 + 1,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+            }
+        }
+        
+        // 创建粒子
+        function createParticles() {
+            const universe = document.getElementById('universe');
+            const particleCount = 200;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // 随机颜色
+                const hue = Math.floor(Math.random() * 60) + 190; // 蓝色系
+                particle.style.color = `hsl(${hue}, 100%, 50%)`;
+                
+                universe.appendChild(particle);
+            }
+            
+            // 创建光束效果
+            for (let i = 0; i < 12; i++) {
+                const beam = document.createElement('div');
+                beam.className = 'light-beam';
+                beam.style.left = `${50 + Math.cos(i * Math.PI / 6) * 20}%`;
+                beam.style.transform = `rotate(${i * 30}deg)`;
+                universe.appendChild(beam);
+            }
+        }
+        
+        // 创建光环
+        function createRings() {
+            const universe = document.getElementById('universe');
+            
+            for (let i = 0; i < 5; i++) {
+                const ring = document.createElement('div');
+                ring.className = 'ring';
+                const size = 100 + i * 150;
+                ring.style.width = `${size}px`;
+                ring.style.height = `${size}px`;
+                ring.style.borderColor = `hsla(${200 + i * 20}, 100%, 50%, ${0.2 + i * 0.15})`;
+                universe.appendChild(ring);
+            }
+        }
+        
+        // 动画序列
+        function startAnimation() {
+            const logo = document.getElementById('logo');
+            const particles = document.querySelectorAll('.particle');
+            const rings = document.querySelectorAll('.ring');
+            const loadingText = document.getElementById('loadingText');
+            const progress = document.getElementById('progress');
+            const beams = document.querySelectorAll('.light-beam');
+            
+            // 重置进度条
+            progress.style.width = '0';
+            
+            // 时间轴控制
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    // 动画完成后跳转
+                    window.location.href = "indexx.html";
+                }
+            });
+            
+            // 0. 背景星星淡入
+            tl.from('.star', {
+                opacity: 0,
+                duration: 1.5,
+                stagger: 0.01,
+                ease: "power2.out"
+            });
+            
+            // 1. logo出现
+            tl.to(logo, {
+                opacity: 1,
+                scale: 1.5,
+                duration: 1,
+                ease: "power2.out"
+            }, "+=0.5")
+            .to(logo, {
+                scale: 1,
+                duration: 0.8,
+                ease: "elastic.out(1, 0.3)"
+            }, "-=0.5");
+            
+            // 2. 光束效果
+            tl.to(beams, {
+                opacity: 0.6,
+                height: "50%",
+                duration: 1,
+                ease: "power2.out"
+            }, "-=0.5")
+            .to(beams, {
+                height: "100%",
+                duration: 1.5,
+                ease: "power1.inOut"
+            }, "-=0.8");
+            
+            // 3. 粒子和光环动画
+            tl.to(particles, {
+                opacity: 1,
+                scale: 1,
+                duration: 0.8,
+                stagger: 0.005,
+                ease: "power2.out"
+            }, "-=1")
+            .to(particles, {
+                x: () => (Math.random() - 0.5) * window.innerWidth,
+                y: () => (Math.random() - 0.5) * window.innerHeight,
+                duration: 2.5,
+                ease: "power2.out"
+            }, "-=1.5");
+            
+            // 光环动画
+            tl.to(rings, {
+                opacity: 0.7,
+                scale: 1,
+                duration: 2,
+                stagger: 0.2,
+                ease: "elastic.out(1, 0.3)"
+            }, "-=2");
+            
+            // 4. 加载文字和进度条
+            tl.to(loadingText, {
+                opacity: 1,
+                y: -30,
+                duration: 0.8,
+                ease: "back.out"
+            }, "-=1.5")
+            .to(progress, {
+                width: "100%",
+                duration: 3,
+                ease: "none"
+            }, "-=2");
+            
+            // 5. 所有元素向中心收缩
+            tl.to([logo, particles, rings, beams], {
+                scale: 0,
+                opacity: 0,
+                duration: 1.2,
+                ease: "power2.in"
+            }, "+=0.5")
+            .to(loadingText, {
+                opacity: 0,
+                y: 30,
+                duration: 0.8,
+                ease: "power2.in"
+            }, "-=1.2")
+            .to('.star', {
+                opacity: 0,
+                duration: 1,
+                stagger: 0.01,
+                ease: "power2.in"
+            }, "-=1");
+            
+            // 6. 最后闪光效果
+            tl.to(universe, {
+                backgroundColor: "white",
+                duration: 0.2,
+                ease: "power2.out"
+            })
+            .to(universe, {
+                backgroundColor: "black",
+                duration: 0.5,
+                ease: "power2.in"
+            });
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            createParticles();
+            createRings();
+            startAnimation();
+        });
+    </script>
+</body>
+</html>

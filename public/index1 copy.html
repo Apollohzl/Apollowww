@@ -29,64 +29,37 @@
     <!-- 引入 LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <script>
-        // 初始化 LeanCloud SDK
-        AV.init({
-            appId: 'XNHZIbsBW0FcZW7qwYTC6AWn-MdYXbMMI',          // 替换为你的 App ID
-            appKey: 'TADJ0WerH7mHPzvzqvHPWEX9'      // 替换为你的 App Key
+        // // 初始化 LeanCloud SDK
+        // AV.init({
+        //     appId: 'XNHZIbsBW0FcZW7qwYTC6AWn-MdYXbMMI',          // 替换为你的 App ID
+        //     appKey: 'TADJ0WerH7mHPzvzqvHPWEX9'      // 替换为你的 App Key
+        // });
+        var myHeaders = new Headers();
+        myHeaders.append("X-LC-Id", "{XNHZIbsBW0FcZW7qwYTC6AWn-MdYXbMMI}");
+        myHeaders.append("X-LC-Key", "{TADJ0WerH7mHPzvzqvHPWEX9}");
+        myHeaders.append("Content-Type", "application/json");
+
+        const name=document.getElementById("username").value;
+        const password=document.getElementById("password").value;
+
+
+
+        var raw = JSON.stringify({
+        "username": name,
+        "password": password
         });
 
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const email = document.getElementById('email').value;
-            
-            // 创建用户对象
-            const user = new AV.User();
-            user.setUsername(username);
-            user.setPassword(password);
-            
-            // 可选：设置邮箱
-            if (email) {
-                user.setEmail(email);
-            }
-            
-            // 注册用户
-            user.signUp().then(function(loggedInUser) {
-                // 注册成功
-                showMessage('注册成功！用户ID: ' + loggedInUser.id, 'success');
-                
-                // 可以在这里跳转到登录页面或其他页面
-                // window.location.href = 'login.html';
-            }).catch(function(error) {
-                // 注册失败
-                let errorMsg = '注册失败: ';
-                switch(error.code) {
-                    case 202:
-                        errorMsg += '用户名已被占用';
-                        break;
-                    case 203:
-                        errorMsg += '电子邮箱地址已被占用';
-                        break;
-                    case 217:
-                        errorMsg += '用户名不能为空';
-                        break;
-                    case 218:
-                        errorMsg += '密码不能为空';
-                        break;
-                    default:
-                        errorMsg += error.message;
-                }
-                showMessage(errorMsg, 'error');
-            });
-        });
+        var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+        };
 
-        function showMessage(message, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = message;
-            messageDiv.className = type; // 可以添加CSS样式
-        }
+        fetch("/1.1/users", requestOptions)
+        .then(response => response.text())
+        .then(result => console.log(result))
+        .catch(error => console.log('error', error));
     </script>
 </body>
 </html>

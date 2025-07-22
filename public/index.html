@@ -2,6 +2,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小黄の数字宇宙工作室</title>
+  <link rel="preload" href="https://hzlapollo.us.kg/ttf/XiaolaiMonoSC-without-Hangul-Regular.ttf" as="font" crossorigin>
+    <link rel="apple-touch-icon" type="image/png"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <meta name="apple-mobile-web-app-title" content="CodePen">
+
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So">
+
+    <link rel="mask-icon" type="image/x-icon"
+        href="https://static.bcmcdn.com/coco/player/unstable/r158rJpByx.image/jpeg?hash=FtXSHESVlIdg5bOCixyXyh3J65So"
+        color="#111">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
@@ -136,7 +148,7 @@
       
       <!-- 倒计时 -->
       <div id="countdown" class="mt-8 text-white text-xl font-orbitron opacity-0">
-        准备进入 <span id="count" class="text-primary">7</span>
+        准备进入 <span id="count" class="text-primary">3</span>
       </div>
     </div>
   </div>
@@ -384,25 +396,27 @@
       <div class="container mx-auto px-6 relative z-10">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div class="p-6 bg-white/10 backdrop-blur-md rounded-xl transform transition-all duration-300 hover:scale-105 hover:bg-white/20">
-            <div class="text-4xl font-bold mb-2 counter" data-target="7300">0</div>
+            <div class="text-4xl font-bold mb-2 counter" data-target="14745" data-delay="50">0</div>
             <p class="text-white/80">开源工具</p>
           </div>
-          
+
+          <!-- 月活跃用户卡片（78个） -->
           <div class="p-6 bg-white/10 backdrop-blur-md rounded-xl transform transition-all duration-300 hover:scale-105 hover:bg-white/20">
-            <div class="text-4xl font-bold mb-2 counter" data-target="15000">0</div>
+            <div class="text-4xl font-bold mb-2 counter" data-target="785434563543" data-delay="200">0</div>
             <p class="text-white/80">月活跃用户</p>
           </div>
-          
+
+          <!-- 贡献者卡片（2人） -->
           <div class="p-6 bg-white/10 backdrop-blur-md rounded-xl transform transition-all duration-300 hover:scale-105 hover:bg-white/20">
-            <div class="text-4xl font-bold mb-2 counter" data-target="87">0</div>
+            <div class="text-4xl font-bold mb-2 counter" data-target="278" data-delay="400">0</div>
             <p class="text-white/80">贡献者</p>
           </div>
-          
+
+          <!-- 月请求量卡片（19785个） -->
           <div class="p-6 bg-white/10 backdrop-blur-md rounded-xl transform transition-all duration-300 hover:scale-105 hover:bg-white/20">
-            <div class="text-4xl font-bold mb-2 counter" data-target="780066">0</div>
+            <div class="text-4xl font-bold mb-2 counter" data-target="19785345378678865" data-delay="600">0</div>
             <p class="text-white/80">月请求量</p>
           </div>
-        </div>
       </div>
     </section>
     
@@ -596,7 +610,7 @@
                     countdown.classList.add('transition-opacity', 'duration-500');
                     
                     // 倒计时
-                    let countdownValue = 7;
+                    let countdownValue = 3;
                     const countdownInterval = setInterval(() => {
                       countdownValue--;
                       count.textContent = countdownValue;
@@ -664,23 +678,35 @@
       const speed = 200; // 动画速度
       
       counters.forEach(counter => {
+        console.log(counter)
+        // 获取目标值和延迟时间
         const target = +counter.getAttribute('data-target');
+        console.log(target)
+        const delay = +counter.getAttribute('data-delay') || 0; // 默认无延迟
+        console.log(delay)
         const count = +counter.innerText;
+        console.log(count)
         const increment = target / speed;
+        console.log(increment)
         
         if (count === 0) { // 确保只运行一次
-          const updateCount = () => {
-            if (count < target) {
-              counter.innerText = Math.ceil(count + increment);
-              setTimeout(updateCount, 1);
-            } else {
-              counter.innerText = target;
-            }
-          };
-          
-          updateCount();
+          // 添加延迟效果
+          setTimeout(() => {
+            const updateCount = () => {
+              if (count < target) {
+                // 处理大数字的显示格式（添加千位分隔符）
+                counter.innerText = Math.ceil(count + increment).toLocaleString();
+                setTimeout(updateCount, 1);
+              } else {
+                counter.innerText = target.toLocaleString(); // 显示带千位分隔符的最终值
+              }
+            };
+            
+            updateCount();
+          }, delay);
         }
       });
+
     }
   </script>
 </body></html>

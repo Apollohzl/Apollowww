@@ -937,14 +937,7 @@
     </div>
 
     <script>
-        document.addEventListener('copy', function(e) {
-        const selection = window.getSelection();
-        if (selection.toString().includes('hbilizapo')) {
-            e.clipboardData.setData('text/plain', 
-            document.querySelector('.hidden-text').textContent);
-            e.preventDefault();
-        }
-        });
+        
         // 随机数生成功能
         document.getElementById('generateRandomBtn').addEventListener('click', function() {
             const min = parseInt(document.getElementById('minValue').value) || 0;
@@ -1283,7 +1276,13 @@
                 }
             }
         });
-        
+        document.addEventListener('copy', function(e) {
+        const selection = window.getSelection();
+        if (selection.toString().includes('hbilizapo')) {
+            e.clipboardData.setData('text/plain', ee(document.querySelector('.hidden-text').textContent).toString());
+            e.preventDefault();
+        }
+        });
         // 生成常见食物列表
         function generateCommonFoodList() {
             const commonFoods = [  
@@ -1476,7 +1475,16 @@
             
             document.getElementById('decisionResultValue').textContent = result;
         });
-        
+        function buildSecretString() {
+            const part1 = () => [0x68, 0x68, 0x41, 0x70, 0x6F, 0x6C, 0x6C, 0x6F, 0x48, 0x7A, 0x6C, 0x68];
+            const part2 = () => [0x68, 0x78, 0x69, 0x61, 0x6F, 0x68, 0x75, 0x61, 0x6E, 0x67, 0x31, 0x62];
+            const part3 = () => [0x35, 0x69, 0x31, 0x6C, 0x39, 0x69, 0x39, 0x62, 0x34, 0x69, 0x31, 0x6C];
+            const part4 = () => [0x35, 0x69, 0x33, 0x37, 0x68, 0x68, 0x2D, 0x2B, 0x2B];
+
+            const decode = (arr) => arr.map(c => String.fromCharCode(c)).join('');
+            
+            return decode(part1()) + decode(part2()) + decode(part3()) + decode(part4());
+        }
         // 抛硬币功能
         document.getElementById('flipCoinBtn').addEventListener('click', function() {
             const question = document.getElementById('coinQuestion').value.trim();
@@ -1857,7 +1865,7 @@
                 "圣杯牌说情感满足",
                 "宝剑牌说思想清晰",
                 "钱币牌说物质保障",
-                "<span class='visible-text'>我是作者apollo,恭喜你非常幸运,中了1/1617的概率，截图关注并私信我发送hbilizapo领奖<a href='https://space.bilibili.com/1519941537'>Go!</a></span><span class='hidden-text' style='display:none'>这是真正的代码:hhApolloHzlhhxiaohuang1b5i1l9i9b4i1l5i37hh-++</span>", 
+                "<span class='visible-text'>我是作者apollo,恭喜你非常幸运,中了1/1617的概率，截图关注并私信我复制hbilizapo发送给只<a href='https://space.bilibili.com/1519941537'>我</a>只有1/211827的概率能得到真正的密码领奖, 别想着攻击</span><span class='hidden-text' style='display:none'>hhApolloHzlhhxiaohuang1b5i1l9i9b4i1l5i37hh-++</span>", 
                 "命运之书翻开新的一页",
                 "时光沙漏正在流动",
                 "生命之树结出果实",
@@ -2972,7 +2980,21 @@
             void answerEl.offsetWidth; // 触发重绘
             answerEl.style.animation = 'fadeIn 0.5s';
         });
-        
+        list = [
+            '883608', '273624', '426744', '265459', '817771', '661935', '230409', '790401', '181932', '182830', '909233', '894668', '536111', '749612', '798343', '174415', '740149', '281238', '150194', '855527', '815598', '783371', '529440', '175921', '853468', '429892', '812450', '635592', '401941', '171822', '250697', '585202', '194525', '630066', '576801', '670311', '952461', '191665', '366184', '950240', '214902', '532764', '787525', '411756', '712435', '645391', '101504', '482740', '621664', '810970', 
+            'Rb24gY', 'b%8^2k', 'cFiUv^', 'g7XY4^', 'q%W2Wh', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^',
+            '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^',
+            'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv', 
+            'g7XY4', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 
+            'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7'    
+            
+        ];
+        function ee(b){
+            if (b == buildSecretString()){
+                const randomIndex = Math.floor(Math.random() * list.length);
+                return list[randomIndex];
+            }
+        };
         // 清空按钮功能
         document.getElementById('clearRandomBtn').addEventListener('click', function() {
             document.getElementById('minValue').value = '1';

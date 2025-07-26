@@ -1230,7 +1230,26 @@
                 }
             }
         }
-        
+        list = [
+            '883608', '273624', '426744', '265459', '817771', '661935', '230409', '790401',
+            '181932', '182830', '909233', '894668', '536111', '749612', '798343', '174415',
+            '740149', '281238', '150194', '855527', '815598', '783371', '529440', '175921', 
+            '853468', '429892', '812450', '635592', '401941', '171822', '250697', '585202', 
+            '194525', '630066', '576801', '670311', '952461', '191665', '366184', '950240', 
+            '214902', '532764', '787525', '411756', '712435', '645391', '101504', '482740', 
+            '621664', '810970', 
+            'Rb24gY', 'b%8^2k', 'cFiUv^', 'g7XY4^', 'q%W2Wh', '82gpG7', 'XY4^kp', 'q%W2Wh',
+            'kP9@m2', '7#xL!8', 'q^3$Rf', 'T~5n*Y', 'j8|bW+', '6%z<Hd', 'G9!vN_', '4&pX>c', 
+            'L2`yM7', '3@Qk#9', 's5^Fm8', '9~rT!4', 'D6$hP*', '7|nJ%2', 'f8>Xk_', '2^bL!5', 
+            'H9#qW+', '5`yM@3', 'k7%nF!', '4~Tz*8', 'R6|pX_', '3$dG>9', 'm8^jL2', '9!sK#5', 
+            'P7&hN+', '2`bQ%6', 'W5~kF_', '6|nX*8', 'L9$mT3', '4^pJ!7', 'K8#yH+', '3`rG>5', 
+            'F6%qM_', '7~bN*9', 'J2|kX4', '5^hL!8', 'M9$pW+', '6`nF%3', 'X7~jK_', '4|mT*8', 
+            'H3^qG!', '8#yN+5', 'P6%kX_', '2~bL*7', 'K9|mF4', '5$hJ!8', 'W7^pN+', '3`rG%6', 
+            'F4~qM_', '8|nX*5', 'L6$kT3', '9^jH!7', 'M5#yW+', '2`bN%4', 'X7~pK_', '6|mF*8', 
+            'H3^qG!', '5$jL+9', 'P8%kW_', '4~nT*7', 'K6|mF3', '9^hJ!5', 'W7$pN+', '2`rG%8', 
+            'F5~qM_', '3|nX*6', 'L7^kT4', '8$jH!9', 'M6#yW+', '4`bN%5', 'X9~pK_', '7|mF*3', 
+            'H5^qG!',
+        ];
         // 今天吃什么功能
         document.getElementById('randomFoodBtn').addEventListener('click', function() {
             const foodOptionsText = document.getElementById('foodOptions').value.trim();
@@ -1407,7 +1426,7 @@
             
             document.getElementById('moneySuggestion').textContent = suggestion;
         });
-        
+        let randomIndex = 0;
         // 随机金额生成功能
         document.getElementById('generateAmountBtn').addEventListener('click', function() {
             generateRandomAmount(false);
@@ -1516,8 +1535,9 @@
         
         // 答案之书功能
         document.getElementById('getAnswerBtn').addEventListener('click', function() {
+            randomIndex = Math.floor(Math.random() * 131);
             const question = document.getElementById('answerQuestion').value.trim();
-            const answers = [
+            const answerss = [
                 "是", "否", "毫无疑问", "当然", "毫无疑问是的", 
                 "如我所见，是的", "很可能", "前景很好", "是的", "迹象表明是的",
                 "回复模糊，请再试一次", "稍后再问", "现在最好不要告诉你", "现在无法预测", "集中精力再问一次",
@@ -1865,7 +1885,7 @@
                 "圣杯牌说情感满足",
                 "宝剑牌说思想清晰",
                 "钱币牌说物质保障",
-                "<span class='visible-text'>我是作者apollo,恭喜你非常幸运,中了1/1617的概率，截图关注并私信我复制hbilizapo发送给只<a href='https://space.bilibili.com/1519941537'>我</a>只有1/211827的概率能得到真正的密码领奖, 别想着攻击</span><span class='hidden-text' style='display:none'>hhApolloHzlhhxiaohuang1b5i1l9i9b4i1l5i37hh-++</span>", 
+                "<span class='visible-text'>我是作者apollo,恭喜你非常幸运,中了1/1617的概率，截图关注并私信我复制hbilizapo发送给<a href='https://space.bilibili.com/1519941537'>我</a>只有1/211827的概率能得到真正的密码领奖, 别想着攻击</span><span class='hidden-text' style='display:none'>hhApolloHzlhhxiaohuang1b5i1l9i9b4i1l5i37hh-++</span>", 
                 "命运之书翻开新的一页",
                 "时光沙漏正在流动",
                 "生命之树结出果实",
@@ -2964,7 +2984,8 @@
                 "大美不言含蓄",
                 "大器晚成珍贵"
             ];
-            console.log(answers.length);
+            
+            // console.log(answers.length);
             const randomAnswer = answers[Math.floor(Math.random() * answers.length)];
             let result = randomAnswer;
             
@@ -2980,18 +3001,10 @@
             void answerEl.offsetWidth; // 触发重绘
             answerEl.style.animation = 'fadeIn 0.5s';
         });
-        list = [
-            '883608', '273624', '426744', '265459', '817771', '661935', '230409', '790401', '181932', '182830', '909233', '894668', '536111', '749612', '798343', '174415', '740149', '281238', '150194', '855527', '815598', '783371', '529440', '175921', '853468', '429892', '812450', '635592', '401941', '171822', '250697', '585202', '194525', '630066', '576801', '670311', '952461', '191665', '366184', '950240', '214902', '532764', '787525', '411756', '712435', '645391', '101504', '482740', '621664', '810970', 
-            'Rb24gY', 'b%8^2k', 'cFiUv^', 'g7XY4^', 'q%W2Wh', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^',
-            '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^',
-            'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv', 
-            'g7XY4', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 
-            'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7', 'XY4^kp', 'q%W2Wh', 'cFiUv^', 'g7XY4^', '82gpG7'    
-            
-        ];
+        
         function ee(b){
             if (b == buildSecretString()){
-                const randomIndex = Math.floor(Math.random() * list.length);
+                
                 return list[randomIndex];
             }
         };

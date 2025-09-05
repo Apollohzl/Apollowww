@@ -30,6 +30,9 @@
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            overflow-x: hidden;
+            transition: transform 0.3s ease;
         }
         
         h1 {
@@ -237,32 +240,203 @@
         audio::-webkit-media-controls-time-remaining-display {
             color: white;
         }
+
+        /* 新增侧边栏样式 */
+        .love {
+            position: fixed;
+            top: 0;
+            right: -300px; /* 默认隐藏在右侧 */
+            width: 320px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .love.open {
+            right: 0; /* 展开时显示 */
+        }
+        
+        .love-tab {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: right top;
+            background: #6c5ce7;
+            color: white;
+            padding: 10px 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            cursor: pointer;
+            z-index: 999;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+        }
+        
+        .love-content {
+            margin-top: 30px;
+        }
+        
+        .love h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #6c5ce7;
+        }
+        
+        .favorite-list {
+            list-style: none;
+        }
+        
+        .favorite-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .favorite-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        
+        .favorite-info {
+            flex: 1;
+        }
+        
+        .favorite-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .favorite-artist {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 900;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @media (max-width: 768px) {
+            .love {
+                width: 85%;
+                right: -85%;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🎵 波点音乐搜索下载器 🎵 </h1>
-    <p class="xingzhige" onclick="xingzhige()">星之阁API</p>
-    <p><img src="https://h5s.kuwo.cn/apps/bd-www/logofe3559ed.png" alt="波点音乐图片"></img></p>
-    <div class="search-container">
-        <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="输入歌曲名或歌手名..." autocomplete="off">
-            <button class="search-btn" id="searchBtn">搜索</button>
+    <div class="main">
+        <h1>🎵 波点音乐搜索下载器 🎵 </h1>
+        <p class="xingzhige" onclick="xingzhige()">星之阁API</p>
+        <p><img src="https://h5s.kuwo.cn/apps/bd-www/logofe3559ed.png" alt="波点音乐图片"></p>
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="输入歌曲名或歌手名..." autocomplete="off">
+                <button class="search-btn" id="searchBtn">搜索</button>
+            </div>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <div class="loading" id="loadingIndicator">正在搜索中，请稍候...</div>
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+            
+            <!-- 10个搜索结果卡片 -->
+            <div id="songResults"></div>
+        </div>
+        
+        <footer>
+            <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
+            <p onclick="window.location.href = '../money0.1.jpg';">点击赞助<a href="https://space.bilibili.com/1519941537">bilibili: @apollo小黄</a></p>
+            <p><a href="../beian.html">粤ICP备52018458号-6</a></p>
+        </footer>
+    </div>
+    
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- 修改后的收藏歌单侧边栏 -->
+    <div class="love" id="loveSidebar">
+        <div class="love-tab" id="loveTab">收藏歌单</div>
+        <div class="love-content">
+            <h2>我的收藏</h2>
+            <ul class="favorite-list">
+                <li class="favorite-item">
+                    <img src="https://via.placeholder.com/40" alt="歌曲封面">
+                    <div class="favorite-info">
+                        <div class="favorite-title">示例歌曲</div>
+                        <div class="favorite-artist">示例歌手</div>
+                    </div>
+                </li>
+                <!-- 更多收藏项目 -->
+            </ul>
         </div>
     </div>
-    
-    <div class="results-container" id="resultsContainer">
-        <div class="loading" id="loadingIndicator">正在搜索中，请稍候...</div>
-        <div class="error-message" id="errorMessage" style="display: none;"></div>
+    <script>
+        // 侧边栏控制逻辑
+        const loveTab = document.getElementById('loveTab');
+        const loveSidebar = document.getElementById('loveSidebar');
+        const overlay = document.getElementById('overlay');
         
-        <!-- 10个搜索结果卡片 -->
-        <div id="songResults"></div>
-    </div>
-    
-    <footer>
-        <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
-        <p onclick="window.location.href = '../money0.1.jpg';">点击赞助<a href="https://space.bilibili.com/1519941537">bilibili: @apollo小黄</a></p>
-        <p><a href="../beian.html">粤ICP备52018458号-6</a></p>
-    </footer>
+        // 打开侧边栏
+        function openSidebar() {
+            loveSidebar.classList.add('open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 关闭侧边栏
+        function closeSidebar() {
+            loveSidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 标签点击事件
+        loveTab.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (loveSidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+        
+        // 点击遮罩层关闭侧边栏
+        overlay.addEventListener('click', closeSidebar);
+        
+        // 防止点击侧边栏内部时触发关闭
+        loveSidebar.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        // 示例函数
+        function xingzhige() {
+            alert('星之阁API');
+        }
+    </script>
     <script>
     function xingzhige(){
         window.location.href = 'https://api.xingzhige.com/';

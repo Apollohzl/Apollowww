@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +23,7 @@
             box-sizing: border-box;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
-        
+
         body {
             background-color: #f5f7fa;
             color: #333;
@@ -31,19 +32,21 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         h1 {
             text-align: center;
             font-size: 2.5rem;
             margin: 30px 0;
             color: #2c3e50;
         }
-        .xingzhige{
+
+        .xingzhige {
             text-align: center;
             font-size: 1.5rem;
             margin: 30px 0;
             color: #2c3e50;
         }
+
         .search-container {
             background: white;
             border-radius: 8px;
@@ -51,12 +54,12 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
         }
-        
+
         .search-box {
             display: flex;
             gap: 10px;
         }
-        
+
         .search-input {
             flex: 1;
             padding: 12px 15px;
@@ -64,13 +67,13 @@
             border-radius: 4px;
             font-size: 1rem;
         }
-        
+
         .search-input:focus {
             outline: none;
             border-color: #6c5ce7;
             box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
         }
-        
+
         .search-btn {
             background: #6c5ce7;
             color: white;
@@ -81,16 +84,16 @@
             font-size: 1rem;
             transition: background 0.3s;
         }
-        
+
         .search-btn:hover {
             background: #5649c0;
         }
-        
+
         .results-container {
             display: none;
             margin-top: 20px;
         }
-        
+
         .song-card {
             background: white;
             border-radius: 8px;
@@ -100,7 +103,7 @@
             display: flex;
             gap: 20px;
         }
-        
+
         .song-cover {
             width: 150px;
             height: 150px;
@@ -108,46 +111,46 @@
             object-fit: cover;
             flex-shrink: 0;
         }
-        
+
         .song-info {
             flex: 1;
         }
-        
+
         .song-title {
             font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 5px;
             color: #2c3e50;
         }
-        
+
         .song-artist {
             font-size: 1rem;
             color: #7f8c8d;
             margin-bottom: 10px;
         }
-        
+
         .song-details {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-bottom: 15px;
         }
-        
+
         .detail-item {
             font-size: 0.9rem;
         }
-        
+
         .detail-label {
             color: #7f8c8d;
             margin-right: 5px;
         }
-        
+
         .song-actions {
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
-        
+
         .action-btn {
             background: #6c5ce7;
             color: white;
@@ -158,40 +161,40 @@
             font-size: 0.9rem;
             transition: background 0.3s;
         }
-        
+
         .action-btn:hover {
             background: #5649c0;
         }
-        
+
         .preview-btn {
             background: #00b894;
         }
-        
+
         .preview-btn:hover {
             background: #00a884;
         }
-        
+
         .download-btn {
             background: #e17055;
         }
-        
+
         .download-btn:hover {
             background: #d35400;
         }
-        
+
         .loading {
             text-align: center;
             padding: 20px;
             font-size: 1.2rem;
             color: #7f8c8d;
         }
-        
+
         .error-message {
             color: #e74c3c;
             text-align: center;
             margin-top: 20px;
         }
-        
+
         footer {
             text-align: center;
             margin-top: 50px;
@@ -200,176 +203,227 @@
             font-size: 14px;
             border-top: 1px solid #eee;
         }
-        
+
         @media (max-width: 768px) {
             .song-card {
                 flex-direction: column;
             }
-            
+
             .song-cover {
                 width: 100%;
                 height: auto;
                 max-height: 300px;
             }
-            
+
             .song-details {
                 grid-template-columns: 1fr 1fr;
             }
         }
-        
+
         /* 音频播放器样式 */
         .audio-player {
             width: 100%;
             margin-top: 10px;
         }
-        
+
         audio::-webkit-media-controls-panel {
             background-color: #6c5ce7;
         }
-        
+
         audio::-webkit-media-controls-play-button,
         audio::-webkit-media-controls-mute-button {
             background-color: white;
             border-radius: 50%;
         }
-        
+
         audio::-webkit-media-controls-current-time-display,
         audio::-webkit-media-controls-time-remaining-display {
             color: white;
         }
     </style>
 </head>
+
 <body>
     <h1>🎵 网易音乐搜索下载器 🎵 </h1>
     <p class="xingzhige" onclick="xingzhige()">星之阁API</p>
-    <p><img src="https://pic3.zhimg.com/80/v2-92d475f7a6938a51f5024fb1114e652a_qhd.jpg" alt="网易音乐图片"></img></p>
+    <p><img src="https://pic3.zhimg.com/80/v2-92d475f7a6938a51f5024fb1114e652a_qhd.jpg" alt="网易音乐图片" height="100px"></img></p>
     <div class="search-container">
         <div class="search-box">
             <input type="text" class="search-input" id="searchInput" placeholder="输入歌曲名或歌手名..." autocomplete="off">
             <button class="search-btn" id="searchBtn">搜索</button>
         </div>
     </div>
-    
+
     <div class="results-container" id="resultsContainer">
         <div class="loading" id="loadingIndicator">正在搜索中，请稍候...</div>
         <div class="error-message" id="errorMessage" style="display: none;"></div>
-        
+
         <!-- 10个搜索结果卡片 -->
         <div id="songResults"></div>
     </div>
-    
+
     <footer>
         <p>copyright © 2025 全能工具箱 | 为您提供便捷的在线工具服务</p>
-        <p onclick="window.location.href = '../money0.1.jpg';">点击赞助<a href="https://space.bilibili.com/1519941537">bilibili: @apollo小黄</a></p>
+        <p onclick="window.location.href = '../money0.1.jpg';">点击赞助<a
+                href="https://space.bilibili.com/1519941537">bilibili: @apollo小黄</a></p>
         <p><a href="../beian.html">粤ICP备52018458号-6</a></p>
     </footer>
     <script>
-    function xingzhige(){
-        window.location.href = 'https://api.xingzhige.com/';
-    }
+        function xingzhige() {
+            window.location.href = 'https://api.xingzhige.com/';
+        }
 
-    // 搜索功能
-    document.getElementById('searchBtn').addEventListener('click', searchMusic);
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchMusic();
-        }
-    });
-    
-    function searchMusic() {
-        const searchTerm = document.getElementById('searchInput').value.trim();
-        
-        if (!searchTerm) {
-            alert('请输入搜索内容');
-            return;
-        }
-        
-        // 显示加载状态
-        document.getElementById('resultsContainer').style.display = 'block';
-        document.getElementById('loadingIndicator').style.display = 'block';
-        document.getElementById('errorMessage').style.display = 'none';
-        document.getElementById('songResults').innerHTML = '';
-        
-        // 清空之前的音频播放器
-        const existingPlayers = document.querySelectorAll('audio');
-        existingPlayers.forEach(player => player.remove());
-        
-        // 发送10个请求
-        const promises = [];
-        for (let i = 0; i <= 10; i++) {
-            promises.push(
-                fetchSongData(searchTerm, i)
-                    .catch(error => {
-                        console.log(`请求 ${i} 失败:`, error);
-                        return null; // 返回null表示失败
+        const fetchData = () => {
+            return new Promise((resolve, reject) => {
+                fetch("https://hzl.ken520.top/api.json")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应不正常');
+                        }
+                        return response.json();
                     })
-            );
+                    .then(data => {
+                        if (data.code !== 0) {
+                            throw new Error(data.apikey || '获取apikey信息失败');
+                        }
+                        resolve(data.apikey); // 关键：调用resolve传递结果
+                    })
+                    .catch(error => {
+                        reject(error); // 关键：调用reject传递错误
+                    });
+            });
+        };
+
+
+        async function fetchGetapikey() {
+            try {
+                const result = await fetchData();
+                console.log("============================", result); // 现在这会正常工作
+                return result;
+            } catch (error) {
+                console.error(error);
+                throw error; // 重新抛出错误以便外部处理
+            }
         }
-        
-        // 等待所有请求完成
-        Promise.all(promises)
-            .then(results => {
-                // 过滤掉失败的请求（null值）
-                const successfulResults = results.filter(result => result !== null);
-                
-                if (successfulResults.length === 0) {
-                    // 所有请求都失败了
+
+        // 搜索功能
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const apikey = await fetchGetapikey();
+            console.log(apikey);
+            searchMusic(apikey);
+
+        });
+        document.getElementById('searchInput').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const apikey = await fetchGetapikey();
+                console.log(apikey);
+                searchMusic(apikey);
+            }
+        });
+
+
+
+        function searchMusic(apikey) {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+
+            if (!searchTerm) {
+                alert('请输入搜索内容');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('songResults').innerHTML = '';
+
+            // 清空之前的音频播放器
+            const existingPlayers = document.querySelectorAll('audio');
+            existingPlayers.forEach(player => player.remove());
+            // const apikey = await fetchGetapikey();
+            // 发送10个请求
+            const promises = [];
+            for (let i = 0; i <= 10; i++) {
+                promises.push(
+                    fetchSongData(searchTerm, i, apikey)
+                        .catch(error => {
+                            console.log(`请求 ${i} 失败:`, error);
+                            return null; // 返回null表示失败
+                        })
+                );
+            }
+
+            // 等待所有请求完成
+
+            Promise.all(promises)
+                .then(results => {
+                    // 过滤掉失败的请求（null值）
+                    const successfulResults = results.filter(result => result !== null);
+
+                    if (successfulResults.length === 0) {
+                        // 所有请求都失败了
+                        document.getElementById('errorMessage').textContent = '搜索失败，请稍后再试';
+                        document.getElementById('errorMessage').style.display = 'block';
+                    } else {
+                        // 有成功的请求
+                        displayResults(successfulResults);
+                    }
+                })
+                .catch(error => {
+                    console.error('搜索失败:', error);
                     document.getElementById('errorMessage').textContent = '搜索失败，请稍后再试';
                     document.getElementById('errorMessage').style.display = 'block';
-                } else {
-                    // 有成功的请求
-                    displayResults(successfulResults);
-                }
-            })
-            .catch(error => {
-                console.error('搜索失败:', error);
-                document.getElementById('errorMessage').textContent = '搜索失败，请稍后再试';
-                document.getElementById('errorMessage').style.display = 'block';
-            })
-            .finally(() => {
-                document.getElementById('loadingIndicator').style.display = 'none';
-            });
-    }
-    
-    function fetchSongData(name, index) {
-        const url = `https://api.xingzhige.com/API/NetEase_CloudMusic_new/?key=hATRmkK3nuzaUuyb-TXIhA76kfmqZwfYA_hR6PbaYG0=&name=${encodeURIComponent(name)}&n=${index}`;
-        
-        return fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('网络响应不正常');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.code !== 0) {
-                    throw new Error(data.msg || '获取歌曲信息失败');
-                }
-                return data;
-            });
-    }
-    
-    function displayResults(results) {
-        const songResultsContainer = document.getElementById('songResults');
-        songResultsContainer.innerHTML = '';
-        
-        // 过滤掉无效结果
-        const validResults = results.filter(result => result && result.data && result.data.songname);
-        
-        if (validResults.length === 0) {
-            document.getElementById('errorMessage').textContent = '没有找到相关歌曲，请尝试其他关键词';
-            document.getElementById('errorMessage').style.display = 'block';
-            return;
+                })
+                .finally(() => {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                });
+
         }
-        
-        validResults.forEach((result, index) => {
-            const song = result.data;
-            
-            const songCard = document.createElement('div');
-            songCard.className = 'song-card';
-            songCard.id = `song-${index}`;
-            
-            songCard.innerHTML = `
+
+
+
+
+        function fetchSongData(name, index, apikey) {
+
+            console.log(apikey);
+            const url = `https://api.xingzhige.com/API/NetEase_CloudMusic_new/?key=${apikey}&name=${encodeURIComponent(name)}&n=${index}`;
+
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.code !== 0) {
+                        throw new Error(data.msg || '获取歌曲信息失败');
+                    }
+                    return data;
+                });
+        }
+
+        function displayResults(results) {
+            const songResultsContainer = document.getElementById('songResults');
+            songResultsContainer.innerHTML = '';
+
+            // 过滤掉无效结果
+            const validResults = results.filter(result => result && result.data && result.data.songname);
+
+            if (validResults.length === 0) {
+                document.getElementById('errorMessage').textContent = '没有找到相关歌曲，请尝试其他关键词';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            validResults.forEach((result, index) => {
+                const song = result.data;
+
+                const songCard = document.createElement('div');
+                songCard.className = 'song-card';
+                songCard.id = `song-${index}`;
+
+                songCard.innerHTML = `
                 <img src="${song.cover}" alt="${song.songname}" class="song-cover" onerror="this.src='https://via.placeholder.com/150?text=封面加载失败'">
                 <div class="song-info">
                     <div class="song-title">${song.songname}</div>
@@ -390,60 +444,61 @@
                     </div>
                 </div>
             `;
-            
-            songResultsContainer.appendChild(songCard);
-        });
-        
-        // 添加试听和下载事件
-        document.querySelectorAll('.preview-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const audioUrl = this.getAttribute('data-audio-url');
-                previewSong(audioUrl, this);
+
+                songResultsContainer.appendChild(songCard);
             });
-        });
-        
-        document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const audioUrl = this.getAttribute('data-audio-url');
-                const songName = this.getAttribute('data-song-name');
-                const artistName = this.getAttribute('data-artist-name');
-                downloadSong(audioUrl, songName, artistName);
+
+            // 添加试听和下载事件
+            document.querySelectorAll('.preview-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const audioUrl = this.getAttribute('data-audio-url');
+                    previewSong(audioUrl, this);
+                });
             });
-        });
-    }
-    
-    function previewSong(audioUrl, button) {
-        // 移除现有的音频播放器
-        const existingPlayers = document.querySelectorAll('audio');
-        existingPlayers.forEach(player => player.remove());
-        
-        // 创建新的音频播放器
-        const audioPlayer = document.createElement('audio');
-        audioPlayer.className = 'audio-player';
-        audioPlayer.controls = true;
-        audioPlayer.src = audioUrl;
-        
-        // 添加到按钮后面的DOM中
-        button.parentNode.insertAdjacentElement('afterend', audioPlayer);
-        
-        // 自动播放
-        audioPlayer.play().catch(e => {
-            console.error('自动播放失败:', e);
-            alert('试听需要用户交互后才能播放，请点击播放按钮');
-        });
-    }
-    
-    function downloadSong(audioUrl, songName, artistName) {
-        // 创建一个隐藏的a标签用于下载
-        const a = document.createElement('a');
-        a.href = audioUrl;
-        a.download = `${artistName} - ${songName}.mp3` || 'download.mp3';
-        a.style.display = 'none';
-        
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-</script>
+
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const audioUrl = this.getAttribute('data-audio-url');
+                    const songName = this.getAttribute('data-song-name');
+                    const artistName = this.getAttribute('data-artist-name');
+                    downloadSong(audioUrl, songName, artistName);
+                });
+            });
+        }
+
+        function previewSong(audioUrl, button) {
+            // 移除现有的音频播放器
+            const existingPlayers = document.querySelectorAll('audio');
+            existingPlayers.forEach(player => player.remove());
+
+            // 创建新的音频播放器
+            const audioPlayer = document.createElement('audio');
+            audioPlayer.className = 'audio-player';
+            audioPlayer.controls = true;
+            audioPlayer.src = audioUrl;
+
+            // 添加到按钮后面的DOM中
+            button.parentNode.insertAdjacentElement('afterend', audioPlayer);
+
+            // 自动播放
+            audioPlayer.play().catch(e => {
+                console.error('自动播放失败:', e);
+                alert('试听需要用户交互后才能播放，请点击播放按钮');
+            });
+        }
+
+        function downloadSong(audioUrl, songName, artistName) {
+            // 创建一个隐藏的a标签用于下载
+            const a = document.createElement('a');
+            a.href = audioUrl;
+            a.download = `${artistName} - ${songName}.mp3` || 'download.mp3';
+            a.style.display = 'none';
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
 </body>
+
 </html>

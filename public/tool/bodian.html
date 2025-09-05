@@ -268,15 +268,58 @@
         window.location.href = 'https://api.xingzhige.com/';
     }
 
-    // 搜索功能
-    document.getElementById('searchBtn').addEventListener('click', searchMusic);
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchMusic();
-        }
-    });
     
-    function searchMusic() {
+        const fetchData = () => {
+            return new Promise((resolve, reject) => {
+                fetch("https://hzl.ken520.top/api.json")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应不正常');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.code !== 0) {
+                            throw new Error(data.apikey || '获取apikey信息失败');
+                        }
+                        resolve(data.apikey); // 关键：调用resolve传递结果
+                    })
+                    .catch(error => {
+                        reject(error); // 关键：调用reject传递错误
+                    });
+            });
+        };
+
+
+        async function fetchGetapikey() {
+            try {
+                const result = await fetchData();
+                console.log("============================", result); // 现在这会正常工作
+                return result;
+            } catch (error) {
+                console.error(error);
+                throw error; // 重新抛出错误以便外部处理
+            }
+        }
+
+
+    // 搜索功能
+    // 搜索功能
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const apikey = await fetchGetapikey();
+            console.log(apikey);
+            searchMusic(apikey);
+
+        });
+        document.getElementById('searchInput').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const apikey = await fetchGetapikey();
+                console.log(apikey);
+                searchMusic(apikey);
+            }
+        });
+    
+    function searchMusic(apikey) {
         const searchTerm = document.getElementById('searchInput').value.trim();
         
         if (!searchTerm) {
@@ -298,7 +341,7 @@
         const promises = [];
         for (let i = 0; i <= 10; i++) {
             promises.push(
-                fetchSongData(searchTerm, i)
+                fetchSongData(searchTerm, i, apikey)
                     .catch(error => {
                         console.log(`请求 ${i} 失败:`, error);
                         return null; // 返回null表示失败
@@ -331,8 +374,8 @@
             });
     }
     
-    function fetchSongData(name, index) {
-        const url = `https://api.xingzhige.com/API/Kuwo_BD_new/?key=hATRmkK3nuzaUuyb-TXIhA76kfmqZwfYA_hR6PbaYG0=&name=${encodeURIComponent(name)}&n=${index}`;
+    function fetchSongData(name, index, apikey) {
+        const url = `https://api.xingzhige.com/API/Kuwo_BD_new/?key=${apikey}&name=${encodeURIComponent(name)}&n=${index}`;
         
         return fetch(url)
             .then(response => {

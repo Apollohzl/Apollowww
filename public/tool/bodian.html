@@ -263,7 +263,7 @@
         .love-tab {
             position: fixed;
             top: 50%;
-            right: 0;
+            right: 20px;
             transform: translateY(-50%) rotate(-90deg);
             transform-origin: right top;
             background: #6c5ce7;
@@ -379,7 +379,7 @@
     
     <!-- 修改后的收藏歌单侧边栏 -->
     <div class="love" id="loveSidebar">
-        <div class="love-tab" id="loveTab">收藏歌单</div>
+        <div class="love-tab" id="loveTab"><</div>
         <div class="love-content">
             <h2>我的收藏</h2>
             <ul class="favorite-list">
@@ -419,8 +419,10 @@
             e.stopPropagation();
             if (loveSidebar.classList.contains('open')) {
                 closeSidebar();
+                loveTab.innerHTML = '<';
             } else {
                 openSidebar();
+                loveTab.innerHTML = '>';
             }
         });
         

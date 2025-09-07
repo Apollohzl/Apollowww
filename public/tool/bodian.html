@@ -658,10 +658,26 @@
         });
     }
     
-     async function downloadSong(audioUrl, songName, artistName) {
+    async function downloadSong(audioUrl, songName, artistName, solutionMethod = 'proxy') {
             try {
+                let finalUrl = audioUrl;
+                
+                // 根据选择的解决方法处理URL
+                if (solutionMethod === 'proxy') {
+                    // 使用CORS代理服务器
+                    finalUrl = await getProxyUrl(audioUrl);
+                } else if (solutionMethod === 'meta') {
+                    // 确保URL使用HTTPS
+                    if (audioUrl.startsWith('http:')) {
+                        finalUrl = audioUrl.replace('http:', 'https:');
+                    }
+                }
+                // 对于'direct'方法，直接使用原始URL
+                
                 // 获取音频文件
-                const response = await fetch(audioUrl);
+                const response = await fetch(finalUrl, {
+                    referrerPolicy: "unsafe-url" // 解决某些CORS问题:cite[1]
+                });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP错误! 状态: ${response.status}`);
@@ -669,6 +685,10 @@
                 
                 // 将响应转换为Blob
                 const blob = await response.blob();
+                
+                if (blob.size === 0) {
+                    throw new Error('接收到的文件为空，可能是CORS代理问题');
+                }
                 
                 // 创建对象URL
                 const url = window.URL.createObjectURL(blob);
@@ -691,8 +711,23 @@
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
             } catch (error) {
+                if (error.message.includes('Failed to fetch')) {
+                    throw new Error('网络错误，请检查URL是否正确或尝试使用其他解决方法');
+                }
                 throw new Error('无法下载文件: ' + error.message);
             }
+        }
+        
+        async function getProxyUrl(originalUrl) {
+            // 尝试多个CORS代理服务器，增加成功率
+            const proxies = [
+                `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`,
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`,
+                `https://cors-anywhere.herokuapp.com/${originalUrl}`
+            ];
+            
+            // 返回第一个可用的代理URL
+            return proxies[0];
         }
 </script>
 </body>

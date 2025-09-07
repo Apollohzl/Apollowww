@@ -628,11 +628,11 @@
         });
         
         document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
+            btn.addEventListener('click', function() {
                 const audioUrl = this.getAttribute('data-audio-url');
                 const songName = this.getAttribute('data-song-name');
                 const artistName = this.getAttribute('data-artist-name');
-                await downloadSong(audioUrl, songName, artistName);
+                downloadSong(audioUrl, songName, artistName);
             });
         });
     }
@@ -658,77 +658,17 @@
         });
     }
     
-    async function downloadSong(audioUrl, songName, artistName, solutionMethod = 'proxy') {
-            try {
-                let finalUrl = audioUrl;
-                
-                // 根据选择的解决方法处理URL
-                if (solutionMethod === 'proxy') {
-                    // 使用CORS代理服务器
-                    finalUrl = await getProxyUrl(audioUrl);
-                } else if (solutionMethod === 'meta') {
-                    // 确保URL使用HTTPS
-                    if (audioUrl.startsWith('http:')) {
-                        finalUrl = audioUrl.replace('http:', 'https:');
-                    }
-                }
-                // 对于'direct'方法，直接使用原始URL
-                
-                // 获取音频文件
-                const response = await fetch(finalUrl, {
-                    referrerPolicy: "unsafe-url" // 解决某些CORS问题:cite[1]
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP错误! 状态: ${response.status}`);
-                }
-                
-                // 将响应转换为Blob
-                const blob = await response.blob();
-                
-                if (blob.size === 0) {
-                    throw new Error('接收到的文件为空，可能是CORS代理问题');
-                }
-                
-                // 创建对象URL
-                const url = window.URL.createObjectURL(blob);
-                
-                // 创建隐藏的下载链接
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                
-                // 设置下载的文件名
-                a.download = `${artistName} - ${songName}.mp3`;
-                
-                // 将链接添加到文档中
-                document.body.appendChild(a);
-                
-                // 模拟点击下载
-                a.click();
-                
-                // 清理
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            } catch (error) {
-                if (error.message.includes('Failed to fetch')) {
-                    throw new Error('网络错误，请检查URL是否正确或尝试使用其他解决方法');
-                }
-                throw new Error('无法下载文件: ' + error.message);
-            }
-        }
+    function downloadSong(audioUrl, songName, artistName) {
+        // 创建一个隐藏的a标签用于下载
+        const a = document.createElement('a');
+        a.href = audioUrl;
+        a.download = `${artistName} - ${songName}.mp3` || 'download.mp3';
+        a.style.display = 'none';
         
-        async function getProxyUrl(originalUrl) {
-            // 尝试多个CORS代理服务器，增加成功率
-            const proxies = [
-                `https://corsproxy.io/?url=${encodeURIComponent(originalUrl)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`,
-                `https://cors-anywhere.herokuapp.com/${originalUrl}`
-            ];
-            
-            // 返回第一个可用的代理URL
-            return proxies[0];
-        }
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 </script>
 </body>
 </html>

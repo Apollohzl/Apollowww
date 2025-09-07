@@ -181,6 +181,14 @@
         .download-btn:hover {
             background: #d35400;
         }
+
+        .love-btn {
+            background: #ff6640;
+        }
+        
+        .love-btn:hover {
+            background: #fd4513;
+        }
         
         .loading {
             text-align: center;
@@ -373,21 +381,20 @@
             <p><a href="../beian.html">粤ICP备52018458号-6</a></p>
         </footer>
     </div>
-    
     <!-- 遮罩层 -->
     <div class="overlay" id="overlay"></div>
-    
     <!-- 修改后的收藏歌单侧边栏 -->
     <div class="love" id="loveSidebar">
         <div class="love-tab" id="loveTab"><</div>
         <div class="love-content">
             <h2>我的收藏</h2>
+
             <ul class="favorite-list">
                 <li class="favorite-item">
-                    <img src="https://via.placeholder.com/40" alt="歌曲封面">
+                    <img src="https://dummyimage.com/300.png/09f/fff" alt="歌曲">
                     <div class="favorite-info">
-                        <div class="favorite-title">示例歌曲</div>
-                        <div class="favorite-artist">示例歌手</div>
+                        <div class="favorite-title">See You Again (feat. Charlie Puth)</div>
+                        <div class="favorite-artist">Wiz Khalifa</div>
                     </div>
                 </li>
                 <!-- 更多收藏项目 -->
@@ -405,6 +412,7 @@
             loveSidebar.classList.add('open');
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            loveTab.innerHTML = '>';
         }
         
         // 关闭侧边栏
@@ -412,6 +420,7 @@
             loveSidebar.classList.remove('open');
             overlay.classList.remove('active');
             document.body.style.overflow = 'auto';
+            loveTab.innerHTML = '<';
         }
         
         // 标签点击事件
@@ -419,10 +428,10 @@
             e.stopPropagation();
             if (loveSidebar.classList.contains('open')) {
                 closeSidebar();
-                loveTab.innerHTML = '<';
+                
             } else {
                 openSidebar();
-                loveTab.innerHTML = '>';
+                
             }
         });
         
@@ -434,10 +443,6 @@
             e.stopPropagation();
         });
         
-        // 示例函数
-        function xingzhige() {
-            alert('星之阁API');
-        }
     </script>
     <script>
     function xingzhige(){
@@ -606,7 +611,8 @@
                     <div class="song-actions">
                         <button class="action-btn preview-btn" data-audio-url="${song.src}">试听</button>
                         <button class="action-btn download-btn" data-audio-url="${song.src}" data-song-name="${song.songname}" data-artist-name="${song.name}">下载</button>
-                    </div>
+                        <button class="action-btn love-btn" data-audio-url="${song.src}" data-song-name="${song.songname}" data-artist-name="${song.name}">喜爱</button>
+                        </div>
                 </div>
             `;
             
@@ -622,11 +628,11 @@
         });
         
         document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 const audioUrl = this.getAttribute('data-audio-url');
                 const songName = this.getAttribute('data-song-name');
                 const artistName = this.getAttribute('data-artist-name');
-                downloadSong(audioUrl, songName, artistName);
+                await downloadSong(audioUrl, songName, artistName);
             });
         });
     }
@@ -652,17 +658,42 @@
         });
     }
     
-    function downloadSong(audioUrl, songName, artistName) {
-        // 创建一个隐藏的a标签用于下载
-        const a = document.createElement('a');
-        a.href = audioUrl;
-        a.download = `${artistName} - ${songName}.mp3` || 'download.mp3';
-        a.style.display = 'none';
-        
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
+     async function downloadSong(audioUrl, songName, artistName) {
+            try {
+                // 获取音频文件
+                const response = await fetch(audioUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                }
+                
+                // 将响应转换为Blob
+                const blob = await response.blob();
+                
+                // 创建对象URL
+                const url = window.URL.createObjectURL(blob);
+                
+                // 创建隐藏的下载链接
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                
+                // 设置下载的文件名
+                a.download = `${artistName} - ${songName}.mp3`;
+                
+                // 将链接添加到文档中
+                document.body.appendChild(a);
+                
+                // 模拟点击下载
+                a.click();
+                
+                // 清理
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                throw new Error('无法下载文件: ' + error.message);
+            }
+        }
 </script>
 </body>
 </html>

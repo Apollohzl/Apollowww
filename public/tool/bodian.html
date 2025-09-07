@@ -721,7 +721,7 @@
         async function getProxyUrl(originalUrl) {
             // 尝试多个CORS代理服务器，增加成功率
             const proxies = [
-                `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`,
+                `https://corsproxy.io/?url=${encodeURIComponent(originalUrl)}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`,
                 `https://cors-anywhere.herokuapp.com/${originalUrl}`
             ];

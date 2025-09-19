@@ -261,7 +261,7 @@
             z-index: 1000;
             transition: right 0.3s ease;
             padding: 20px;
-            overflow-y: auto;
+            overflow: hidden;
         }
         
         .love.open {
@@ -287,17 +287,81 @@
         
         .love-content {
             margin-top: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            
         }
         
-        .love h2 {
-            color: #2c3e50;
+        .header-with-search {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #6c5ce7;
+            flex-wrap: wrap;
+            gap: 15px;
+            flex-shrink: 0; /* 防止头部被压缩 */
+        }
+        
+        .love-content h2 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin: 0;
+        }
+        
+        .search-love-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 44px;
+        }
+        
+        .search-love-input {
+            height: 100%;
+            width: 250px;
+            padding: 0 50px 0 20px;
+            border: 2px solid #ddd;
+            border-radius: 22px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-love-input:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .search-love-button {
+            position: absolute;
+            right: 4px;
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .search-love-button:hover {
+            background: #5649c5;
+            transform: scale(1.05);
         }
         
         .favorite-list {
             list-style: none;
+            overflow-y: auto; /* 只有列表区域可以滚动 */
+            flex-grow: 1; /* 占据剩余空间 */
+            max-height: calc(100% - 70px); /* 减去头部高度 */
+            padding-right: 5px; /* 为滚动条留出空间 */
+            margin: 0;
         }
         
         .favorite-item {
@@ -306,27 +370,122 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        
+
+        .favorite-item:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .favorite-item:hover::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
         .favorite-item img {
             width: 40px;
             height: 40px;
             border-radius: 4px;
             object-fit: cover;
+            transition: transform 0.3s ease;
         }
-        
+
+        .favorite-item:hover img {
+            transform: scale(1.1);
+        }
+
         .favorite-info {
             flex: 1;
+            position: relative;
         }
-        
+
         .favorite-title {
             font-weight: bold;
             font-size: 0.9rem;
+            transition: color 0.3s ease;
         }
-        
+
+        .favorite-item:hover .favorite-title {
+            color: #3498db;
+        }
+
         .favorite-artist {
             font-size: 0.8rem;
             color: #7f8c8d;
+        }
+
+        /* 悬停卡片效果 */
+        .favorite-item .hover-card {
+            position: absolute;
+            top: -140px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            width: 200px;
+            background: #333;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .favorite-item:hover .hover-card {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* .favorite-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .favorite-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .favorite-list::-webkit-scrollbar-thumb {
+            background: #c4c4c4;
+            border-radius: 3px;
+        }
+
+        .favorite-list::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        } */
+
+        .hover-card img {
+            width: 100%;
+            height: 120px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .hover-card-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hover-card-artist {
+            font-size: 0.8rem;
+            color: #ccc;
         }
         
         .overlay {
@@ -354,6 +513,9 @@
             }
         }
     </style>
+    <script>
+        
+    </script>
 </head>
 <body>
     <div class="main">
@@ -387,16 +549,26 @@
     <div class="love" id="loveSidebar">
         <div class="love-tab" id="loveTab"><</div>
         <div class="love-content">
-            <h2>我的收藏</h2>
+            <div class="header-with-search">
+                <h2>我的收藏</h2>
+                <div class="search-love-container">
+                    <input type="text" class="search-love-input" placeholder="搜索歌曲名...">
+                    <button class="search-love-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
 
-            <ul class="favorite-list">
-                <li class="favorite-item">
+            <ul class="favorite-list" id="favorite-list">
+                <li class="favorite-item" onclick="">
                     <img src="https://dummyimage.com/300.png/09f/fff" alt="歌曲">
                     <div class="favorite-info">
                         <div class="favorite-title">See You Again (feat. Charlie Puth)</div>
                         <div class="favorite-artist">Wiz Khalifa</div>
                     </div>
                 </li>
+                
+                
                 <!-- 更多收藏项目 -->
             </ul>
         </div>
@@ -487,23 +659,23 @@
     // 搜索功能
     // 搜索功能
         document.getElementById('searchBtn').addEventListener('click', async () => {
-            const apikey = await fetchGetapikey();
-            console.log(apikey);
-            searchMusic(apikey);
+            window.apikey = await fetchGetapikey();
+            console.log(window.apikey);
+            searchMusic(window.apikey);
 
         });
         document.getElementById('searchInput').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
-                const apikey = await fetchGetapikey();
-                console.log(apikey);
-                searchMusic(apikey);
+                window.apikey = await fetchGetapikey();
+                console.log(window.apikey);
+                searchMusic(window.apikey);
             }
         });
     
     function searchMusic(apikey) {
-        const searchTerm = document.getElementById('searchInput').value.trim();
+        window.searchTerm = document.getElementById('searchInput').value.trim();
         
-        if (!searchTerm) {
+        if (!window.searchTerm) {
             alert('请输入搜索内容');
             return;
         }
@@ -522,7 +694,7 @@
         const promises = [];
         for (let i = 0; i <= 10; i++) {
             promises.push(
-                fetchSongData(searchTerm, i, apikey)
+                fetchSongData(window.searchTerm, i, apikey)
                     .catch(error => {
                         console.log(`请求 ${i} 失败:`, error);
                         return null; // 返回null表示失败
@@ -542,7 +714,7 @@
                     document.getElementById('errorMessage').style.display = 'block';
                 } else {
                     // 有成功的请求
-                    displayResults(successfulResults);
+                    displayResults(successfulResults, );
                 }
             })
             .catch(error => {
@@ -594,7 +766,7 @@
             songCard.id = `song-${index}`;
             
             songCard.innerHTML = `
-                <img src="${song.cover}" alt="${song.songname}" class="song-cover" onerror="this.src='https://via.placeholder.com/150?text=封面加载失败'">
+                <img src="${song.cover}" alt="${song.songname}" class="song-cover" onerror="this.src='https://dummyimage.com/600x400/000/fff&text=%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%A4%B1%E8%B4%A5'">
                 <div class="song-info">
                     <div class="song-title">${song.songname}</div>
                     <div class="song-artist">${song.name}</div>
@@ -611,7 +783,7 @@
                     <div class="song-actions">
                         <button class="action-btn preview-btn" data-audio-url="${song.src}">试听</button>
                         <button class="action-btn download-btn" data-audio-url="${song.src}" data-song-name="${song.songname}" data-artist-name="${song.name}">下载</button>
-                        <button class="action-btn love-btn" data-audio-url="${song.src}" data-song-name="${song.songname}" data-artist-name="${song.name}">喜爱</button>
+                        <button class="action-btn love-btn" data-audio-url="${`https://api.xingzhige.com/API/Kuwo_BD_new/?key=${window.apikey}&name=${encodeURIComponent(window.searchTerm)}&n=${index+1}`}" data-song-name="${song.songname}" data-artist-name="${song.name}" data-img-url="${song.cover}" data-img-name="${song.album}">喜爱</button>
                         </div>
                 </div>
             `;
@@ -633,6 +805,18 @@
                 const songName = this.getAttribute('data-song-name');
                 const artistName = this.getAttribute('data-artist-name');
                 downloadSong(audioUrl, songName, artistName);
+            });
+        });
+
+        document.querySelectorAll('.love-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const audioUrl = this.getAttribute('data-audio-url');
+                const songName = this.getAttribute('data-song-name');
+                const artistName = this.getAttribute('data-artist-name');
+                const imgUrl = this.getAttribute('data-img-url');
+                const songAlbum = this.getAttribute('data-album-name');
+                console.log(audioUrl, songName, artistName, imgUrl, songAlbum);
+                AddToLove(audioUrl, songName, artistName, imgUrl, songAlbum);
             });
         });
     }
@@ -669,6 +853,102 @@
         a.click();
         document.body.removeChild(a);
     }
+
+</script>
+<script>
+    function AddToLove(audioUrl, songName, artistName, imgUrl, songAlbum) {
+        // 尝试获取收藏列表，如果不存在则创建空数组
+        let love_List_value;
+        try {
+            const storedValue = localStorage.getItem('Apollo_XZG_BoDian_Love');
+            love_List_value = storedValue ? JSON.parse(storedValue) : [];
+        } catch (e) {
+            // 如果解析失败，也创建空数组
+            console.error('解析收藏列表失败:', e);
+            love_List_value = [];
+        }
+        
+        // 添加新项目到收藏列表
+        love_List_value.push([audioUrl, songName, artistName, imgUrl, songAlbum]);
+        
+        // 保存更新后的收藏列表
+        try {
+            localStorage.setItem('Apollo_XZG_BoDian_Love', JSON.stringify(love_List_value));
+            alert('已收藏');
+            
+        } catch (e) {
+            console.error('保存收藏列表失败:', e);
+            alert('收藏失败，可能是存储空间不足');
+        };
+        RenderLoveList();
+    }
+    //[audioUrl, songName, artistName, imgUrl]
+    function RenderLoveList() {
+        const html_Love_part = document.getElementById("favorite-list");
+        html_Love_part.innerHTML = '';
+        
+        try {
+            const value = localStorage.getItem('Apollo_XZG_BoDian_Love');
+            // 检查是否获取到值
+            if (!value) {
+                console.log('没有收藏数据');
+                return 0;
+            }
+            
+            const To_Render = JSON.parse(value);
+            
+            // 检查是否是数组且不为空
+            if (!Array.isArray(To_Render) || To_Render.length <= 0) {
+                console.log('收藏数据为空或格式不正确');
+                return 0;
+            }
+            
+            // 渲染收藏列表
+            for (let i = 0; i < To_Render.length; i++) {
+                // 检查数据格式是否正确
+                if (!To_Render[i] || !Array.isArray(To_Render[i]) || To_Render[i].length < 4) {
+                    console.warn('无效的收藏数据格式:', To_Render[i]);
+                    continue; // 跳过无效数据
+                }
+                
+                const LoveSongCard = document.createElement('li');
+                LoveSongCard.className = 'favorite-item';
+                // 修复onclick设置方式
+                LoveSongCard.onclick = function() {
+                    PlayLove(To_Render[i][0]);
+                };
+
+                LoveSongCard.innerHTML = `
+                    <img src="${To_Render[i][3] || 'https://dummyimage.com/600x400/000/fff&text=ErrorNoPicture'}" alt="歌曲">
+                    <div class="favorite-info">
+                        <div class="favorite-title">${To_Render[i][1] || '未知歌曲'}</div>
+                        <div class="favorite-artist">${To_Render[i][2] || '未知歌手'}</div>
+                    </div>
+                `;
+                html_Love_part.appendChild(LoveSongCard);
+            }
+            
+        } catch (e) {
+            console.error('解析收藏列表失败:', e);
+            // 显示空状态提示
+            html_Love_part.innerHTML = `
+            `;
+            return 0;
+        }
+    };
+
+    function PlayLove(audioUrl) {
+        //http://sr.sycdn.kuwo.cn/7c1635c2c518a972e108bbb1386bd726/68c4000c/resource/n1/76/58/3761560538.mp3?from=xzg_api
+        alert(audioUrl);
+    }
+
+
+
+
+
+
+
+    RenderLoveList();
 </script>
 </body>
 </html>

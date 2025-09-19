@@ -685,7 +685,7 @@
                     const jsonData = await response.json();
                     
                     // 获取data中的src值
-                    const src = jsonData.data.src;
+                    const src = "https://cors.hzlapollo.dpdns.org/?url="+jsonData.data.src;
                     console.log('获取到的音频URL:', src);
                     // 返回src值
                     return src;
@@ -736,7 +736,7 @@
                         title: To_Render[i][1],
                         artist: To_Render[i][2],
                         albumCover: To_Render[i][3],
-                        audioUrl: TaudioUrl,
+                        audioUrl: "https://cors.hzlapollo.dpdns.org/?url="+TaudioUrl,
                         lyrics: ''
                     };
                     

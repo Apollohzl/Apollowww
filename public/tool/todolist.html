@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo List</title>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <div>
+        <input type="text" id="new-item" placeholder="主题">
+        <input type="text" id="new-desc" placeholder="描述">
+        <button onclick="addItem()">添加</button>
+    </div>
+    <ul id="todo-list"></ul>
+</body>
+<script>
+    function addItem() {
+        const newItem = document.getElementById("new-item").value;
+        const newDesc = document.getElementById("new-desc").value;
+        const newItemHtml = `<li>${newItem} - ${newDesc} <button onclick="removeItem(this)">删除</button></li>`;
+    }

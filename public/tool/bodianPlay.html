@@ -327,8 +327,6 @@
             songArtistEl.textContent = currentSong.artist;
             albumCoverEl.src = currentSong.albumCover;
             audioPlayer.src = currentSong.audioUrl;
-            
-            // 解析并显示歌词
             parseLyrics(currentSong.lyrics);
         }
 
@@ -416,6 +414,7 @@
 
         // 解析LRC格式歌词
         function parseLyrics(lrcText) {
+            console.log("解析歌词")
             // 清空现有歌词
             lyricsEl.innerHTML = '';
             

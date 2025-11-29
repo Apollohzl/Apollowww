@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子书阅读器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'SimSun', serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            line-height: 1.6;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #2c3e50, #4a6491);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 500;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(to right, #34495e, #7f8c8d);
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .chapter-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            max-height: 400px;
+            background-color: #f8f9fa;
+        }
+
+        .chapter-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .chapter-item:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .chapter-item.active {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .book-input {
+            padding: 20px;
+            background: linear-gradient(to bottom, #e9ecef, #dee2e6);
+            border-top: 1px solid #ced4da;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .reader-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background-color: #fafafa;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .chapter-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            color: #2c3e50;
+            font-weight: 500;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .chapter-content {
+            font-size: 1.2em;
+            line-height: 2.2;
+            text-align: justify;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding: 0 30px 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background: linear-gradient(to right, #bdc3c7, #95a5a6);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .page-info {
+            text-align: center;
+            margin: 15px 0;
+            color: #7f8c8d;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        .settings-panel {
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, #e9ecef, #dcdde1);
+            border-top: 1px solid #ced4da;
+        }
+
+        .setting-item {
+            margin-bottom: 15px;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .setting-item select, .setting-item input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .error {
+            color: #e74c3c;
+            padding: 30px;
+            text-align: center;
+            font-size: 1.1em;
+            background-color: #fdeded;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        
+        .quick-books {
+            padding: 15px 20px;
+            background-color: #e9ecef;
+            border-top: 1px solid #ced4da;
+        }
+        
+        .quick-book-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .quick-book-btn {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-align: left;
+            transition: all 0.3s;
+            min-height: auto;
+            height: auto;
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .quick-book-btn:hover {
+            background: linear-gradient(to right, #8e44ad, #7d3c98);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(142, 68, 173, 0.4);
+        }
+        
+        .sidebar.collapsed {
+            width: 40px;
+            overflow: hidden;
+        }
+        
+        .sidebar.collapsed .sidebar-header,
+        .sidebar.collapsed .chapter-list,
+        .sidebar.collapsed .settings-panel,
+        .sidebar.collapsed .book-input,
+        .sidebar.collapsed .quick-books {
+            display: none;
+        }
+        
+        .sidebar.collapsed .collapse-btn {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #34495e, #2c3e50);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .collapse-btn {
+            display: none;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                min-height: calc(100vh - 20px);
+            }
+            
+            .sidebar {
+                width: 280px;
+            }
+            
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .reader-content {
+                padding: 20px;
+            }
+            
+            .chapter-title {
+                font-size: 1.8em;
+            }
+            
+            .chapter-content {
+                font-size: 1.1em;
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 电子书阅读器</h1>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    📖 章节目录
+                </div>
+                <div class="chapter-list" id="chapterList">
+                    <!-- 章节目录将动态生成 -->
+                </div>
+                
+                <div class="settings-panel">
+                    <div class="setting-item">
+                        <label for="fontSize">🔍 字体大小:</label>
+                        <select id="fontSize">
+                            <option value="1">小</option>
+                            <option value="1.2" selected>中</option>
+                            <option value="1.5">大</option>
+                            <option value="1.8">超大</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="bgColor">🎨 背景色:</label>
+                        <select id="bgColor">
+                            <option value="#fafafa">默认</option>
+                            <option value="#f5f5dc">护眼绿</option>
+                            <option value="#f4f1ee">米白</option>
+                            <option value="#fefefe">纯白</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="book-input">
+                    <div class="input-group">
+                        <label for="bookId">📚 书本ID:</label>
+                        <input type="text" id="bookId" placeholder="请输入书本ID">
+                    </div>
+                    <button class="btn" onclick="loadBook()">📥 加载书籍</button>
+                    <button class="btn" id="toggleSidebarBtn" onclick="toggleSidebar()">📋 切换目录</button>
+                </div>
+                
+                <div class="quick-books">
+                    <div class="setting-item">
+                        <label>📖 快捷书籍:</label>
+                        <div class="quick-book-buttons">
+                            <button class="quick-book-btn" data-id="7379865527998483480" data-title="白天卖衣服，晚上缝尸体">白天卖衣服，晚上缝尸体</button>
+                            <button class="quick-book-btn" data-id="7428110987808492606" data-title="大明：我每天收到一个未来快递">大明：我每天收到一个未来快递</button>
+                            <button class="quick-book-btn" data-id="7193704897005489209" data-title="拍流浪地球我造太空电梯很合理吧">拍流浪地球我造太空电梯很合理吧</button>
+                            <button class="quick-book-btn" data-id="7113743406903331881" data-title="诡异直播：我能无限推演">诡异直播：我能无限推演</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="reader-content" id="readerContent">
+                <div class="loading" id="loadingMessage">
+                    请在左侧输入书本ID，然后点击"加载书籍"开始阅读
+                </div>
+                <!-- 阅读内容将动态生成 -->
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="prevChapter()" disabled>⬅️ 上一章</button>
+            <div class="page-info" id="pageInfo">第 0 章，共 0 章</div>
+            <div>
+                <button class="nav-btn" id="expandSidebarBtn" onclick="expandSidebar()" style="display:none;">📚</button>
+                <button class="nav-btn" id="nextBtn" onclick="nextChapter()" disabled>下一章 ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="ebook_reader.js?v=1.2"></script>
+</body>
+</html>

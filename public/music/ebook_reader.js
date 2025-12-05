@@ -187,7 +187,6 @@ function displaySearchResults(books, container) {
         const bookItem = document.createElement('div');
         bookItem.className = 'search-result-item';
         bookItem.innerHTML = `
-            bookItem.innerHTML = `
             <div class="search-result-book" style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s;">
                 <div style="text-align: center; margin-bottom: 10px;">
                     <img src="${book.audio_thumb_uri}" alt="${book.book_name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
@@ -198,7 +197,6 @@ function displaySearchResults(books, container) {
                     <div style="font-size: 0.85em; color: #888; line-height: 1.3;">${book.abstract}</div>
                 </div>
             </div>
-        `;
         `;
         
         // 添加点击事件，点击后加载书籍

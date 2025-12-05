@@ -189,7 +189,7 @@ function displaySearchResults(books, container) {
         bookItem.innerHTML = `
             <div class="search-result-book" style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s;">
                 <div style="text-align: center; margin: 5px;">
-                    <img src="${book.audio_thumb_uri}" alt="${book.book_name}" style="width: calc(100% - 10px); height: 120px; object-fit: cover; border-radius: 4px; margin: 5px;">
+                    <img src="${book.audio_thumb_uri}" alt="${book.book_name}" style="width: calc(100% - 10px); max-width: 100%; height: auto; object-fit: cover; border-radius: 4px; margin: 5px;">
                 </div>
                 <div style="text-align: left;">
                     <div style="font-weight: bold; margin-bottom: 5px;">${book.book_name}</div>

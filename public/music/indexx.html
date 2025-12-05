@@ -346,9 +346,12 @@
             .sidebar {
                 width: 100%;
                 height: auto;
-                max-height: 30vh;
+                min-height: 200px; /* 确保侧边栏有最小高度 */
+                max-height: 40vh; /* 增加最大高度 */
                 border-right: none;
                 border-bottom: 1px solid #dee2e6;
+                display: flex;
+                flex-direction: column;
             }
             
             .sidebar.collapsed {
@@ -359,11 +362,15 @@
             .sidebar-header {
                 padding: 12px;
                 font-size: 1.1em;
+                flex-shrink: 0; /* 防止头部被压缩 */
             }
             
             .chapter-list {
-                max-height: 20vh;
+                flex: 1; /* 让章节列表占据剩余空间 */
+                max-height: 30vh; /* 增加章节列表最大高度 */
+                min-height: 100px; /* 确保最小高度 */
                 padding: 10px;
+                overflow-y: auto;
             }
             
             .chapter-item {
@@ -373,10 +380,20 @@
             
             .book-input {
                 padding: 15px;
+                flex-shrink: 0; /* 防止输入区域被压缩 */
+            }
+            
+            .settings-panel {
+                flex-shrink: 0; /* 防止设置面板被压缩 */
+            }
+            
+            .quick-books {
+                flex-shrink: 0; /* 防止快捷书籍被压缩 */
             }
             
             .reader-content {
                 padding: 15px;
+                min-height: 300px; /* 确保阅读区域有最小高度 */
             }
             
             .chapter-title {
@@ -391,14 +408,17 @@
             }
             
             .navigation {
-                padding: 0 15px 15px;
+                padding: 15px;
                 flex-direction: column;
                 gap: 10px;
+                align-items: stretch; /* 让按钮拉伸以保持一致宽度 */
             }
             
             .nav-btn {
-                padding: 10px 15px;
+                padding: 12px 15px;
                 min-width: auto;
+                width: 100%; /* 让按钮宽度一致 */
+                margin: 5px 0; /* 添加垂直间距 */
             }
             
             .page-info {
@@ -430,15 +450,17 @@
             }
             
             .sidebar {
-                max-height: 40vh;
+                max-height: 50vh; /* 为小屏手机增加侧边栏高度 */
             }
             
             .chapter-list {
-                max-height: 30vh;
+                max-height: 35vh; /* 增加章节列表高度 */
+                min-height: 120px;
             }
             
             .reader-content {
                 padding: 10px;
+                min-height: 250px;
             }
             
             .chapter-title {
@@ -451,8 +473,8 @@
             }
             
             .nav-btn {
-                padding: 8px 12px;
-                font-size: 0.95em;
+                padding: 12px 15px;
+                font-size: 1em; /* 确保按钮文字大小合适 */
             }
         }
     </style>

@@ -326,33 +326,133 @@
         /* 响应式设计 */
         @media (max-width: 768px) {
             .container {
-                margin: 10px;
-                min-height: calc(100vh - 20px);
-            }
-            
-            .sidebar {
-                width: 280px;
+                margin: 5px;
+                min-height: calc(100vh - 10px);
+                flex-direction: column;
             }
             
             .header {
-                padding: 15px 20px;
+                padding: 10px 15px;
             }
             
             .header h1 {
-                font-size: 1.5em;
+                font-size: 1.3em;
+            }
+            
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 30vh;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .sidebar.collapsed {
+                width: 100%;
+                height: 40px;
+            }
+            
+            .sidebar-header {
+                padding: 12px;
+                font-size: 1.1em;
+            }
+            
+            .chapter-list {
+                max-height: 20vh;
+                padding: 10px;
+            }
+            
+            .chapter-item {
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+            
+            .book-input {
+                padding: 15px;
             }
             
             .reader-content {
-                padding: 20px;
+                padding: 15px;
             }
             
             .chapter-title {
-                font-size: 1.8em;
+                font-size: 1.5em;
+                margin-bottom: 20px;
             }
             
             .chapter-content {
                 font-size: 1.1em;
-                padding: 0 10px;
+                line-height: 1.8;
+                padding: 0;
+            }
+            
+            .navigation {
+                padding: 0 15px 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-btn {
+                padding: 10px 15px;
+                min-width: auto;
+            }
+            
+            .page-info {
+                order: -1; /* 将页码信息移到按钮上方 */
+                margin: 10px 0;
+            }
+            
+            .quick-book-btn {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            
+            .search-result-book {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-result-book img {
+                margin-bottom: 10px;
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* 针对小屏手机的进一步优化 */
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2em;
+            }
+            
+            .sidebar {
+                max-height: 40vh;
+            }
+            
+            .chapter-list {
+                max-height: 30vh;
+            }
+            
+            .reader-content {
+                padding: 10px;
+            }
+            
+            .chapter-title {
+                font-size: 1.4em;
+            }
+            
+            .chapter-content {
+                font-size: 1em;
+                line-height: 1.7;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.95em;
             }
         }
     </style>
@@ -389,6 +489,7 @@
                             <option value="#f5f5dc">护眼绿</option>
                             <option value="#f4f1ee">米白</option>
                             <option value="#fefefe">纯白</option>
+                            <option value="#1e1e1e">暗黑</option>
                         </select>
                     </div>
                 </div>
@@ -399,7 +500,7 @@
                         <input type="text" id="bookId" placeholder="请输入书本ID">
                     </div>
                     <button class="btn" onclick="loadBook()">📥 加载书籍</button>
-                    <button class="btn" id="toggleSidebarBtn" onclick="toggleSidebar()">📋 切换目录</button>
+                    <button class="btn" id="toggleSidebarBtn" onclick="toggleSidebar()">📋 隐藏侧边</button>
                 </div>
                 
                 <div class="quick-books">
@@ -408,10 +509,20 @@
                         <div class="quick-book-buttons">
                             <button class="quick-book-btn" data-id="7379865527998483480" data-title="白天卖衣服，晚上缝尸体">白天卖衣服，晚上缝尸体</button>
 			    <button class="quick-book-btn" data-id="7241017404237548605" data-title="带着超级商场逛古代">带着超级商场逛古代</button>
+			    <button class="quick-book-btn" data-id="7143506226230332447" data-title="带仓库回大唐">带仓库回大唐</button>
                             <button class="quick-book-btn" data-id="7428110987808492606" data-title="大明：我每天收到一个未来快递">大明：我每天收到一个未来快递</button>
                             <button class="quick-book-btn" data-id="7193704897005489209" data-title="拍流浪地球我造太空电梯很合理吧">拍流浪地球我造太空电梯很合理吧</button>
                             <button class="quick-book-btn" data-id="7113743406903331881" data-title="诡异直播：我能无限推演">诡异直播：我能无限推演</button>
                         </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>🔍 搜索书籍:</label>
+                        <div class="search-section">
+                            <input type="text" id="searchInput" placeholder="请输入书名" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 0.95em;">
+                            <button class="btn" id="searchBtn" onclick="searchBooks()">🔍 搜索</button>
+                        </div>
+                        <div id="searchResults" class="search-results-container" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -425,11 +536,11 @@
         </div>
         
         <div class="navigation">
-            <button class="nav-btn" id="prevBtn" onclick="prevChapter()" disabled>⬅️ 上一章</button>
+            <button class="nav-btn" id="prevBtn" onclick="prevChapter()" disabled>⬅️ 上一章[←]</button>
             <div class="page-info" id="pageInfo">第 0 章，共 0 章</div>
             <div>
-                <button class="nav-btn" id="expandSidebarBtn" onclick="expandSidebar()" style="display:none;">📚</button>
-                <button class="nav-btn" id="nextBtn" onclick="nextChapter()" disabled>下一章 ➡️</button>
+                <button class="nav-btn" id="expandSidebarBtn" onclick="expandSidebar()" style="display:none;">📚 显示侧边</button>
+                <button class="nav-btn" id="nextBtn" onclick="nextChapter()" disabled>下一章[→] ➡️</button>
             </div>
         </div>
     </div>

@@ -441,10 +441,35 @@ async function loadChapter(index) {
     }
 }
 
-// 格式化内容（处理换行等）
+// 格式化内容（处理换行等和HTML标签）
 function formatContent(content) {
-    // 将换行符转换为HTML的<br>标签
-    return content.replace(/\n/g, '<br>');
+    // 保留原有的换行处理
+    let formattedContent = content.replace(/\n/g, '<br>');
+    
+    // 处理API返回的特殊HTML格式，如图片标签
+    // 将API返回的图片格式转换为标准HTML img标签
+    // 例如：处理 <img src="..." img-width="..." img-height="..." alt="..." media-idx="..."/> 格式
+    // 并移除非标准属性如img-width, img-height, media-idx等，保留src, alt等标准属性
+    formattedContent = formattedContent.replace(/<img\s+([^>]*?)\s*\/?>/gi, function(match) {
+        // 提取src, alt, title等标准属性，忽略其他非标准属性如img-width, img-height, media-idx等
+        const srcMatch = match.match(/src\s*=\s*["']([^"']*)["']/i);
+        const altMatch = match.match(/alt\s*=\s*["']([^"']*)["']/i);
+        const titleMatch = match.match(/title\s*=\s*["']([^"']*)["']/i);
+        const src = srcMatch ? srcMatch[1] : '';
+        const alt = altMatch ? altMatch[1] : '';
+        const title = titleMatch ? titleMatch[1] : '';
+        
+        if (src) {
+            let imgTag = `<img src="${src}"`;
+            if (alt) imgTag += ` alt="${alt}"`;
+            if (title) imgTag += ` title="${title}"`;
+            imgTag += ` />`;
+            return imgTag;
+        }
+        return match; // 如果没有src，则返回原始匹配内容
+    });
+    
+    return formattedContent;
 }
 
 // 更新导航按钮状态

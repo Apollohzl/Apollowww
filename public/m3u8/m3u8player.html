@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>m3u8播放器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        
+        .player-container {
+            position: relative;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        video {
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            background-color: #000;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .input-group label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .input-group input, .input-group button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .input-group button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+            margin-top: 5px;
+        }
+        
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .status {
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>m3u8播放器</h1>
+        
+        <div class="player-container">
+            <video id="videoPlayer" controls></video>
+        </div>
+        
+        <div id="statusMessage" class="status"></div>
+        
+        <div class="controls">
+            <div class="input-group">
+                <label for="urlInput">输入m3u8链接:</label>
+                <input type="text" id="urlInput" placeholder="例如: https://example.com/playlist.m3u8">
+                <button id="playUrlBtn">播放链接</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="fileInput">上传m3u8文件:</label>
+                <input type="file" id="fileInput" accept=".m3u8">
+                <button id="playFileBtn">播放文件</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入HLS.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('videoPlayer');
+            const urlInput = document.getElementById('urlInput');
+            const playUrlBtn = document.getElementById('playUrlBtn');
+            const fileInput = document.getElementById('fileInput');
+            const playFileBtn = document.getElementById('playFileBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            let hls = null;
+            
+            // 显示状态信息
+            function showStatus(message, isError = false) {
+                statusMessage.textContent = message;
+                statusMessage.style.display = 'block';
+                statusMessage.className = 'status ' + (isError ? 'error' : 'success');
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+            // 播放URL链接
+            function playUrl() {
+                const url = urlInput.value.trim();
+                if (!url) {
+                    showStatus('请输入有效的m3u8链接', true);
+                    return;
+                }
+                
+                if (hls) {
+                    hls.destroy();
+                }
+                
+                if (Hls.isSupported()) {
+                    hls = new Hls({
+                        // 基础配置
+                        enableWorker: true,
+                        lowLatencyMode: true
+                    });
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play();
+                        showStatus('正在播放链接: ' + url);
+                    });
+                    
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        console.error('HLS错误:', data);
+                        showStatus('播放出错: ' + data.details, true);
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Safari原生支持
+                    video.src = url;
+                    video.addEventListener('loadedmetadata', function() {
+                        video.play();
+                        showStatus('正在播放链接: ' + url);
+                    });
+                } else {
+                    showStatus('您的浏览器不支持m3u8播放', true);
+                }
+            }
+            
+            // 播放上传的文件
+            function playFile() {
+                const file = fileInput.files[0];
+                if (!file) {
+                    showStatus('请选择m3u8文件', true);
+                    return;
+                }
+                
+                if (file.type !== 'application/vnd.apple.mpegurl' && !file.name.toLowerCase().endsWith('.m3u8')) {
+                    showStatus('请选择有效的m3u8文件', true);
+                    return;
+                }
+                
+                if (hls) {
+                    hls.destroy();
+                }
+                
+                const fileURL = URL.createObjectURL(file);
+                
+                if (Hls.isSupported()) {
+                    hls = new Hls({
+                        // 基础配置
+                        enableWorker: true,
+                        lowLatencyMode: true
+                    });
+                    hls.loadSource(fileURL);
+                    hls.attachMedia(video);
+                    
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play();
+                        showStatus('正在播放文件: ' + file.name);
+                    });
+                    
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        console.error('HLS错误:', data);
+                        showStatus('播放出错: ' + data.details, true);
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Safari原生支持
+                    video.src = fileURL;
+                    video.addEventListener('loadedmetadata', function() {
+                        video.play();
+                        showStatus('正在播放文件: ' + file.name);
+                    });
+                } else {
+                    showStatus('您的浏览器不支持m3u8播放', true);
+                }
+            }
+            
+            // 事件监听器
+            playUrlBtn.addEventListener('click', playUrl);
+            playFileBtn.addEventListener('click', playFile);
+            
+            // 支持回车键播放链接
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    playUrl();
+                }
+            });
+            
+            // 页面卸载时清理
+            window.addEventListener('beforeunload', function() {
+                if (hls) {
+                    hls.destroy();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

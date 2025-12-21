@@ -337,8 +337,7 @@
             const G_album = song.album || "";
             try {
                     const proxyUrl = 'https://hzliflow.ken520.top/api/cors?url=';
-                    const targetUrl = `https://api.lrc.cx/lyrics?title=${G_title}&artist=${G_artist}${G_album ? `&album=${G_album}` : ''}`;
-		    const targetUrl = encodeURIComponent(targetUrl);
+                    const targetUrl =encodeURIComponent( `https://api.lrc.cx/lyrics?title=${G_title}&artist=${G_artist}${G_album ? `&album=${G_album}` : ''}`);
                     const response = await fetch(proxyUrl + targetUrl,  {
                         method: 'GET',
                         headers: {

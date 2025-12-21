@@ -336,9 +336,9 @@
             const G_artist = song.artist;
             const G_album = song.album || "";
             try {
-                    const proxyUrl = 'https://cors.hzlapollo.dpdns.org/?url=';
+                    const proxyUrl = 'https://hzliflow.ken520.top/api/cors?url=';
                     const targetUrl = `https://api.lrc.cx/lyrics?title=${G_title}&artist=${G_artist}${G_album ? `&album=${G_album}` : ''}`;
-
+		    const targetUrl = encodeURIComponent(targetUrl);
                     const response = await fetch(proxyUrl + targetUrl,  {
                         method: 'GET',
                         headers: {
@@ -684,7 +684,7 @@
                     const jsonData = await response.json();
                     
                     // 获取data中的src值
-                    const src = "https://cors.hzlapollo.dpdns.org/?url="+jsonData.data.src;
+                    const src = "https://hzliflow.ken520.top/api/cors?url="+encodeURIComponent(jsonData.data.src);
                     console.log('获取到的音频URL:', src);
                     // 返回src值
                     return src;

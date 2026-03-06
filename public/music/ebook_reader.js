@@ -5,6 +5,10 @@ let chapterTitles = {};
 let bookId = '';
 let totalChapters = 0;
 let sidebarVisible = true;
+// 添加缓存相关变量
+let chapterCache = {}; // 章节内容缓存
+let preloadingChapters = new Set(); // 正在预加载的章节集合
+const PRELOAD_COUNT = 10; // 预加载章节的数量
 
 // 读取本地存储中的阅读记录
 function getReadingHistory() {
@@ -288,6 +292,11 @@ async function getChapterInfo(bookId) {
 
 // 获取章节内容
 async function getChapterContent(itemId) {
+    // 如果缓存中存在该章节内容，直接返回缓存内容
+    if (chapterCache[itemId]) {
+        return chapterCache[itemId];
+    }
+    
     try {
         const response = await fetch(`https://bk.yydjtc.cn/api/content?tab=%E5%B0%8F%E8%AF%B4&item_id=${itemId}`);
         const data = await response.json();
@@ -296,7 +305,11 @@ async function getChapterContent(itemId) {
             throw new Error(data.message || '获取章节内容失败');
         }
         
-        return data.data.content;
+        // 将获取到的内容存入缓存
+        const content = data.data.content;
+        chapterCache[itemId] = content;
+        
+        return content;
     } catch (error) {
         console.error('获取章节内容失败:', error);
         throw error;
@@ -321,6 +334,10 @@ async function loadBook() {
             loadingMessage.textContent = '正在加载书籍信息...';
             loadingMessage.className = 'loading';
         }
+        
+        // 清除之前的缓存
+        chapterCache = {};
+        preloadingChapters.clear();
         
         // 获取章节信息
         const { allItemIds: ids, chapterTitles: titles } = await getChapterInfo(bookId);
@@ -432,12 +449,53 @@ async function loadChapter(index) {
         // 应用设置
         applySettings();
         
+        // 启动预加载后续章节
+        await preloadChapters(index);
+        
     } catch (error) {
         console.error('加载章节失败:', error);
         const readerContent = document.getElementById('readerContent');
         if (readerContent) {
             readerContent.innerHTML = `<div class="error">加载章节失败: ${error.message}</div>`;
         }
+    }
+}
+
+// 预加载后续章节
+async function preloadChapters(currentIndex) {
+    // 计算需要预加载的章节范围
+    const startIndex = currentIndex + 1;
+    const endIndex = Math.min(currentIndex + PRELOAD_COUNT, allItemIds.length);
+    
+    // 创建预加载任务数组
+    const preloadTasks = [];
+    
+    for (let i = startIndex; i < endIndex; i++) {
+        // 检查缓存中是否已经有该章节内容，以及是否已经在预加载队列中
+        const itemId = allItemIds[i];
+        if (!chapterCache[itemId] && !preloadingChapters.has(itemId)) {
+            // 标记该章节正在预加载
+            preloadingChapters.add(itemId);
+            
+            // 添加预加载任务
+            preloadTasks.push(
+                getChapterContent(itemId).then(() => {
+                    // 预加载完成后从预加载集合中移除
+                    preloadingChapters.delete(itemId);
+                    console.log(`预加载完成: 第${i + 1}章`);
+                }).catch(error => {
+                    // 如果预加载失败，也需要从预加载集合中移除
+                    preloadingChapters.delete(itemId);
+                    console.error(`预加载失败 第${i + 1}章:`, error);
+                })
+            );
+        }
+    }
+    
+    // 执行所有预加载任务
+    if (preloadTasks.length > 0) {
+        console.log(`开始预加载 ${preloadTasks.length} 个章节`);
+        await Promise.all(preloadTasks);
     }
 }
 

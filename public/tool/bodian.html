@@ -839,11 +839,7 @@
         // 添加到按钮后面的DOM中
         button.parentNode.insertAdjacentElement('afterend', audioPlayer);
         
-        // 自动播放
-        audioPlayer.play().catch(e => {
-            console.error('自动播放失败:', e);
-            alert('试听需要用户交互后才能播放，请点击播放按钮');
-        });
+        // 不自动播放，让用户手动点击播放按钮
     }
     
     function downloadSong(audioUrl, songName, artistName) {

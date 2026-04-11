@@ -107,7 +107,7 @@
         }
         
         #lyrics-wrapper {
-            transition: transform 0.3s ease-out;
+            /* 移除transition以提高滚动响应速度 */
         }
         
         .lyric-item {
@@ -258,7 +258,7 @@
             
             <!-- 歌词 -->
             <div class="lyrics-container mb-4">
-                <div id="lyrics-wrapper" class="transition-transform duration-300">
+                <div id="lyrics-wrapper">
                     <div id="lyrics">
                         <p class="lyric-item">本歌曲没有歌词，请欣赏音乐...</p>
                     </div>
@@ -585,7 +585,6 @@
             const lyrics = lyricsEl.querySelectorAll('.lyric-item');
             
             if (lyrics.length === 0) {
-                console.log("没有歌词可更新");
                 return;
             }
             
@@ -616,33 +615,23 @@
                 const lyricsContainer = document.querySelector('.lyrics-container');
                 const containerHeight = lyricsContainer ? lyricsContainer.clientHeight : 160;
                 const lyricHeight = activeLyric.offsetHeight || 24;
+                const lyricOffsetTop = activeLyric.offsetTop || 0;
                 
-                // 计算滚动位置（相对于 lyrics-container）
-                const lyricsWrapperTop = lyricsWrapper.offsetTop || 0;
-                const activeLyricTop = activeLyric.offsetTop || 0;
-                const scrollPosition = lyricsWrapperTop + activeLyricTop - containerHeight / 2 + lyricHeight / 2;
+                // 计算滚动位置
+                const scrollPosition = lyricOffsetTop - containerHeight / 2 + lyricHeight / 2;
                 
                 // 确保滚动位置不为负
                 const finalScrollPosition = Math.max(0, scrollPosition);
                 
-                console.log(`歌词滚动 - 容器高度: ${containerHeight}px, 歌词高度: ${lyricHeight}px, 滚动位置: ${finalScrollPosition.toFixed(1)}px`);
-                
-                // 移除 transition 以提高滚动响应速度
-                lyricsWrapper.style.transition = 'none';
+                // 直接设置滚动位置
                 lyricsWrapper.style.transform = `translateY(-${finalScrollPosition}px)`;
                 
-                // 恢复 transition
-                setTimeout(() => {
-                    lyricsWrapper.style.transition = 'transform 0.3s ease-out';
-                }, 50);
-                
-                // 调试信息
-                if (Math.floor(currentTime) % 5 === 0) {
-                    console.log(`当前时间: ${currentTime.toFixed(2)}s, 高亮歌词索引: ${activeIndex}, 内容: "${activeLyric.textContent.trim()}"`);
+                // 调试信息（每10秒输出一次）
+                if (Math.floor(currentTime) % 10 === 0) {
+                    console.log(`歌词滚动 - 索引: ${activeIndex}, 位置: ${finalScrollPosition.toFixed(1)}px, 内容: "${activeLyric.textContent.trim()}"`);
                 }
             } else if (lyricsWrapper) {
                 // 如果没有匹配的歌词，重置位置到开头
-                console.log("重置歌词滚动位置");
                 lyricsWrapper.style.transform = 'translateY(0)';
             }
         }
@@ -1216,6 +1205,12 @@
             updateVolumeIcon();
             updatePlayModeButton();
             RenderLoveList();
+            
+            // 设置定时器，每分钟更新一次收藏列表
+            setInterval(() => {
+                console.log('定时更新收藏列表');
+                RenderLoveList();
+            }, 60000); // 60000毫秒 = 1分钟
             
             // 键盘控制
             document.addEventListener('keydown', function(e) {

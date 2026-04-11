@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音乐播放器 - 星之阁</title>
+    <title>音乐播放�?- 星之�?/title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="apple-touch-icon" type="image/png"
@@ -223,17 +223,279 @@
             background: rgba(255, 215, 0, 0.15);
             border-left: 3px solid #FFD700;
         }
+        
+        /* 刷新按钮旋转动画 */
+        .rotating {
+            animation: rotate 0.5s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 歌词模式样式 */
+        body.lyrics-mode,
+        html.lyrics-mode {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        html.lyrics-mode {
+            height: 100%;
+        }
+        
+        body.lyrics-mode {
+            height: 100vh;
+            min-height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body.lyrics-mode::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: var(--album-bg, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+            background-size: cover;
+            background-position: center;
+            filter: blur(40px) brightness(0.3);
+            z-index: -1;
+        }
+        
+        body.lyrics-mode .max-w-4xl {
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        body.lyrics-mode #player-card {
+            width: 100%;
+            height: 100vh;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.lyrics-mode .flex.justify-between.items-center.mb-6 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+        
+        body.lyrics-mode .flex.justify-center.mb-6 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            z-index: 50;
+        }
+        
+        body.lyrics-mode .relative {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        body.lyrics-mode #album-container {
+            width: 60vh;
+            height: 60vh;
+            border-radius: 50%;
+            position: absolute;
+            top: -30vh;
+            left: -30vh;
+            overflow: hidden;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+        
+        body.lyrics-mode .text-center.mb-4 {
+            position: fixed;
+            top: 20px;
+            left: 220px;
+            right: 100px;
+            text-align: left;
+            z-index: 60;
+        }
+        
+        body.lyrics-mode .text-center.mb-4 h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        body.lyrics-mode .text-center.mb-4 p {
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+        }
+        
+        body.lyrics-mode .lyrics-container {
+            flex: 1;
+            height: calc(100vh - 200px);
+            max-height: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border-radius: 0;
+            mask-image: none;
+            -webkit-mask-image: none;
+            padding: 220px 40px 120px 40px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            position: relative;
+        }
+        
+        body.lyrics-mode .lyrics-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        body.lyrics-mode .lyrics-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        body.lyrics-mode .lyrics-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        body.lyrics-mode .lyrics-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        body.lyrics-mode #playlist-btn .fa-list {
+            display: none;
+        }
+        
+        body.lyrics-mode #playlist-btn .fa-arrow-left {
+            display: inline;
+        }
+        
+        body:not(.lyrics-mode) #playlist-btn .fa-arrow-left {
+            display: none;
+        }
+        
+        body.lyrics-mode #lyrics-wrapper {
+            transform: none !important;
+            transition: none !important;
+        }
+        
+        body.lyrics-mode #lyrics {
+            width: 100%;
+            padding: 0;
+        }
+        
+        body.lyrics-mode #lyrics {
+            padding: 0;
+        }
+        
+        body.lyrics-mode .lyric-item {
+            font-size: 18px;
+            padding: 15px 0;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        body.lyrics-mode .lyric-item.active {
+            font-size: 28px;
+            opacity: 1;
+            transform: scale(1.05);
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        body.lyrics-mode .mb-4:last-of-type {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            margin: 0;
+        }
+        
+        body.lyrics-mode .progress-bar {
+            margin: 0 0 10px 0;
+        }
+        
+        body.lyrics-mode .flex.items-center.justify-center.gap-4 {
+            justify-content: space-around;
+            margin: 0;
+        }
+        
+        body.lyrics-mode .flex.items-center.justify-center.gap-3 {
+            display: none;
+        }
+        
+        body.lyrics-mode .text-center.mt-2 {
+            display: none;
+        }
+        
+        /* 歌词模式下的返回按钮 */
+        body.lyrics-mode .fa-arrow-left {
+            display: inline;
+        }
+        
+        body:not(.lyrics-mode) .fa-arrow-left {
+            display: none;
+        }
+        
+        /* 歌词模式下的控制栏背�?*/
+        body.lyrics-mode .mb-4:last-of-type {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        /* 手机版禁用歌词模�?*/
+        @media (max-width: 768px) {
+            .lyrics-mode-unsupported {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: #FFD700;
+                padding: 20px 40px;
+                border-radius: 10px;
+                z-index: 10000;
+                text-align: center;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .lyrics-mode-unsupported {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
     <div class="max-w-4xl mx-auto">
         <!-- 主播放器卡片 -->
-        <div class="glass-effect rounded-3xl p-6 md:p-8 mb-6">
+        <div id="player-card" class="glass-effect rounded-3xl p-6 md:p-8 mb-6">
             <!-- 顶部信息 -->
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-white text-xl font-bold">音乐播放器</h1>
+                <h1 class="text-white text-xl font-bold">音乐播放�?/h1>
                 <button id="playlist-btn" class="control-btn p-2">
                     <i class="fa fa-list text-xl"></i>
+                    <i class="fa fa-arrow-left text-xl" style="display: none;"></i>
                 </button>
             </div>
             
@@ -252,7 +514,7 @@
             <!-- 歌曲信息 -->
             <div class="text-center mb-4">
                 <h2 id="song-title" class="text-white text-xl md:text-2xl font-bold mb-1">歌曲名称</h2>
-                <p id="song-artist" class="text-white/70 text-base md:text-lg">艺术家</p>
+                <p id="song-artist" class="text-white/70 text-base md:text-lg">艺术�?/p>
                 <p id="song-album" class="text-white/50 text-sm mt-1">专辑</p>
             </div>
             
@@ -260,12 +522,12 @@
             <div class="lyrics-container mb-4">
                 <div id="lyrics-wrapper">
                     <div id="lyrics">
-                        <p class="lyric-item">本歌曲没有歌词，请欣赏音乐...</p>
+                        <p class="lyric-item">本歌曲没有歌词，请欣赏音�?..</p>
                     </div>
                 </div>
             </div>
             
-            <!-- 进度条 -->
+            <!-- 进度�?-->
             <div class="mb-4">
                 <div class="flex justify-between text-white/70 text-sm mb-2">
                     <span id="current-time">00:00</span>
@@ -281,13 +543,13 @@
                 <button id="shuffle-btn" class="control-btn p-2" title="切换播放模式 (M)">
                     <i class="fa fa-random text-lg"></i>
                 </button>
-                <button id="prev-btn" class="control-btn p-2" title="上一首">
+                <button id="prev-btn" class="control-btn p-2" title="上一�?>
                     <i class="fa fa-step-backward text-xl"></i>
                 </button>
                 <button id="play-btn" class="play-btn" title="播放/暂停 (空格)">
                     <i id="play-icon" class="fa fa-play text-white text-xl ml-1"></i>
                 </button>
-                <button id="next-btn" class="control-btn p-2" title="下一首">
+                <button id="next-btn" class="control-btn p-2" title="下一�?>
                     <i class="fa fa-step-forward text-xl"></i>
                 </button>
                 <button id="repeat-btn" class="control-btn p-2" title="切换播放模式 (M)">
@@ -295,7 +557,7 @@
                 </button>
             </div>
             
-            <!-- 播放模式指示器 -->
+            <!-- 播放模式指示�?-->
             <div class="text-center mt-2">
                 <span id="play-mode-indicator" class="text-white/50 text-xs"></span>
             </div>
@@ -318,19 +580,24 @@
         </div>
     </div>
     
-    <!-- 播放列表侧边栏 -->
+    <!-- 播放列表侧边�?-->
     <div id="playlist-panel" class="playlist-panel fixed top-0 right-0 h-full w-full md:w-96 bg-gray-900/95 backdrop-blur-lg z-50 shadow-2xl">
         <div class="p-4 flex justify-between items-center border-b border-white/10">
             <h3 class="text-white text-lg font-bold">
                 <i class="fa fa-heart text-gold mr-2"></i>
                 收藏列表
             </h3>
-            <button id="close-playlist-btn" class="control-btn p-2">
-                <i class="fa fa-times text-xl"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <button id="refresh-playlist-btn" class="control-btn p-2" title="刷新列表">
+                    <i class="fa fa-refresh text-lg"></i>
+                </button>
+                <button id="close-playlist-btn" class="control-btn p-2">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
         </div>
         <ul id="favorite-list" class="p-4 overflow-y-auto h-[calc(100%-60px)]">
-            <!-- 收藏列表将通过JS动态加载 -->
+            <!-- 收藏列表将通过JS动态加�?-->
         </ul>
     </div>
     
@@ -341,8 +608,14 @@
         // 全局变量
         let currentSongIndex = -1;
         let playlist = [];
-        // 播放模式：'list' - 列表循环, 'shuffle' - 随机播放, 'single' - 单曲循环
+        // 播放模式�?list' - 列表循环, 'shuffle' - 随机播放, 'single' - 单曲循环
         let playMode = 'list';
+        
+        // 歌词模式
+        let isLyricsMode = false;
+        let lyricsScrollTimer = null;
+        let isUserScrolling = false;
+        let lastScrollTime = 0;
         
         // DOM元素
         const audioPlayer = document.getElementById('audio-player');
@@ -371,8 +644,8 @@
         
         // 当前歌曲信息
         let currentSong = {
-            title: "未命名歌曲",
-            artist: "未知艺术家",
+            title: "未命名歌�?,
+            artist: "未知艺术�?,
             album: "未知专辑",
             albumCover: "https://picsum.photos/400/400?random=1",
             audioUrl: "",
@@ -385,36 +658,56 @@
             const G_artist = song.artist;
             const G_album = song.album || "";
             
-            console.log(`获取歌词 - 歌曲名: ${G_title}, 歌手: ${G_artist}, 专辑: ${G_album}`);
-            
             try {
-                const proxyUrl = 'https://hzliflow.ken520.top/api/cors?url=';
-                const targetUrl = encodeURIComponent(`https://api.lrc.cx/lyrics?title=${G_title}&artist=${G_artist}${G_album ? `&album=${G_album}` : ''}`);
+                // 准备请求URL
+                const directUrl = `https://api.lrc.cx/lyrics?title=${G_title}&artist=${G_artist}${G_album ? `&album=${G_album}` : ''}`;
+                const proxyUrl = 'https://hzliflow.ken520.top/api/cors?url=' + encodeURIComponent(directUrl);
                 
-                console.log('请求歌词URL:', targetUrl);
+                // 创建AbortController用于取消请求
+                const controller1 = new AbortController();
+                const controller2 = new AbortController();
                 
-                const response = await fetch(proxyUrl + targetUrl, {
+                // 创建两个请求Promise
+                const request1 = fetch(directUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'text/plain, */*'
+                    },
+                    signal: controller1.signal
+                }).then(async response => {
+                    if (!response.ok) {
+                        throw new Error(`直接请求HTTP错误! 状�? ${response.status}`);
                     }
+                    const lyricsText = await response.text();
+                    return lyricsText;
                 });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP错误! 状态: ${response.status}`);
-                }
-
-                const lyricsText = await response.text();
-                console.log('获取到的歌词文本长度:', lyricsText.length);
-                console.log('歌词文本预览:', lyricsText.substring(0, 200));
+                
+                const request2 = fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/plain, */*'
+                    },
+                    signal: controller2.signal
+                }).then(async response => {
+                    if (!response.ok) {
+                        throw new Error(`代理请求HTTP错误! 状�? ${response.status}`);
+                    }
+                    const lyricsText = await response.text();
+                    return lyricsText;
+                });
+                
+                // 使用Promise.race等待最快的请求
+                const lyricsText = await Promise.race([request1, request2]);
+                
+                // 取消另一个请求
+                controller1.abort();
+                controller2.abort();
+                
                 return lyricsText;
                 
             } catch (error) {
-                console.error('获取歌词文本失败:', error);
-                console.log('使用默认歌词');
                 return `[00:00.000]暂未找到歌曲歌词文件
-[00:05.525]请尽情
-[00:15.147]欣赏
+[00:05.525]请尽�?[00:15.147]欣赏
 [00:25.599]音乐吧`;
             }
         }
@@ -425,24 +718,19 @@
                 const response = await fetch(s_url);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                    throw new Error(`HTTP错误! 状�? ${response.status}`);
                 }
                 
                 const jsonData = await response.json();
                 const src = "https://hzliflow.ken520.top/api/cors?url=" + encodeURIComponent(jsonData.data.src);
-                console.log('获取到的音频URL:', src);
                 return src;
                 
             } catch (error) {
-                console.error('获取音频URL失败:', error);
                 throw error;
             }
         }
         
-        // 切换到指定歌曲
-        async function switchToSong(song, index, autoPlay = false) {
-            console.log('切换到歌曲:', song.title, '索引:', index, '自动播放:', autoPlay);
-            
+        // 切换到指定歌�?        async function switchToSong(song, index, autoPlay = false) {
             // 停止当前播放
             const wasPlaying = !audioPlayer.paused;
             audioPlayer.pause();
@@ -458,32 +746,25 @@
             albumCoverEl.src = song.albumCover;
             audioPlayer.src = song.audioUrl;
             
+            // 更新歌词模式背景
+            updateLyricsModeBackground(song.albumCover);
+            
             // 等待音频加载完成
             try {
                 await new Promise((resolve, reject) => {
                     audioPlayer.addEventListener('loadedmetadata', resolve, { once: true });
                     audioPlayer.addEventListener('error', reject, { once: true });
                     
-                    // 设置超时，防止卡住
-                    setTimeout(() => reject(new Error('音频加载超时')), 10000);
+                    // 设置超时，防止卡�?                    setTimeout(() => reject(new Error('音频加载超时')), 10000);
                 });
                 
-                console.log('音频加载完成');
-            } catch (error) {
-                console.error('音频加载失败:', error);
-                // 即使加载失败也继续执行，让用户看到歌曲信息
-            }
+                } catch (error) {
+                // 即使加载失败也继续执行，让用户看到歌曲信�?            }
             
-            // 获取并解析歌词
-            console.log("开始获取歌曲歌词...");
-            const Songlyrics = await GetLyrics(song);
-            console.log("歌词获取完成，开始解析...");
+            // 获取并解析歌�?            const Songlyrics = await GetLyrics(song);
             parseLyrics(Songlyrics);
-            console.log("歌词解析完成");
-            
             // 如果之前在播放，或者要求自动播放，则播放新歌曲
             if (wasPlaying || autoPlay) {
-                console.log('准备播放新歌曲');
                 setTimeout(() => {
                     playAudio();
                 }, 100);
@@ -495,46 +776,34 @@
             // 关闭播放列表
             playlistPanel.classList.remove('active');
             
-            // 强制更新一次歌词显示
-            setTimeout(() => {
-                console.log("强制更新歌词显示");
+            // 强制更新一次歌词显�?            setTimeout(() => {
                 updateLyrics();
             }, 200);
         }
         
         // 解析LRC格式歌词
         function parseLyrics(lrcText) {
-            console.log("解析歌词");
-            console.log("歌词文本长度:", lrcText ? lrcText.length : 0);
-            
             // 检查DOM元素是否存在
             if (!lyricsEl) {
-                console.error("歌词容器元素不存在！");
                 return;
             }
             
             // 重置歌词容器滚动位置
             if (lyricsWrapper) {
                 lyricsWrapper.style.transform = 'translateY(0)';
-                console.log("已重置歌词容器位置");
-            }
+                }
             
             // 清空现有歌词
             lyricsEl.innerHTML = '';
-            console.log("已清空歌词容器");
-            
             if (!lrcText || lrcText.trim() === '') {
-                console.log("歌词文本为空");
                 const emptyLyric = document.createElement('p');
                 emptyLyric.className = 'lyric-item';
-                emptyLyric.textContent = '本歌曲没有歌词，请欣赏音乐...';
+                emptyLyric.textContent = '本歌曲没有歌词，请欣赏音�?..';
                 lyricsEl.appendChild(emptyLyric);
-                console.log("已添加空歌词提示");
                 return;
             }
             
             const lines = lrcText.split('\n');
-            console.log("歌词行数:", lines.length);
             const lyricPattern = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
             let parsedCount = 0;
             
@@ -560,16 +829,11 @@
                 }
             });
             
-            console.log(`歌词解析完成，共解析 ${parsedCount} 行歌词`);
-            console.log("歌词容器中的元素数量:", lyricsEl.children.length);
-            
             // 验证歌词是否已添加到DOM
             setTimeout(() => {
                 const actualCount = lyricsEl.querySelectorAll('.lyric-item').length;
-                console.log("验证：DOM中的歌词元素数量:", actualCount);
                 if (actualCount === 0) {
-                    console.error("警告：歌词元素未正确添加到DOM！");
-                }
+                    }
             }, 100);
         }
         
@@ -577,7 +841,6 @@
         function updateLyrics() {
             // 检查DOM元素是否存在
             if (!lyricsEl) {
-                console.error("歌词容器元素不存在！");
                 return;
             }
             
@@ -590,15 +853,14 @@
             
             let activeIndex = -1;
             
-            // 找到当前时间对应的歌词
-            lyrics.forEach((lyric, index) => {
+            // 找到当前时间对应的歌�?            lyrics.forEach((lyric, index) => {
                 const lyricTime = parseFloat(lyric.dataset.time);
                 if (!isNaN(lyricTime) && lyricTime <= currentTime) {
                     activeIndex = index;
                 }
             });
             
-            // 更新歌词高亮状态
+            // 更新歌词高亮状态（无论是否在歌词模式）
             lyrics.forEach((lyric, index) => {
                 if (index === activeIndex) {
                     lyric.classList.add('active');
@@ -607,41 +869,52 @@
                 }
             });
             
-            // 滚动到当前歌词
-            if (activeIndex !== -1 && lyricsWrapper) {
+            // 滚动到当前歌�?            if (activeIndex !== -1) {
                 const activeLyric = lyrics[activeIndex];
                 
                 // 获取容器信息
                 const lyricsContainer = document.querySelector('.lyrics-container');
-                const containerHeight = lyricsContainer ? lyricsContainer.clientHeight : 160;
-                const lyricHeight = activeLyric.offsetHeight || 24;
-                const lyricOffsetTop = activeLyric.offsetTop || 0;
                 
-                // 计算滚动位置
-                const scrollPosition = lyricOffsetTop - containerHeight / 2 + lyricHeight / 2;
-                
-                // 确保滚动位置不为负
-                const finalScrollPosition = Math.max(0, scrollPosition);
-                
-                // 直接设置滚动位置
-                lyricsWrapper.style.transform = `translateY(-${finalScrollPosition}px)`;
-                
-                // 调试信息（每10秒输出一次）
-                if (Math.floor(currentTime) % 10 === 0) {
-                    console.log(`歌词滚动 - 索引: ${activeIndex}, 位置: ${finalScrollPosition.toFixed(1)}px, 内容: "${activeLyric.textContent.trim()}"`);
+                if (lyricsContainer) {
+                    const containerHeight = lyricsContainer.clientHeight;
+                    const lyricHeight = activeLyric.offsetHeight || 24;
+                    const lyricOffsetTop = activeLyric.offsetTop || 0;
+                    
+                    // 计算滚动位置
+                    const scrollPosition = lyricOffsetTop - containerHeight / 2 + lyricHeight / 2;
+                    
+                    // 确保滚动位置不为�?                    const finalScrollPosition = Math.max(0, scrollPosition);
+                    
+                    // 根据模式选择滚动方式
+                    if (isLyricsMode) {
+                        // 歌词模式：使用scrollTop滚动容器
+                        if (!isUserScrolling) {
+                            lyricsContainer.scrollTop = finalScrollPosition;
+                        }
+                    } else {
+                        // 正常模式：使用transform滚动wrapper
+                        if (lyricsWrapper) {
+                            lyricsWrapper.style.transform = `translateY(-${finalScrollPosition}px)`;
+                        }
+                    }
+                } else if (lyricsWrapper) {
+                    // 如果没有找到容器，使用transform
+                    const containerHeight = lyricsEl.parentElement ? lyricsEl.parentElement.clientHeight : 160;
+                    const lyricHeight = activeLyric.offsetHeight || 24;
+                    const lyricOffsetTop = activeLyric.offsetTop || 0;
+                    const scrollPosition = lyricOffsetTop - containerHeight / 2 + lyricHeight / 2;
+                    const finalScrollPosition = Math.max(0, scrollPosition);
+                    lyricsWrapper.style.transform = `translateY(-${finalScrollPosition}px)`;
                 }
-            } else if (lyricsWrapper) {
-                // 如果没有匹配的歌词，重置位置到开头
-                lyricsWrapper.style.transform = 'translateY(0)';
+            } else if (lyricsWrapper && !isLyricsMode) {
+                // 如果没有匹配的歌词，重置位置到开�?                lyricsWrapper.style.transform = 'translateY(0)';
             }
         }
         
-        // 更新进度条
-        function updateProgress() {
+        // 更新进度�?        function updateProgress() {
             if (isNaN(audioPlayer.duration)) return;
             
-            // 如果正在拖拽，不更新进度条
-            if (isDragging) return;
+            // 如果正在拖拽，不更新进度�?            if (isDragging) return;
             
             const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
             progressBar.style.width = `${percent}%`;
@@ -652,8 +925,7 @@
             updateLyrics();
         }
         
-        // 格式化时间
-        function formatTime(seconds) {
+        // 格式化时�?        function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -661,20 +933,15 @@
         
         // 播放音频
         function playAudio() {
-            console.log('尝试播放音频:', audioPlayer.src);
             audioPlayer.play()
                 .then(() => {
-                    console.log('播放成功');
                     playIcon.classList.remove('fa-play');
                     playIcon.classList.add('fa-pause');
                     albumContainer.classList.remove('paused');
                 })
                 .catch(error => {
-                    console.error('播放失败:', error);
-                    // 如果播放失败，可能是浏览器阻止了自动播放，显示提示
-                    if (error.name === 'NotAllowedError') {
-                        console.log('浏览器阻止了自动播放，需要用户交互');
-                    }
+                    // 如果播放失败，可能是浏览器阻止了自动播放，显示提�?                    if (error.name === 'NotAllowedError') {
+                        }
                 });
         }
         
@@ -699,24 +966,22 @@
             }
         }
         
-        // 播放上一首
-        function playPrev(autoPlay = false) {
+        // 播放上一�?        async function playPrev(autoPlay = false) {
+            // 先刷新收藏列�?            await RenderLoveList();
+            
             if (playlist.length === 0) return;
             
             let prevIndex;
             if (playMode === 'shuffle') {
-                // 随机播放模式下，随机选择上一首
-                prevIndex = Math.floor(Math.random() * playlist.length);
+                // 随机播放模式下，随机选择上一�?                prevIndex = Math.floor(Math.random() * playlist.length);
             } else {
-                // 列表循环或单曲循环模式，播放上一首
-                prevIndex = currentSongIndex - 1;
+                // 列表循环或单曲循环模式，播放上一�?                prevIndex = currentSongIndex - 1;
                 if (prevIndex < 0) {
                     prevIndex = playlist.length - 1;
                 }
             }
             
-            // 如果没有指定 autoPlay，则根据当前播放状态决定
-            if (autoPlay === false) {
+            // 如果没有指定 autoPlay，则根据当前播放状态决�?            if (autoPlay === false) {
                 const wasPlaying = !audioPlayer.paused;
                 switchToSong(playlist[prevIndex], prevIndex, wasPlaying);
             } else {
@@ -724,17 +989,16 @@
             }
         }
         
-        // 播放下一首
-        function playNext(autoPlay = true) {
+        // 播放下一�?        async function playNext(autoPlay = true) {
+            // 先刷新收藏列�?            await RenderLoveList();
+            
             if (playlist.length === 0) return;
             
             let nextIndex;
             if (playMode === 'shuffle') {
-                // 随机播放模式下，随机选择下一首
-                nextIndex = Math.floor(Math.random() * playlist.length);
+                // 随机播放模式下，随机选择下一�?                nextIndex = Math.floor(Math.random() * playlist.length);
             } else {
-                // 列表循环或单曲循环模式，播放下一首
-                nextIndex = currentSongIndex + 1;
+                // 列表循环或单曲循环模式，播放下一�?                nextIndex = currentSongIndex + 1;
                 if (nextIndex >= playlist.length) {
                     nextIndex = 0;
                 }
@@ -750,8 +1014,7 @@
             const nextIndex = (currentIndex + 1) % modes.length;
             playMode = modes[nextIndex];
             
-            // 更新按钮图标和状态
-            updatePlayModeButton();
+            // 更新按钮图标和状�?            updatePlayModeButton();
             
             // 更新音频循环设置
             audioPlayer.loop = (playMode === 'single');
@@ -764,13 +1027,11 @@
             };
             showToast(modeNames[playMode]);
             
-            console.log('播放模式切换为:', playMode);
-        }
+            }
         
         // 更新播放模式按钮显示
         function updatePlayModeButton() {
-            // 移除所有按钮的 active 类
-            shuffleBtn.classList.remove('active');
+            // 移除所有按钮的 active �?            shuffleBtn.classList.remove('active');
             repeatBtn.classList.remove('active');
             
             // 根据当前模式设置按钮图标
@@ -791,8 +1052,7 @@
                     break;
             }
             
-            // 更新播放模式指示器
-            const modeIndicator = document.getElementById('play-mode-indicator');
+            // 更新播放模式指示�?            const modeIndicator = document.getElementById('play-mode-indicator');
             if (modeIndicator) {
                 const modeNames = {
                     'list': '列表循环',
@@ -826,8 +1086,7 @@
             }
         }
         
-        // 跳转进度 - 支持点击和拖拽
-        let isDragging = false;
+        // 跳转进度 - 支持点击和拖�?        let isDragging = false;
         let dragStartX = 0;
         let hasMoved = false;
         
@@ -836,8 +1095,7 @@
             let clientX;
             
             if (e.type.includes('touch')) {
-                // 对于touch事件，优先使用changedTouches（适用于touchend）
-                if (e.changedTouches && e.changedTouches.length > 0) {
+                // 对于touch事件，优先使用changedTouches（适用于touchend�?                if (e.changedTouches && e.changedTouches.length > 0) {
                     clientX = e.changedTouches[0].clientX;
                 } else if (e.touches && e.touches.length > 0) {
                     clientX = e.touches[0].clientX;
@@ -877,51 +1135,35 @@
         function seekToPercent(percent) {
             if (!isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
                 const targetTime = percent * audioPlayer.duration;
-                console.log('音频时长:', audioPlayer.duration.toFixed(2) + 's');
-                console.log('跳转位置:', percent.toFixed(2) + '%');
-                console.log('目标时间:', targetTime.toFixed(2) + 's');
-                console.log('当前播放状态:', audioPlayer.paused ? '暂停' : '播放中');
-                console.log('就绪状态:', audioPlayer.readyState);
-                console.log('当前时间:', audioPlayer.currentTime.toFixed(2) + 's');
                 
                 // 检查缓冲状态
                 const buffered = isBuffered(targetTime);
-                console.log('目标位置是否已缓冲:', buffered);
-                
                 // 检查音频是否已加载
                 if (audioPlayer.readyState >= 2) { // HAVE_CURRENT_DATA
                     audioPlayer.currentTime = targetTime;
-                    console.log('设置后的当前时间:', audioPlayer.currentTime.toFixed(2) + 's');
                     
                     // 验证设置是否成功
                     setTimeout(() => {
-                        console.log('验证当前时间:', audioPlayer.currentTime.toFixed(2) + 's');
                         if (Math.abs(audioPlayer.currentTime - targetTime) > 1) {
-                            console.warn('警告：设置的时间与实际时间差异较大！');
                         }
                     }, 100);
                 } else {
-                    console.log('音频未完全加载，等待加载...');
                     // 等待音频加载后再跳转
                     audioPlayer.addEventListener('canplay', function onCanPlay() {
                         audioPlayer.currentTime = targetTime;
-                        console.log('加载后设置当前时间:', audioPlayer.currentTime.toFixed(2) + 's');
                         audioPlayer.removeEventListener('canplay', onCanPlay);
                     }, { once: true });
                 }
             } else {
-                console.log('无法跳转：音频时长无效或为0');
-            }
+                }
         }
         
         // 鼠标按下
         progressContainer.addEventListener('mousedown', function(e) {
-            console.log('鼠标按下');
             isDragging = true;
             hasMoved = false;
             dragStartX = e.clientX;
             const percent = getProgressFromEvent(e);
-            console.log('点击位置:', percent.toFixed(2));
             updateProgressDisplay(percent);
             seekToPercent(percent);
             e.preventDefault();
@@ -939,7 +1181,6 @@
         // 鼠标释放
         document.addEventListener('mouseup', function(e) {
             if (isDragging) {
-                console.log('鼠标释放，是否移动:', hasMoved);
                 if (hasMoved) {
                     const percent = getProgressFromEvent(e);
                     seekToPercent(percent);
@@ -949,14 +1190,11 @@
             }
         });
         
-        // 触摸开始
-        progressContainer.addEventListener('touchstart', function(e) {
-            console.log('触摸开始');
+        // 触摸开�?        progressContainer.addEventListener('touchstart', function(e) {
             isDragging = true;
             hasMoved = false;
             dragStartX = e.touches[0].clientX;
             const percent = getProgressFromEvent(e);
-            console.log('触摸位置:', percent.toFixed(2));
             updateProgressDisplay(percent);
             seekToPercent(percent);
             e.preventDefault();
@@ -975,7 +1213,6 @@
         // 触摸结束
         document.addEventListener('touchend', function(e) {
             if (isDragging) {
-                console.log('触摸结束，是否移动:', hasMoved);
                 if (hasMoved && e.changedTouches && e.changedTouches.length > 0) {
                     const touch = e.changedTouches[0];
                     const mockEvent = {
@@ -994,7 +1231,6 @@
         
         // 点击事件（用于简单点击跳转）
         progressContainer.addEventListener('click', function(e) {
-            console.log('点击事件触发，hasMoved:', hasMoved);
             // 只有在没有拖拽的情况下才处理点击
             if (!hasMoved) {
                 const percent = getProgressFromEvent(e);
@@ -1038,7 +1274,6 @@
                 
                 for (let i = 0; i < To_Render.length; i++) {
                     if (!To_Render[i] || !Array.isArray(To_Render[i]) || To_Render[i].length < 4) {
-                        console.warn('无效的收藏数据格式:', To_Render[i]);
                         continue;
                     }
 
@@ -1079,24 +1314,20 @@
                         `;
                         html_Love_part.appendChild(LoveSongCard);
                     } catch (error) {
-                        console.error('加载歌曲失败:', error);
-                    }
+                        }
                 }
                 
-                // 自动播放第一首
-                if (playlist.length > 0 && currentSongIndex === -1) {
+                // 自动播放第一�?                if (playlist.length > 0 && currentSongIndex === -1) {
                     switchToSong(playlist[0], 0);
                 }
                 
             } catch (e) {
-                console.error('解析收藏列表失败:', e);
                 html_Love_part.innerHTML = '<div class="text-center text-white/50 py-8">加载收藏列表失败</div>';
                 return 0;
             }
         }
         
-        // 播放指定索引的歌曲
-        function playSongAtIndex(index) {
+        // 播放指定索引的歌�?        function playSongAtIndex(index) {
             if (index >= 0 && index < playlist.length) {
                 switchToSong(playlist[index], index);
             }
@@ -1109,8 +1340,24 @@
         
         // 事件监听
         playBtn.addEventListener('click', togglePlay);
-        prevBtn.addEventListener('click', playPrev);
-        nextBtn.addEventListener('click', playNext);
+        prevBtn.addEventListener('click', async function() {
+            // 显示加载提示
+            showToast('�?正在加载...');
+            try {
+                await playPrev();
+            } catch (error) {
+                showToast('�?播放失败');
+            }
+        });
+        nextBtn.addEventListener('click', async function() {
+            // 显示加载提示
+            showToast('�?正在加载...');
+            try {
+                await playNext();
+            } catch (error) {
+                showToast('�?播放失败');
+            }
+        });
         
         volumeSlider.addEventListener('input', function() {
             audioPlayer.volume = this.value;
@@ -1129,65 +1376,47 @@
         audioPlayer.addEventListener('timeupdate', updateProgress);
         audioPlayer.addEventListener('loadedmetadata', updateProgress);
         
-        // 添加音频加载状态监控
-        audioPlayer.addEventListener('loadstart', function() {
-            console.log('音频开始加载');
-        });
+        // 添加音频加载状态监�?        audioPlayer.addEventListener('loadstart', function() {
+            });
         
         audioPlayer.addEventListener('canplay', function() {
-            console.log('音频可以播放，时长:', audioPlayer.duration);
-        });
+            });
         
         audioPlayer.addEventListener('canplaythrough', function() {
-            console.log('音频可以流畅播放');
-        });
+            });
         
         audioPlayer.addEventListener('seeking', function() {
-            console.log('正在跳转到:', audioPlayer.currentTime);
-        });
+            });
         
         audioPlayer.addEventListener('seeked', function() {
-            console.log('跳转完成，当前时间:', audioPlayer.currentTime);
-        });
+            });
         
         audioPlayer.addEventListener('error', function(e) {
-            console.error('音频错误:', e);
-            console.error('错误代码:', audioPlayer.error);
-            console.error('错误信息:', audioPlayer.error ? audioPlayer.error.message : '未知错误');
-        });
+            });
         
         audioPlayer.addEventListener('stalled', function() {
-            console.warn('音频加载停滞');
-        });
+            });
         
         audioPlayer.addEventListener('suspend', function() {
-            console.log('音频加载挂起');
-        });
+            });
         
         audioPlayer.addEventListener('waiting', function() {
-            console.log('等待更多数据...');
-        });
+            });
         
         audioPlayer.addEventListener('ended', function() {
-            console.log('歌曲播放结束，当前播放模式:', playMode);
-            
             switch (playMode) {
                 case 'list':
-                    // 列表循环模式：播放下一首
-                    console.log('列表循环模式，自动播放下一首');
-                    playNext(true);
+                    // 列表循环模式：播放下一�?                    playNext(true).catch(error => {
+                        });
                     break;
                     
                 case 'shuffle':
-                    // 随机播放模式：随机播放下一首
-                    console.log('随机播放模式，随机播放下一首');
-                    playNext(true);
+                    // 随机播放模式：随机播放下一�?                    playNext(true).catch(error => {
+                        });
                     break;
                     
                 case 'single':
-                    // 单曲循环模式：重新播放当前歌曲
-                    console.log('单曲循环模式，重新播放当前歌曲');
-                    audioPlayer.currentTime = 0;
+                    // 单曲循环模式：重新播放当前歌�?                    audioPlayer.currentTime = 0;
                     playAudio();
                     break;
             }
@@ -1199,18 +1428,36 @@
             }
         });
         
-        // 初始化
-        window.addEventListener('DOMContentLoaded', function() {
+        // 初始�?        window.addEventListener('DOMContentLoaded', function() {
             audioPlayer.volume = 0.75;
             updateVolumeIcon();
             updatePlayModeButton();
             RenderLoveList();
             
-            // 设置定时器，每分钟更新一次收藏列表
-            setInterval(() => {
-                console.log('定时更新收藏列表');
+            // 设置定时器，每分钟更新一次收藏列�?            setInterval(() => {
                 RenderLoveList();
             }, 60000); // 60000毫秒 = 1分钟
+            
+            // 初始化歌词模�?            initLyricsMode();
+            
+            // 初始化刷新收藏列表按�?            const refreshPlaylistBtn = document.getElementById('refresh-playlist-btn');
+            if (refreshPlaylistBtn) {
+                refreshPlaylistBtn.addEventListener('click', function() {
+                    // 添加旋转动画
+                    const icon = this.querySelector('i');
+                    icon.classList.add('rotating');
+                    
+                    // 重新加载收藏列表
+                    RenderLoveList().then(() => {
+                        // 移除旋转动画
+                        setTimeout(() => {
+                            icon.classList.remove('rotating');
+                        }, 500);
+                        
+                        showToast('🔄 收藏列表已刷�?);
+                    });
+                });
+            }
             
             // 键盘控制
             document.addEventListener('keydown', function(e) {
@@ -1225,21 +1472,12 @@
                         if (!isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
                             const currentTime = audioPlayer.currentTime;
                             const newTime = Math.max(0, currentTime - 5);
-                            console.log('后退5秒 - 原时间:', currentTime.toFixed(2) + 's, 新时间:', newTime.toFixed(2) + 's');
-                            console.log('音频就绪状态:', audioPlayer.readyState);
-                            
                             audioPlayer.currentTime = newTime;
-                            
-                            // 验证设置是否成功
-                            setTimeout(() => {
-                                console.log('设置后的实际时间:', audioPlayer.currentTime.toFixed(2) + 's');
-                            }, 100);
                             
                             // 显示提示
                             showToast('⏪ 后退 5秒');
                         } else {
-                            console.log('无法后退：音频未加载');
-                        }
+                            }
                         e.preventDefault();
                         break;
                         
@@ -1248,26 +1486,18 @@
                         if (!isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
                             const currentTime = audioPlayer.currentTime;
                             const newTime = Math.min(audioPlayer.duration, currentTime + 5);
-                            console.log('前进5秒 - 原时间:', currentTime.toFixed(2) + 's, 新时间:', newTime.toFixed(2) + 's');
-                            console.log('音频就绪状态:', audioPlayer.readyState);
-                            
                             audioPlayer.currentTime = newTime;
-                            
-                            // 验证设置是否成功
-                            setTimeout(() => {
-                                console.log('设置后的实际时间:', audioPlayer.currentTime.toFixed(2) + 's');
-                            }, 100);
+                            audioPlayer.currentTime = newTime;
                             
                             // 显示提示
                             showToast('⏩ 前进 5秒');
                         } else {
-                            console.log('无法前进：音频未加载');
-                        }
+                            }
                         e.preventDefault();
                         break;
                         
                     case 'Space':
-                        // 空格键播放/暂停
+                        // 空格键播�?暂停
                         e.preventDefault();
                         togglePlay();
                         break;
@@ -1293,13 +1523,160 @@
                         break;
                         
                     case 'KeyM':
-                        // M键切换播放模式
-                        e.preventDefault();
+                        // M键切换播放模�?                        e.preventDefault();
                         togglePlayMode();
+                        break;
+                        
+                    case 'Escape':
+                        // ESC键退出歌词模�?                        if (isLyricsMode) {
+                            e.preventDefault();
+                            toggleLyricsMode();
+                        }
                         break;
                 }
             });
         });
+        
+        // 更新歌词模式背景
+        function updateLyricsModeBackground(albumCoverUrl) {
+            const playerCard = document.getElementById('player-card');
+            if (playerCard) {
+                playerCard.style.setProperty('--album-bg', `url('${albumCoverUrl}')`);
+            }
+        }
+        
+        // 初始化歌词模�?        function initLyricsMode() {
+            const lyricsContainer = document.querySelector('.lyrics-container');
+            const playlistBtn = document.getElementById('playlist-btn');
+            
+            if (lyricsContainer) {
+                // 点击歌词容器进入歌词模式
+                lyricsContainer.addEventListener('click', function(e) {
+                    // 检查是否为手机�?                    if (window.innerWidth <= 768) {
+                        showToast('🚫 手机版不支持歌词模式');
+                        return;
+                    }
+                    
+                    // 检查是否点击的是歌词项（不是歌词模式）
+                    if (!isLyricsMode) {
+                        toggleLyricsMode();
+                    }
+                });
+                
+                // 添加鼠标滚动监听
+                lyricsContainer.addEventListener('wheel', handleLyricsScroll, { passive: true });
+                
+                // 添加触摸滚动监听
+                lyricsContainer.addEventListener('touchmove', handleLyricsScroll, { passive: true });
+                
+                // 添加滚动事件监听（用于调试）
+                lyricsContainer.addEventListener('scroll', function(e) {
+                    if (isLyricsMode) {
+                        }
+                }, { passive: true });
+            }
+            
+            // 播放列表按钮在歌词模式下的行�?            if (playlistBtn) {
+                playlistBtn.addEventListener('click', function(e) {
+                    if (isLyricsMode) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleLyricsMode();
+                    }
+                });
+            }
+        }
+        
+        // 切换歌词模式
+        function toggleLyricsMode() {
+            isLyricsMode = !isLyricsMode;
+            const body = document.body;
+            const html = document.documentElement;
+            
+            if (isLyricsMode) {
+                // 进入歌词模式
+                html.classList.add('lyrics-mode');
+                body.classList.add('lyrics-mode');
+                body.style.overflow = 'hidden';
+                
+                // 检查歌词容�?                const lyricsContainer = document.querySelector('.lyrics-container');
+                if (lyricsContainer) {
+                    }
+                
+                // 移除播放列表侧边栏和播放面板
+                const playlistPanel = document.getElementById('playlist-panel');
+                if (playlistPanel) {
+                    playlistPanel.classList.remove('active');
+                }
+                
+                showToast('🎵 已进入歌词模�?);
+                // 初始滚动到当前歌�?                setTimeout(() => {
+                    scrollToCurrentLyric();
+                }, 300);
+            } else {
+                // 退出歌词模�?                html.classList.remove('lyrics-mode');
+                body.classList.remove('lyrics-mode');
+                body.style.overflow = 'auto';
+                
+                showToast('🎶 已退出歌词模�?);
+                // 重置歌词位置
+                if (lyricsWrapper) {
+                    lyricsWrapper.style.transform = 'translateY(0)';
+                }
+            }
+            
+            // 清除滚动计时�?            if (lyricsScrollTimer) {
+                clearTimeout(lyricsScrollTimer);
+                lyricsScrollTimer = null;
+            }
+        }
+        
+        // 处理歌词滚动
+        function handleLyricsScroll(e) {
+            if (!isLyricsMode) return;
+            
+            isUserScrolling = true;
+            lastScrollTime = Date.now();
+            
+            // 清除之前的计时器
+            if (lyricsScrollTimer) {
+                clearTimeout(lyricsScrollTimer);
+            }
+            
+            // 设置新的计时器，15秒后恢复自动滚动
+            lyricsScrollTimer = setTimeout(() => {
+                isUserScrolling = false;
+                scrollToCurrentLyric();
+                }, 15000);
+            
+            }
+        
+        // 滚动到当前歌�?        function scrollToCurrentLyric() {
+            if (!isLyricsMode || isUserScrolling) return;
+            
+            const lyrics = document.querySelectorAll('.lyric-item');
+            const activeLyric = document.querySelector('.lyric-item.active');
+            
+            if (activeLyric) {
+                const lyricsContainer = document.querySelector('.lyrics-container');
+                if (!lyricsContainer) return;
+                
+                const containerHeight = lyricsContainer.clientHeight;
+                const lyricOffset = activeLyric.offsetTop;
+                const lyricHeight = activeLyric.offsetHeight;
+                
+                // 计算滚动位置，使当前歌词居中
+                const scrollPosition = lyricOffset - containerHeight / 2 + lyricHeight / 2;
+                
+                // 确保滚动位置不为�?                const finalScrollPosition = Math.max(0, scrollPosition);
+                
+                lyricsContainer.scrollTo({
+                    top: finalScrollPosition,
+                    behavior: 'smooth'
+                });
+                
+                }
+        }
         
         // 显示提示信息
         function showToast(message) {

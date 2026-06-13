@@ -158,7 +158,7 @@ async function searchBooks() {
         searchResults.innerHTML = '<div class="loading">正在搜索...</div>';
         
         // 发起搜索请求
-        const response = await fetch(`https://bk.yydjtc.cn/api/search?key=${encodeURIComponent(searchTerm)}`);
+        const response = await fetch(`http://101.35.133.34:5000/api/search?key=${encodeURIComponent(searchTerm)}`);
         const data = await response.json();
         
         if (data.code !== 200) {
@@ -262,7 +262,7 @@ function applySettings() {
 // 获取书籍章节信息
 async function getChapterInfo(bookId) {
     try {
-        const response = await fetch(`https://bk.yydjtc.cn/api/book?book_id=${bookId}`);
+        const response = await fetch(`http://101.35.133.34:5000/api/book?book_id=${bookId}`);
         const data = await response.json();
         
         if (data.code !== 200) {
@@ -298,7 +298,7 @@ async function getChapterContent(itemId) {
     }
     
     try {
-        const response = await fetch(`https://bk.yydjtc.cn/api/content?tab=%E5%B0%8F%E8%AF%B4&item_id=${itemId}`);
+        const response = await fetch(`http://101.35.133.34:5000/api/content?tab=%E5%B0%8F%E8%AF%B4&item_id=${itemId}`);
         const data = await response.json();
         
         if (data.code !== 200) {

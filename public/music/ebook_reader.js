@@ -298,7 +298,7 @@ async function getChapterContent(itemId) {
     }
     
     try {
-        const response = await fetch(`https://hzliflow.ken520.top/api/cors?url=http://101.35.133.34:5000/api/content?tab=小说&item_id=${itemId}`);
+        const response = await fetch(`https://hzliflow.ken520.top/api/cors?url=http://101.35.133.34:5000/api/content?tab=${encodeURIComponent("小说&item_id=")+ itemId}`);
         const data = await response.json();
         
         if (data.code !== 200) {

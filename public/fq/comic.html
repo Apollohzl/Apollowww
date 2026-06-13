@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漫画 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="reader-wrap">
+    <header class="reader-toolbar">
+      <div class="toolbar-inner">
+        <div class="toolbar-left">
+          <button class="back-btn" onclick="history.back()" aria-label="返回">←</button>
+          <div class="toolbar-book-info">
+            <div id="tb-book" class="book">加载中…</div>
+            <div id="tb-chapter" class="chapter">—</div>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button onclick="gotoDir()" aria-label="目录" title="目录">☰</button>
+          <button onclick="gotoReader()" aria-label="阅读" title="阅读">📖</button>
+          <button onclick="gotoComment()" aria-label="评论" title="评论">💬</button>
+        </div>
+      </div>
+    </header>
+
+    <section id="chapter-nav" style="max-width: 900px; margin: 0 auto; padding: 16px 16px 0; display: flex; gap: 8px;">
+      <button id="prev-chapter" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-size:14px;">◀ 上一章</button>
+      <button id="next-chapter" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-size:14px;">下一章 ▶</button>
+    </section>
+
+    <section id="comic-area" class="comic-viewer">
+      <div class="loading"><div class="loading-spinner"></div><span>正在加载漫画…</span></div>
+    </section>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var bookId = Fq.getQuery('book_id');
+    var itemId = Fq.getQuery('item_id');
+    var title = Fq.getQuery('title');
+    var bookDetail = null;
+    var chapterList = [];
+    var currentIndex = -1;
+
+    if (title) document.getElementById('tb-book').textContent = title;
+
+    function gotoDir() {
+      if (!bookId) return;
+      location.href = 'directory.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
+    }
+    function gotoReader() {
+      if (!bookId || !itemId) return;
+      var q = 'book_id=' + encodeURIComponent(bookId) + '&item_id=' + encodeURIComponent(itemId);
+      if (title) q += '&title=' + encodeURIComponent(title);
+      location.href = 'reader.html?' + q;
+    }
+    function gotoComment() {
+      if (!bookId) return;
+      location.href = 'comment.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
+    }
+    window.gotoDir = gotoDir;
+    window.gotoReader = gotoReader;
+    window.gotoComment = gotoComment;
+
+    function findImageUrls(data) {
+      if (!data) return [];
+      var urls = [];
+      if (Array.isArray(data)) {
+        for (var i = 0; i < data.length; i++) {
+          if (typeof data[i] === 'string' && /^https?:\/\//.test(data[i]) && /\.(jpg|jpeg|png|webp|gif|bmp)/i.test(data[i])) {
+            urls.push(data[i]);
+          } else if (typeof data[i] === 'object') {
+            var u = data[i].url || data[i].image_url || data[i].img_url || data[i].src || '';
+            if (u) urls.push(u);
+          }
+        }
+        return urls;
+      }
+      var candidates = [
+        data.images, data.image_urls, data.comic_images, data.imgs,
+        data.pictures, data.pics, data.img_list, data.image_list
+      ];
+      for (var j = 0; j < candidates.length; j++) {
+        if (Array.isArray(candidates[j])) {
+          for (var k = 0; k < candidates[j].length; k++) {
+            var v = candidates[j][k];
+            if (typeof v === 'string' && /^https?:\/\//.test(v)) {
+              urls.push(v);
+            } else if (v && typeof v === 'object') {
+              var u2 = v.url || v.image_url || v.img_url || v.src || '';
+              if (u2) urls.push(u2);
+            }
+          }
+          if (urls.length) return urls;
+        }
+      }
+      if (typeof data === 'object') {
+        for (var key in data) {
+          var vv = data[key];
+          if (typeof vv === 'string' && /^https?:\/\//.test(vv) && /\.(jpg|jpeg|png|webp|gif)/i.test(vv)) {
+            urls.push(vv);
+          }
+        }
+      }
+      return urls;
+    }
+
+    function renderComic(chapterTitle, imageUrls, htmlContent) {
+      var area = document.getElementById('comic-area');
+      if ((!imageUrls || !imageUrls.length) && !htmlContent) {
+        area.innerHTML = '<div class="error-box">⚠ 未找到图片资源，该章节可能无法正常显示</div>';
+        return;
+      }
+      var html = '<div class="fade-in">';
+      if (imageUrls && imageUrls.length) {
+        for (var i = 0; i < imageUrls.length; i++) {
+          html += '<div class="comic-image">' +
+            '<img src="' + Fq.escapeHtml(imageUrls[i]) + '" alt="" loading="lazy" ' +
+              'onerror="this.parentElement.style.display=\'none\'">' +
+          '</div>';
+        }
+      } else if (htmlContent) {
+        html += '<div class="comic-image" style="background:#fff;padding:12px;border-radius:10px;">' +
+          '<div style="max-width:100%;overflow:hidden;">' + htmlContent + '</div>' +
+        '</div>';
+      }
+      html += '</div>';
+      area.innerHTML = html;
+    }
+
+    function loadChapter() {
+      var area = document.getElementById('comic-area');
+      Fq.showLoading(area, '正在加载漫画…');
+      document.getElementById('tb-chapter').textContent = '加载中…';
+
+      Promise.all([
+        FqApi.getComic(itemId, '0'),
+        FqApi.getComic(itemId, '1')
+      ]).then(function (results) {
+        var resp0 = results[0];
+        var resp1 = results[1];
+
+        var chapterTitle = '';
+        if (resp0 && resp0.data) chapterTitle = resp0.data.chapter_title || resp0.data.title || '';
+        if (!chapterTitle && resp1 && resp1.data) chapterTitle = resp1.data.chapter_title || resp1.data.title || '';
+
+        var images = findImageUrls(resp0 && resp0.data);
+        if (!images.length) images = findImageUrls(resp1 && resp1.data);
+
+        var htmlContent = '';
+        if (!images.length && resp1 && resp1.data && typeof resp1.data.content_html === 'string') {
+          htmlContent = resp1.data.content_html;
+        }
+        if (!images.length && !htmlContent && resp0 && resp0.data && typeof resp0.data.content_html === 'string') {
+          htmlContent = resp0.data.content_html;
+        }
+
+        document.getElementById('tb-chapter').textContent = chapterTitle || '未知章节';
+        renderComic(chapterTitle, images, htmlContent);
+      }).catch(function (err) {
+        document.getElementById('comic-area').innerHTML =
+          '<div class="error-box">⚠ 加载失败：' + Fq.escapeHtml((err && err.message) || String(err)) + '</div>';
+      });
+    }
+
+    function switchChapter(delta) {
+      if (!chapterList.length) return;
+      var idx = currentIndex;
+      if (idx < 0) {
+        for (var i = 0; i < chapterList.length; i++) {
+          if (chapterList[i].item_id === itemId) { idx = i; break; }
+        }
+      }
+      idx = idx + delta;
+      if (idx < 0 || idx >= chapterList.length) return;
+      itemId = chapterList[idx].item_id;
+      currentIndex = idx;
+      window.scrollTo(0, 0);
+      loadChapter();
+    }
+
+    document.getElementById('prev-chapter').onclick = function () { switchChapter(-1); };
+    document.getElementById('next-chapter').onclick = function () { switchChapter(1); };
+
+    function loadBook() {
+      if (!bookId) return;
+      FqApi.getDetail(bookId).then(function (resp) {
+        if (resp && resp.data) {
+          bookDetail = resp.data;
+          var bName = bookDetail.book_name || bookDetail.name || title || '';
+          if (bName) {
+            document.getElementById('tb-book').textContent = bName;
+            title = bName;
+          }
+        }
+      }).catch(function () {});
+
+      FqApi.getBook(bookId).then(function (resp) {
+        chapterList = FqApi.extractChapterList(resp);
+        if (chapterList.length) {
+          for (var i = 0; i < chapterList.length; i++) {
+            if (chapterList[i].item_id === itemId) { currentIndex = i; break; }
+          }
+        }
+      }).catch(function () {});
+    }
+
+    if (!bookId || !itemId) {
+      document.getElementById('comic-area').innerHTML =
+        '<div class="error-box">⚠ 参数错误：缺少 book_id 或 item_id</div>';
+      return;
+    }
+
+    loadBook();
+    loadChapter();
+  })();
+  </script>
+</body>
+</html>

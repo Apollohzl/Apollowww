@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>短剧 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="reader-wrap">
+    <header class="reader-toolbar">
+      <div class="toolbar-inner">
+        <div class="toolbar-left">
+          <button class="back-btn" onclick="history.back()" aria-label="返回">←</button>
+          <div class="toolbar-book-info">
+            <div id="tb-book" class="book">加载中…</div>
+            <div id="tb-chapter" class="chapter">—</div>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button onclick="gotoDir()" aria-label="目录" title="目录">☰</button>
+          <button onclick="gotoReader()" aria-label="阅读" title="阅读">📖</button>
+          <button onclick="gotoComment()" aria-label="评论" title="评论">💬</button>
+        </div>
+      </div>
+    </header>
+
+    <section id="video-area" style="max-width: 900px; margin: 16px auto 0; padding: 0 16px;">
+      <div class="loading"><div class="loading-spinner"></div><span>正在加载视频…</span></div>
+    </section>
+
+    <section id="episode-area" style="max-width: 900px; margin: 0 auto; padding: 24px 16px 48px;">
+      <div class="loading"><div class="loading-spinner"></div><span>正在加载剧集列表…</span></div>
+    </section>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var bookId = Fq.getQuery('book_id');
+    var itemId = Fq.getQuery('item_id');
+    var title = Fq.getQuery('title');
+    var bookDetail = null;
+    var chapterList = [];
+    var currentIndex = -1;
+
+    if (title) document.getElementById('tb-book').textContent = title;
+
+    function gotoDir() {
+      if (!bookId) return;
+      location.href = 'directory.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
+    }
+    function gotoReader() {
+      if (!bookId || !itemId) return;
+      var q = 'book_id=' + encodeURIComponent(bookId) + '&item_id=' + encodeURIComponent(itemId);
+      if (title) q += '&title=' + encodeURIComponent(title);
+      location.href = 'reader.html?' + q;
+    }
+    function gotoComment() {
+      if (!bookId) return;
+      location.href = 'comment.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
+    }
+    window.gotoDir = gotoDir;
+    window.gotoReader = gotoReader;
+    window.gotoComment = gotoComment;
+
+    function findVideoUrl(data) {
+      if (!data) return '';
+      var candidates = [
+        data.video_url, data.video, data.url, data.mp4,
+        data.videoUrl, data.video_url_hd, data.video_url_sd,
+        data.play_url, data.media_url, data.source_url, data.file_url
+      ];
+      for (var i = 0; i < candidates.length; i++) {
+        if (typeof candidates[i] === 'string' && candidates[i] && /^https?:\/\//.test(candidates[i])) {
+          return candidates[i];
+        }
+      }
+      if (Array.isArray(data.videos) && data.videos.length) {
+        var f = data.videos[0];
+        if (typeof f === 'string') return f;
+        if (f && f.url) return f.url;
+      }
+      if (typeof data === 'object') {
+        for (var k in data) {
+          var v = data[k];
+          if (typeof v === 'string' && /^https?:\/\//.test(v) && /\.(mp4|m3u8|flv|webm|mov)/i.test(v)) {
+            return v;
+          }
+        }
+      }
+      return '';
+    }
+
+    function renderVideo(chapterTitle, videoUrl) {
+      var area = document.getElementById('video-area');
+      if (!videoUrl) {
+        area.innerHTML = '<div class="error-box">⚠ 未找到视频资源，该剧集可能无法播放</div>';
+        return;
+      }
+      area.innerHTML =
+        '<div class="drama-player fade-in">' +
+          '<video controls playsinline preload="metadata" style="width:100%;display:block;background:#000;">' +
+            '<source src="' + Fq.escapeHtml(videoUrl) + '" type="video/mp4">' +
+            '您的浏览器不支持 video 标签。' +
+          '</video>' +
+        '</div>' +
+        (chapterTitle ? '<div style="padding:12px 4px 0;font-size:15px;font-weight:600;">' + Fq.escapeHtml(chapterTitle) + '</div>' : '');
+    }
+
+    function renderEpisodeList() {
+      var area = document.getElementById('episode-area');
+      if (!chapterList.length) {
+        Fq.showEmpty(area, '暂无剧集');
+        return;
+      }
+      var html = '<div class="section-title"><h2>剧集列表</h2></div>' +
+        '<div class="chapter-list fade-in">';
+      for (var i = 0; i < chapterList.length; i++) {
+        var ch = chapterList[i];
+        var active = (ch.item_id === itemId) || (i === currentIndex);
+        var t = ch.title || ch.chapter_title || ch.chapter_name || ('第' + (i + 1) + '集');
+        html += '<div class="chapter-item' + (active ? ' active' : '') + '" data-index="' + i + '" data-item="' + Fq.escapeHtml(ch.item_id || '') + '" style="cursor:pointer;">' +
+          '<span class="title-cell">' + Fq.escapeHtml(t) + '</span>' +
+          (active ? '<span class="chapter-meta" style="color:var(--tomato);">播放中</span>' : '') +
+        '</div>';
+      }
+      html += '</div>';
+      area.innerHTML = html;
+
+      var items = area.querySelectorAll('.chapter-item');
+      items.forEach(function (el) {
+        el.onclick = function () {
+          var idx = parseInt(el.getAttribute('data-index'), 10);
+          var iid = el.getAttribute('data-item');
+          if (iid) {
+            itemId = iid;
+            currentIndex = idx;
+            window.scrollTo(0, 0);
+            loadEpisode();
+          }
+        };
+      });
+    }
+
+    function loadEpisode() {
+      var area = document.getElementById('video-area');
+      Fq.showLoading(area, '正在加载视频…');
+      document.getElementById('tb-chapter').textContent = '加载中…';
+
+      FqApi.getDrama(itemId).then(function (resp) {
+        var chapterTitle = '';
+        if (resp && resp.data) {
+          chapterTitle = resp.data.chapter_title || resp.data.title || resp.data.chapter_name || '';
+        }
+        var videoUrl = findVideoUrl(resp && resp.data);
+        document.getElementById('tb-chapter').textContent = chapterTitle || '未知剧集';
+        renderVideo(chapterTitle, videoUrl);
+      }).catch(function (err) {
+        document.getElementById('video-area').innerHTML =
+          '<div class="error-box">⚠ 加载失败：' + Fq.escapeHtml((err && err.message) || String(err)) + '</div>';
+      });
+    }
+
+    function loadBook() {
+      if (!bookId) return;
+      FqApi.getDetail(bookId).then(function (resp) {
+        if (resp && resp.data) {
+          bookDetail = resp.data;
+          var bName = bookDetail.book_name || bookDetail.name || title || '';
+          if (bName) {
+            document.getElementById('tb-book').textContent = bName;
+            title = bName;
+          }
+        }
+      }).catch(function () {});
+
+      FqApi.getBook(bookId).then(function (resp) {
+        chapterList = FqApi.extractChapterList(resp);
+        if (currentIndex < 0 && chapterList.length) {
+          for (var i = 0; i < chapterList.length; i++) {
+            if (chapterList[i].item_id === itemId) { currentIndex = i; break; }
+          }
+          if (currentIndex < 0) currentIndex = 0;
+        }
+        renderEpisodeList();
+      }).catch(function () {
+        document.getElementById('episode-area').innerHTML =
+          '<div class="error-box">⚠ 剧集列表加载失败</div>';
+      });
+    }
+
+    if (!bookId || !itemId) {
+      document.getElementById('video-area').innerHTML =
+        '<div class="error-box">⚠ 参数错误：缺少 book_id 或 item_id</div>';
+      document.getElementById('episode-area').innerHTML = '';
+      return;
+    }
+
+    loadBook();
+    loadEpisode();
+  })();
+  </script>
+</body>
+</html>

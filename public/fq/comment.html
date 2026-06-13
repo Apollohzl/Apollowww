@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>评论 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="reader-wrap">
+    <header class="reader-toolbar">
+      <div class="toolbar-inner">
+        <div class="toolbar-left">
+          <button class="back-btn" onclick="history.back()" aria-label="返回">←</button>
+          <div class="toolbar-book-info">
+            <div id="tb-book" class="book">加载中…</div>
+            <div id="tb-chapter" class="chapter">读者评论</div>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button onclick="gotoDir()" aria-label="目录" title="目录">☰</button>
+          <button onclick="gotoReader()" aria-label="阅读" title="阅读">📖</button>
+          <button onclick="gotoAudio()" aria-label="听书" title="听书">🎧</button>
+        </div>
+      </div>
+    </header>
+
+    <section id="header-area" style="max-width: 820px; margin: 0 auto; padding: 24px 16px 0;">
+      <div class="section-title" style="padding: 8px 0 16px;"><h2>读者评论</h2></div>
+    </section>
+
+    <section id="comment-area" style="max-width: 820px; margin: 0 auto; padding: 0 16px 48px;">
+      <div class="loading"><div class="loading-spinner"></div><span>正在加载评论…</span></div>
+    </section>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var bookId = Fq.getQuery('book_id');
+    var title = Fq.getQuery('title');
+    var bookDetail = null;
+
+    if (title) {
+      document.getElementById('tb-book').textContent = title;
+    }
+
+    function gotoDir() {
+      if (!bookId) return;
+      location.href = 'directory.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
+    }
+    function gotoReader() {
+      if (!bookId) return;
+      var q = 'book_id=' + encodeURIComponent(bookId);
+      if (title) q += '&title=' + encodeURIComponent(title);
+      location.href = 'reader.html?' + q;
+    }
+    function gotoAudio() {
+      if (!bookId) return;
+      var q = 'book_id=' + encodeURIComponent(bookId);
+      if (title) q += '&title=' + encodeURIComponent(title);
+      location.href = 'audio.html?' + q;
+    }
+    window.gotoDir = gotoDir;
+    window.gotoReader = gotoReader;
+    window.gotoAudio = gotoAudio;
+
+    function extractComments(resp) {
+      if (!resp) return [];
+      var candidates = [];
+      var d = resp.data;
+      if (Array.isArray(d)) candidates = d;
+      else if (d) {
+        if (Array.isArray(d.comments)) candidates = d.comments;
+        else if (Array.isArray(d.comment_list)) candidates = d.comment_list;
+        else if (Array.isArray(d.items)) candidates = d.items;
+        else if (Array.isArray(d.list)) candidates = d.list;
+        else if (Array.isArray(d.data)) candidates = d.data;
+      }
+      if (!candidates.length && resp && Array.isArray(resp.comments)) candidates = resp.comments;
+      var out = [];
+      for (var i = 0; i < candidates.length; i++) {
+        var c = candidates[i];
+        if (!c || typeof c !== 'object') continue;
+        var text = c.text || c.content || c.comment_text || c.body || c.message || '';
+        if (!text) continue;
+        var user = c.user_name || c.user || c.nickname || c.author || c.name || c.userName || '';
+        if (!user && c.user && typeof c.user === 'object') user = c.user.name || c.user.nickname || '';
+        var avatar = c.user_avatar || c.avatar || c.userAvatar || '';
+        if (!avatar && c.user && typeof c.user === 'object') avatar = c.user.avatar || c.user.avatar_url || '';
+        var time = c.create_time || c.time || c.created_at || c.date || c.createTime || '';
+        var digg = c.digg_count || c.like_count || c.likes || c.diggCount || 0;
+        out.push({
+          user: user,
+          avatar: avatar,
+          time: time,
+          text: text,
+          digg: digg
+        });
+      }
+      return out;
+    }
+
+    function formatTimeText(t) {
+      if (!t) return '';
+      if (typeof t === 'number') {
+        var d = new Date(t * 1000);
+        if (!isNaN(d.getTime())) return d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0');
+      }
+      return String(t).slice(0, 10);
+    }
+
+    function renderComments(comments) {
+      var area = document.getElementById('comment-area');
+      if (!comments || !comments.length) {
+        Fq.showEmpty(area, '还没有人发表评论，快来抢沙发吧~');
+        return;
+      }
+      var html = '<div class="comment-list fade-in">';
+      for (var i = 0; i < comments.length; i++) {
+        var c = comments[i];
+        var initial = (c.user || '匿').charAt(0) || '匿';
+        var avatarHtml = c.avatar
+          ? '<div class="avatar"><img src="' + Fq.escapeHtml(c.avatar) + '" alt="" onerror="this.style.display=\'none\'"></div>'
+          : '<div class="avatar">' + Fq.escapeHtml(initial) + '</div>';
+        var timeText = formatTimeText(c.time);
+        var diggCount = Number(c.digg) || 0;
+        html += '<div class="comment-item">' +
+          '<div class="comment-head">' +
+            avatarHtml +
+            '<div class="comment-user">' +
+              '<div class="name">' + Fq.escapeHtml(c.user || '匿名用户') + '</div>' +
+              (timeText ? '<div class="time">' + Fq.escapeHtml(timeText) + '</div>' : '') +
+            '</div>' +
+            (diggCount > 0 ? '<div class="comment-digg">👍 ' + Fq.escapeHtml(String(diggCount)) + '</div>' : '') +
+          '</div>' +
+          '<div class="comment-text">' + Fq.escapeHtml(String(c.text)) + '</div>' +
+        '</div>';
+      }
+      html += '</div>';
+      area.innerHTML = html;
+    }
+
+    function updateHeader() {
+      var name = (bookDetail && (bookDetail.book_name || bookDetail.name)) || title || '本书';
+      var h2 = document.querySelector('#header-area h2');
+      if (h2) h2.textContent = '《' + name + '》读者评论';
+      document.getElementById('tb-book').textContent = name;
+    }
+
+    function loadAll() {
+      Promise.all([
+        FqApi.getDetail(bookId).catch(function () { return null; }),
+        FqApi.getComments(bookId).catch(function () { return null; })
+      ]).then(function (results) {
+        var detailResp = results[0];
+        var commentResp = results[1];
+
+        if (detailResp && detailResp.data) {
+          bookDetail = detailResp.data;
+          if (!title) title = bookDetail.book_name || bookDetail.name || '';
+          updateHeader();
+        }
+
+        var comments = extractComments(commentResp);
+        if (!comments.length) {
+          return FqApi.search(title || bookId, 3).catch(function () { return null; }).then(function (sResp) {
+            var extras = extractComments(sResp);
+            if (extras.length) comments = extras;
+            renderComments(comments);
+          });
+        }
+        renderComments(comments);
+      }).catch(function (err) {
+        document.getElementById('comment-area').innerHTML =
+          '<div class="error-box">⚠ 加载失败：' + Fq.escapeHtml((err && err.message) || String(err)) + '</div>';
+      });
+    }
+
+    if (!bookId) {
+      document.getElementById('comment-area').innerHTML =
+        '<div class="error-box">⚠ 参数错误：缺少 book_id</div>';
+    } else {
+      loadAll();
+    }
+  })();
+  </script>
+</body>
+</html>

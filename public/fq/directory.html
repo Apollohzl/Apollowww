@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>章节目录 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark">番</span>
+        <span>番茄书阁</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">首页</a>
+        <a href="search.html?tab=小说">小说</a>
+        <a href="search.html?tab=听书">听书</a>
+        <a href="search.html?tab=漫画">漫画</a>
+        <a href="search.html?tab=短剧">短剧</a>
+      </nav>
+      <div class="header-search">
+        <form class="search-box" onsubmit="return doSearch(this)">
+          <input type="text" name="q" placeholder="搜索书名、作者…">
+          <button type="submit" aria-label="搜索">🔍</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <section class="container" style="padding-top: 24px;">
+    <div class="content-section">
+      <h3 id="book-title" style="font-size: 20px;">章节目录</h3>
+      <div id="book-meta" style="color: var(--ink-light); font-size: 13px; margin-top: 4px;"></div>
+      <div style="margin-top: 16px;">
+        <a id="back-link" href="#" class="btn btn-ghost" style="height: 36px; padding: 0 18px; font-size: 13px;">
+          ← 返回书籍详情
+        </a>
+      </div>
+    </div>
+
+    <div class="content-section" style="padding: 0;">
+      <div id="chapter-list">
+        <div class="loading" style="padding: 60px;">
+          <div class="loading-spinner"></div><span>加载章节…</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container"><p>© 番茄书阁 · 仅供学习交流使用</p></div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const bookId = Fq.getQuery('book_id');
+    const backLink = document.getElementById('back-link');
+    if (bookId) backLink.href = 'book.html?book_id=' + encodeURIComponent(bookId);
+
+    function doSearch(form) {
+      const q = form.q.value.trim();
+      if (!q) return false;
+      location.href = 'search.html?keyword=' + encodeURIComponent(q);
+      return false;
+    }
+
+    function showBookInfo(detail) {
+      const title = (detail && (detail.book_name || detail.title || detail.name)) || '章节目录';
+      const author = (detail && detail.author) || '';
+      document.getElementById('book-title').textContent = title;
+      document.title = title + ' · 章节目录 · 番茄书阁';
+      const meta = document.getElementById('book-meta');
+      const parts = [];
+      if (author) parts.push('作者：' + Fq.escapeHtml(author));
+      meta.textContent = parts.join('');
+    }
+
+    function updateChapterCount(count) {
+      const meta = document.getElementById('book-meta');
+      const current = meta.textContent;
+      const suffix = '  ·  共 ' + count + ' 章';
+      if (current.indexOf('共') !== -1) {
+        meta.textContent = current.replace(/  ·  共 [\s\S]*/, '') + suffix;
+      } else {
+        meta.textContent = current + suffix;
+      }
+    }
+
+    function renderChapterList(bookResp) {
+      const el = document.getElementById('chapter-list');
+
+      // 尝试提取章节数组（兼容两种格式）
+      // 格式A: chapters = [{ title, data: [chapterItem, ...] }]
+      // 格式B: chapterListWithVolume = [[chapterItem, ...], ...]
+      var raw = null;
+      try { raw = bookResp.data.data || bookResp.data || bookResp; } catch (e) { raw = bookResp; }
+
+      var chapterGroups = null;
+      if (raw.chapters && Array.isArray(raw.chapters)) {
+        chapterGroups = raw.chapters; // 格式A
+      } else if (raw.chapterListWithVolume && Array.isArray(raw.chapterListWithVolume)) {
+        chapterGroups = raw.chapterListWithVolume; // 格式B，转为统一格式
+        chapterGroups = chapterGroups.map(function(vol) {
+          return { data: vol };
+        });
+      }
+
+      if (!chapterGroups || !chapterGroups.length) {
+        Fq.showEmpty(el, '暂无章节');
+        return;
+      }
+
+      let html = '';
+      let globalIndex = 0;
+      for (let i = 0; i < chapterGroups.length; i++) {
+        const grp = chapterGroups[i];
+        const volName = grp.title || ('第 ' + (i + 1) + ' 卷');
+        const chapters = Array.isArray(grp.data) ? grp.data : [];
+        if (!chapters.length) continue;
+
+        if (chapterGroups.length > 1) {
+          html += '<div class="chapter-group-title">' + Fq.escapeHtml(volName) + '</div>';
+        }
+
+        for (let j = 0; j < chapters.length; j++) {
+          globalIndex += 1;
+          const ch = chapters[j];
+          const itemId = ch.itemId || ch.item_id || ch.chapter_id || ch.id || '';
+          const chTitle = ch.title || ('第 ' + globalIndex + ' 章');
+          const pay = ch.needPay || ch.isChapterLock || ch.isPaidPublication;
+          const readerUrl = 'reader.html?book_id=' + encodeURIComponent(bookId) +
+                            '&item_id=' + encodeURIComponent(itemId);
+          const badge = pay
+            ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(230,90,44,0.10);color:var(--tomato);font-size:11px;font-weight:600;">付费</span>'
+            : '';
+          html += '<a class="chapter-item" href="' + Fq.escapeHtml(readerUrl) + '">' +
+                    '<div class="title-cell">' +
+                      '<span style="color:var(--ink-light);margin-right:12px;font-variant-numeric:tabular-nums;">' + String(globalIndex).padStart(3,'0') + '</span>' +
+                      Fq.escapeHtml(chTitle) +
+                    '</div>' +
+                    '<div class="chapter-meta">' + badge + '</div>' +
+                  '</a>';
+        }
+      }
+
+      if (!html) {
+        Fq.showEmpty(el, '暂无章节');
+        return;
+      }
+      el.innerHTML = '<div class="chapter-list" style="padding:0;">' + html + '</div>';
+      updateChapterCount(globalIndex);
+    }
+
+    function showErrorInList(msg) {
+      const el = document.getElementById('chapter-list');
+      Fq.showError(el, msg);
+    }
+
+    if (!bookId) {
+      document.getElementById('book-title').textContent = '缺少参数';
+      document.getElementById('book-meta').textContent = 'URL 中未提供 book_id';
+      showErrorInList('请从书籍详情页进入章节目录（缺少 book_id）');
+    } else {
+      Promise.all([
+        FqApi.getDetail(bookId).catch(function (err) {
+          console.warn('获取书籍详情失败：', err);
+          return null;
+        }),
+        FqApi.getBook(bookId)
+      ]).then(function (results) {
+        const detail = results[0];
+        const bookResp = results[1];
+
+        // 详情（失败则回退到 getBook 的返回中查找字段）
+        if (detail) {
+          const data = (detail && detail.data && typeof detail.data === 'object' && !Array.isArray(detail.data))
+            ? Object.assign({}, detail, detail.data) : detail;
+          showBookInfo(data);
+        } else if (bookResp) {
+          const data = (bookResp && bookResp.data && typeof bookResp.data === 'object' && !Array.isArray(bookResp.data))
+            ? Object.assign({}, bookResp, bookResp.data) : bookResp;
+          showBookInfo(data);
+        }
+
+        // 章节数据：传入完整响应对象，由 renderChapterList 内部解析
+        renderChapterList(bookResp);
+      }).catch(function (err) {
+        showErrorInList('加载失败：' + (err.message || err));
+      });
+    }
+  </script>
+</body>
+</html>

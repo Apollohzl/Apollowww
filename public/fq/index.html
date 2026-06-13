@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark">番</span>
+        <span>番茄书阁</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="active">首页</a>
+        <a href="search.html?tab=小说">小说</a>
+        <a href="search.html?tab=听书">听书</a>
+        <a href="search.html?tab=漫画">漫画</a>
+        <a href="search.html?tab=短剧">短剧</a>
+      </nav>
+      <div class="header-search">
+        <form class="search-box" onsubmit="return doHeaderSearch(this)">
+          <input type="text" name="q" placeholder="搜索书名、作者、关键词…">
+          <button type="submit" aria-label="搜索">🔍</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>发现你的<em>下一本好书</em></h1>
+        <p>海量小说 · 精品听书 · 热门漫画 · 精彩短剧，一站尽享。</p>
+        <form class="hero-search" onsubmit="return doHeroSearch(this)">
+          <input type="text" name="q" placeholder="搜索你感兴趣的内容…">
+          <button type="submit">搜索</button>
+        </form>
+        <div class="hero-quick">
+          <span>热搜：</span>
+          <a href="search.html?keyword=修仙">修仙</a>
+          <a href="search.html?keyword=都市">都市</a>
+          <a href="search.html?keyword=穿越">穿越</a>
+          <a href="search.html?keyword=言情">言情</a>
+          <a href="search.html?keyword=悬疑">悬疑</a>
+          <a href="search.html?keyword=历史">历史</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="section-title">
+      <h2>分类导航</h2>
+      <a class="more" href="search.html?tab=小说">查看更多 →</a>
+    </div>
+    <div class="category-grid">
+      <a class="category-item" href="search.html?keyword=修仙&tab=小说">
+        <div class="category-icon" style="background: linear-gradient(135deg,#e65a2c,#f8b089);">⚔</div>
+        <div><strong>修仙</strong><small>玄幻奇幻</small></div>
+      </a>
+      <a class="category-item" href="search.html?keyword=都市&tab=小说">
+        <div class="category-icon" style="background: linear-gradient(135deg,#c74520,#e65a2c);">🏙</div>
+        <div><strong>都市</strong><small>现代生活</small></div>
+      </a>
+      <a class="category-item" href="search.html?keyword=穿越&tab=小说">
+        <div class="category-icon" style="background: linear-gradient(135deg,#8a7d6b,#c7a878);">⏳</div>
+        <div><strong>穿越</strong><small>时空穿梭</small></div>
+      </a>
+      <a class="category-item" href="search.html?keyword=言情&tab=小说">
+        <div class="category-icon" style="background: linear-gradient(135deg,#e65a2c,#f8b089);">❤</div>
+        <div><strong>言情</strong><small>甜蜜爱恋</small></div>
+      </a>
+      <a class="category-item" href="search.html?keyword=悬疑&tab=小说">
+        <div class="category-icon" style="background: linear-gradient(135deg,#5a5045,#8a7d6b);">🔍</div>
+        <div><strong>悬疑</strong><small>烧脑推理</small></div>
+      </a>
+      <a class="category-item" href="search.html?keyword=历史&tab=小说">
+        <div class="category-icon" style="background: linear-gradient(135deg,#c7a878,#8a7d6b);">📜</div>
+        <div><strong>历史</strong><small>风云变幻</small></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="section-title">
+      <h2>推荐小说</h2>
+      <a class="more" href="search.html?tab=小说">查看更多 →</a>
+    </div>
+    <div class="book-grid fade-in" id="grid-novel"></div>
+  </section>
+
+  <section class="container">
+    <div class="section-title">
+      <h2>听书精选</h2>
+      <a class="more" href="search.html?tab=听书">查看更多 →</a>
+    </div>
+    <div class="book-grid fade-in" id="grid-audio"></div>
+  </section>
+
+  <section class="container">
+    <div class="section-title">
+      <h2>热门漫画</h2>
+      <a class="more" href="search.html?tab=漫画">查看更多 →</a>
+    </div>
+    <div class="book-grid fade-in" id="grid-comic"></div>
+  </section>
+
+  <section class="container">
+    <div class="section-title">
+      <h2>短剧推荐</h2>
+      <a class="more" href="search.html?tab=短剧">查看更多 →</a>
+    </div>
+    <div class="book-grid fade-in" id="grid-drama"></div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 番茄书阁 · 仅供学习交流使用</p>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    function doHeroSearch(form) {
+      const q = form.q.value.trim();
+      if (!q) return false;
+      location.href = 'search.html?keyword=' + encodeURIComponent(q);
+      return false;
+    }
+    function doHeaderSearch(form) {
+      const q = form.q.value.trim();
+      if (!q) return false;
+      location.href = 'search.html?keyword=' + encodeURIComponent(q);
+      return false;
+    }
+
+    function loadSection(gridId, keyword, tabType) {
+      const el = document.getElementById(gridId);
+      Fq.showLoading(el, '加载中…');
+      FqApi.search(keyword, tabType, 0).then(function (resp) {
+        const books = FqApi.extractBooksFromSearch(resp);
+        el.innerHTML = Fq.renderBookCards(books);
+      }).catch(function (err) {
+        Fq.showError(el, '加载失败：' + (err && err.message ? err.message : err));
+      });
+    }
+
+    loadSection('grid-novel', '推荐', 3);
+    loadSection('grid-audio', '听书', 2);
+    loadSection('grid-comic', '漫画', 8);
+    loadSection('grid-drama', '短剧', 11);
+  </script>
+</body>
+</html>

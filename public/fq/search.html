@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>搜索 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark">番</span>
+        <span>番茄书阁</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">首页</a>
+        <a href="search.html?tab=小说" id="nav-novel">小说</a>
+        <a href="search.html?tab=听书" id="nav-audio">听书</a>
+        <a href="search.html?tab=漫画" id="nav-comic">漫画</a>
+        <a href="search.html?tab=短剧" id="nav-drama">短剧</a>
+      </nav>
+      <div class="header-search">
+        <form class="search-box" onsubmit="return doHeaderSearch(this)">
+          <input type="text" name="q" id="header-q" placeholder="搜索书名、作者、关键词…">
+          <button type="submit" aria-label="搜索">🔍</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" style="padding: 36px 0 24px;">
+    <div class="container">
+      <div class="hero-content">
+        <form class="hero-search" onsubmit="return doHeroSearch(this)" style="max-width: 640px;">
+          <input type="text" name="q" id="hero-q" placeholder="搜索你感兴趣的内容…">
+          <button type="submit">搜索</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab-btn" data-tab="小说">小说</button>
+      <button class="tab-btn" data-tab="听书">听书</button>
+      <button class="tab-btn" data-tab="漫画">漫画</button>
+      <button class="tab-btn" data-tab="短剧">短剧</button>
+      <button class="tab-btn" data-tab="推荐">推荐</button>
+    </div>
+
+    <div id="result-summary" style="padding: 0 4px 16px; color: var(--ink-soft); font-size: 14px;"></div>
+    <div class="book-grid fade-in" id="result-grid"></div>
+    <div style="text-align:center; margin: 24px 0;">
+      <button id="load-more" class="load-more" style="display:none;">加载更多</button>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 番茄书阁 · 仅供学习交流使用</p>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const PAGE_SIZE = 20;
+    const TABS = ['小说', '听书', '漫画', '短剧', '推荐'];
+
+    let state = {
+      tab: TABS.includes(Fq.getQuery('tab')) ? Fq.getQuery('tab') : '小说',
+      keyword: Fq.getQuery('keyword') || Fq.getQuery('key') || '',
+      offset: 0,
+      items: [],
+      loading: false,
+      finished: false
+    };
+
+    function effectiveKeyword() {
+      return state.keyword || state.tab;
+    }
+
+    function tabTypeFor(tab) {
+      if (tab === '推荐') return 3;
+      return tab;
+    }
+
+    function effectiveSearchKeyword() {
+      if (state.tab === '推荐' && !state.keyword) return '推荐';
+      return effectiveKeyword();
+    }
+
+    function updateSummary() {
+      const el = document.getElementById('result-summary');
+      const kw = effectiveKeyword();
+      el.textContent = '搜索：' + kw + '  ·  分类：' + state.tab + '  ·  已加载 ' + state.items.length + ' 本';
+    }
+
+    function initTabs() {
+      const btns = document.querySelectorAll('.tab-btn');
+      btns.forEach(function (btn) {
+        if (btn.dataset.tab === state.tab) btn.classList.add('active');
+        btn.addEventListener('click', function () {
+          const tab = btn.dataset.tab;
+          if (tab === state.tab) return;
+          const url = 'search.html?tab=' + encodeURIComponent(tab) +
+                      (state.keyword ? '&keyword=' + encodeURIComponent(state.keyword) : '');
+          location.href = url;
+        });
+      });
+
+      const navMap = { '小说': 'nav-novel', '听书': 'nav-audio', '漫画': 'nav-comic', '短剧': 'nav-drama' };
+      const navId = navMap[state.tab];
+      if (navId) {
+        const el = document.getElementById(navId);
+        if (el) el.classList.add('active');
+      }
+    }
+
+    function initSearchBox() {
+      if (state.keyword) {
+        document.getElementById('header-q').value = state.keyword;
+        document.getElementById('hero-q').value = state.keyword;
+      }
+    }
+
+    function loadPage(reset) {
+      if (state.loading) return;
+      if (reset) {
+        state.offset = 0;
+        state.items = [];
+        state.finished = false;
+      }
+      if (state.finished) return;
+
+      state.loading = true;
+      const grid = document.getElementById('result-grid');
+      const moreBtn = document.getElementById('load-more');
+
+      if (reset) {
+        Fq.showLoading(grid, '搜索中…');
+      }
+      moreBtn.style.display = 'none';
+
+      const kw = effectiveSearchKeyword();
+      const tt = tabTypeFor(state.tab);
+
+      FqApi.search(kw, tt, state.offset).then(function (resp) {
+        const books = FqApi.extractBooksFromSearch(resp);
+        state.items = state.items.concat(books);
+
+        grid.innerHTML = Fq.renderBookCards(state.items);
+        updateSummary();
+
+        if (books.length < PAGE_SIZE || state.offset >= 200) {
+          state.finished = true;
+          moreBtn.style.display = 'none';
+        } else {
+          state.offset += PAGE_SIZE;
+          moreBtn.style.display = 'inline-block';
+          moreBtn.disabled = false;
+          moreBtn.textContent = '加载更多';
+        }
+        state.loading = false;
+      }).catch(function (err) {
+        if (reset) {
+          Fq.showError(grid, '搜索失败：' + (err.message || err));
+        }
+        updateSummary();
+        moreBtn.style.display = 'none';
+        state.loading = false;
+      });
+    }
+
+    function doHeroSearch(form) {
+      const q = form.q.value.trim();
+      if (!q) return false;
+      location.href = 'search.html?keyword=' + encodeURIComponent(q) +
+                      '&tab=' + encodeURIComponent(state.tab);
+      return false;
+    }
+
+    function doHeaderSearch(form) {
+      const q = form.q.value.trim();
+      if (!q) return false;
+      location.href = 'search.html?keyword=' + encodeURIComponent(q) +
+                      '&tab=' + encodeURIComponent(state.tab);
+      return false;
+    }
+
+    document.getElementById('load-more').addEventListener('click', function () {
+      const moreBtn = document.getElementById('load-more');
+      moreBtn.disabled = true;
+      moreBtn.textContent = '加载中…';
+      loadPage(false);
+    });
+
+    initTabs();
+    initSearchBox();
+    updateSummary();
+    loadPage(true);
+  </script>
+</body>
+</html>

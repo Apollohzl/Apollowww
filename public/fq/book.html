@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书籍详情 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark">番</span>
+        <span>番茄书阁</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">首页</a>
+        <a href="search.html?tab=小说">小说</a>
+        <a href="search.html?tab=听书">听书</a>
+        <a href="search.html?tab=漫画">漫画</a>
+        <a href="search.html?tab=短剧">短剧</a>
+      </nav>
+      <div class="header-search">
+        <form class="search-box" onsubmit="return doSearch(this)">
+          <input type="text" name="q" placeholder="搜索书名、作者…">
+          <button type="submit" aria-label="搜索">🔍</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- 书籍头部信息 -->
+  <section class="detail-hero">
+    <div class="container">
+      <div id="hero-wrap">
+        <div class="loading" style="padding:60px 24px;">
+          <div class="loading-spinner"></div><span>加载书籍信息…</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 内容简介 -->
+  <section class="container">
+    <div class="content-section">
+      <h3>内容简介</h3>
+      <div id="abstract-box" style="line-height:1.9;color:var(--ink-soft);font-size:15px;"></div>
+    </div>
+
+    <!-- 章节目录预览 -->
+    <div class="content-section">
+      <h3>章节目录</h3>
+      <div id="chapter-preview"></div>
+      <div style="margin-top:16px;text-align:center;">
+        <a id="all-chapters-link" href="#" class="btn btn-primary" style="max-width:240px;margin:0 auto;">查看全部章节 →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 番茄书阁 · 仅供学习交流使用</p>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // ===== 参数 =====
+    var book_id = Fq.getQuery('book_id');
+    var title   = Fq.getQuery('title');
+
+    function doSearch(form) {
+      var q = form.q.value.trim();
+      if (!q) return false;
+      location.href = 'search.html?keyword=' + encodeURIComponent(q);
+      return false;
+    }
+
+    function buildParams(extras) {
+      var p = [];
+      if (book_id) p.push('book_id=' + encodeURIComponent(book_id));
+      if (title)   p.push('title='   + encodeURIComponent(title));
+      if (extras) {
+        for (var k in extras) {
+          if (extras[k] !== undefined && extras[k] !== null && extras[k] !== '') {
+            p.push(encodeURIComponent(k) + '=' + encodeURIComponent(extras[k]));
+          }
+        }
+      }
+      return p.join('&');
+    }
+
+    // ===== 渲染函数 =====
+
+    function renderHero(book) {
+      var name     = book.book_name || title || '未知书籍';
+      var author   = book.author   || '佚名';
+      var cover    = book.thumb_url || book.cover_url || '';
+      var score    = book.score    || '';
+      var category = book.category || '';
+      var readCnt  = book.read_cnt_text || '';
+      var serialCt = book.serial_count   || '';
+
+      // 标签
+      var tags = [];
+      if (category)    tags.push(category);
+      if (book.state)  tags.push(book.state);
+      if (book.genre)  tags.push(book.genre);
+      var tagHtml = tags.slice(0,4).map(function(t){
+        return '<span class="detail-tag">' + Fq.escapeHtml(t) + '</span>';
+      }).join('');
+
+      // 封面 HTML
+      var coverHtml;
+      if (cover) {
+        coverHtml =
+          '<div class="detail-cover">' +
+            '<img src="' + Fq.escapeHtml(cover) + '" alt="" ' +
+              'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\';">' +
+            '<div class="book-cover-placeholder" style="display:none;">' + Fq.escapeHtml(name.slice(0,4)) + '</div>' +
+          '</div>';
+      } else {
+        coverHtml =
+          '<div class="detail-cover">' +
+            '<div class="book-cover-placeholder">' + Fq.escapeHtml(name.slice(0,4)) + '</div>' +
+          '</div>';
+      }
+
+      var dirUrl    = 'directory.html?' + buildParams();
+      var readerUrl = 'reader.html?'     + buildParams();
+      var audioUrl  = 'audio.html?'      + buildParams();
+      var commentUrl= 'comment.html?'    + buildParams();
+
+      var statsHtml =
+        '<div class="detail-stats">' +
+          (score    ? '<div class="stat"><strong>' + Fq.escapeHtml(score) + '</strong><small>评分</small></div>' : '') +
+          (readCnt  ? '<div class="stat"><strong>' + Fq.escapeHtml(readCnt) + '</strong><small>阅读</small></div>' : '') +
+          (serialCt ? '<div class="stat"><strong>' + Fq.escapeHtml(serialCt) + '</strong><small>章节</small></div>' : '') +
+        '</div>';
+
+      document.getElementById('hero-wrap').innerHTML =
+        '<div class="detail-hero-inner">' +
+          coverHtml +
+          '<div class="detail-info">' +
+            '<h1>' + Fq.escapeHtml(name) + '</h1>' +
+            '<div class="detail-author">作者：<a href="search.html?keyword=' + encodeURIComponent(author) + '&tab=小说">' + Fq.escapeHtml(author) + '</a></div>' +
+            (tagHtml ? '<div class="detail-tags">' + tagHtml + '</div>' : '') +
+            statsHtml +
+            '<div class="detail-actions">' +
+              '<a class="btn btn-primary" href="' + dirUrl    + '" style="max-width:160px;flex:0 0 auto;">开始阅读</a>' +
+              '<a class="btn btn-ghost" href="' + readerUrl  + '">📖 阅读</a>' +
+              '<a class="btn btn-ghost" href="' + audioUrl   + '">🎧 听书</a>' +
+              '<a class="btn btn-ghost" href="' + commentUrl+ '">💬 评论</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('all-chapters-link').href = dirUrl;
+      document.title = name + ' · 番茄书阁';
+    }
+
+    function renderAbstract(book) {
+      var text = book.abstract || book.book_abstract_v2 || book.description || '暂无简介。';
+      document.getElementById('abstract-box').innerHTML =
+        '<div class="abstract-text">' + Fq.escapeHtml(text).replace(/\n/g, '<br>') + '</div>';
+    }
+
+    function renderChapterPreview(chapters) {
+      var el = document.getElementById('chapter-preview');
+      if (!chapters || chapters.length === 0) {
+        el.innerHTML = '<div class="empty-state"><p>暂无章节</p></div>';
+        return;
+      }
+      var preview = chapters.slice(0, 8);
+      var html = '<div class="chapter-list">';
+      for (var i = 0; i < preview.length; i++) {
+        var c = preview[i];
+        var itemId  = c.itemId || c.item_id || c.id || '';
+        var chTitle = c.title  || ('第 ' + (i + 1) + ' 章');
+        html +=
+          '<a class="chapter-item" href="reader.html?' + buildParams({ item_id: itemId }) + '">' +
+            '<div class="title-cell">' + Fq.escapeHtml(chTitle) + '</div>' +
+            '<div class="chapter-meta">' +
+              (c.needPay ? '<span style="color:var(--tomato);">付费</span>' : '') +
+            '</div>' +
+          '</a>';
+      }
+      html += '</div>';
+      el.innerHTML = html;
+    }
+
+    function showLoadError(msg) {
+      document.getElementById('hero-wrap').innerHTML =
+        '<div class="error-box" style="margin:40px 0;">' + Fq.escapeHtml(msg) + '</div>';
+      document.getElementById('abstract-box').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      document.getElementById('chapter-preview').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+    }
+
+    // ===== 加载入口 =====
+    function load() {
+      if (!book_id) {
+        showLoadError('缺少 book_id 参数，请从搜索结果或目录页进入。');
+        return;
+      }
+
+      Fq.showLoading(document.getElementById('abstract-box'), '加载简介…');
+      Fq.showLoading(document.getElementById('chapter-preview'), '加载章节…');
+
+      // 并行请求：书籍详情 + 章节列表
+      Promise.all([
+        FqApi.getDetail(book_id),
+        FqApi.getBook(book_id)
+      ]).then(function (results) {
+        var detailResp = results[0];
+        var bookResp   = results[1];
+
+        // 书籍详情：resp.data.data
+        var book = {};
+        try { book = detailResp.data.data || {}; } catch (e) {}
+
+        // 如果 URL 带了 title 优先用它
+        if (title && !book.book_name) book.book_name = title;
+
+        renderHero(book);
+        renderAbstract(book);
+
+        // 章节列表
+        var chapters = FqApi.extractChapterList(bookResp);
+        renderChapterPreview(chapters);
+
+      }).catch(function (err) {
+        console.error('load error:', err);
+        showLoadError('加载失败：' + (err.message || String(err)));
+      });
+    }
+
+    load();
+  </script>
+</body>
+</html>

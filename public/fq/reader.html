@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>阅读 · 番茄书阁</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="reader-wrap">
+    <header class="reader-toolbar">
+      <div class="toolbar-inner">
+        <div class="toolbar-left">
+          <button class="back-btn" onclick="history.back()" aria-label="返回">←</button>
+          <div class="toolbar-book-info">
+            <div id="tb-book" class="book">加载中…</div>
+            <div id="tb-chapter" class="chapter">—</div>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button onclick="gotoDir()" title="目录">☰</button>
+          <button onclick="gotoAudio()" title="听书">🎧</button>
+          <button onclick="gotoComment()" title="评论">💬</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="chapter-content">
+      <div id="content-area">
+        <div class="loading"><div class="loading-spinner"></div><span>正在加载章节内容…</span></div>
+      </div>
+      <div id="preload-indicator" style="text-align:center;font-size:12px;color:var(--ink-light);height:20px;margin-top:4px;"></div>
+    </section>
+
+    <nav class="reader-nav">
+      <a id="prev-btn" href="#" class="btn btn-ghost" style="pointer-events:none;opacity:0.5;">← 上一章</a>
+      <a id="dir-btn" href="#" class="btn btn-primary">返回目录</a>
+      <a id="next-btn" href="#" class="btn btn-ghost" style="pointer-events:none;opacity:0.5;">下一章 →</a>
+    </nav>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container"><p>© 番茄书阁 · 仅供学习交流使用</p></div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // ============================================================
+    // 章节缓存管理
+    // ============================================================
+    var ChapterCache = (function () {
+      var PREFIX = 'fq_ch_';
+      var MAX = 50;
+
+      function key(iid) { return PREFIX + String(iid); }
+
+      function get(iid) {
+        try {
+          var raw = sessionStorage.getItem(key(iid));
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (e) { return null; }
+      }
+
+      function set(iid, data) {
+        try {
+          // 清退：如果已达上限，则删除最早的那几条
+          var keys = [];
+          for (var i = 0; i < sessionStorage.length; i++) {
+            var k = sessionStorage.key(i);
+            if (k && k.indexOf(PREFIX) === 0) keys.push(k);
+          }
+          while (keys.length >= MAX) {
+            sessionStorage.removeItem(keys.shift());
+          }
+          sessionStorage.setItem(key(iid), JSON.stringify(data));
+        } catch (e) { /* 静默 */ }
+      }
+
+      function has(iid) {
+        // 判断：存在且 content 非空
+        var v = get(iid);
+        return !!(v && v.content && v.content.length > 0);
+      }
+
+      function remove(iid) {
+        try { sessionStorage.removeItem(key(iid)); } catch (e) {}
+      }
+
+      return { get: get, set: set, has: has, remove: remove };
+    })();
+
+    // ============================================================
+    // 全局状态
+    // ============================================================
+    var bookId       = Fq.getQuery('book_id');
+    var itemId       = Fq.getQuery('item_id');
+    var bookName     = Fq.getQuery('title') || '书籍';
+    var chapterList  = [];
+    var currentIndex = -1;
+    var currentTitle = '';
+    var isPreloading = false;
+
+    var contentEl = document.getElementById('content-area');
+    var preloadEl = document.getElementById('preload-indicator');
+    var tbBook    = document.getElementById('tb-book');
+    var tbChapter = document.getElementById('tb-chapter');
+    var prevBtn   = document.getElementById('prev-btn');
+    var nextBtn   = document.getElementById('next-btn');
+    var dirBtn    = document.getElementById('dir-btn');
+
+    // ============================================================
+    // URL
+    // ============================================================
+    function buildBase() {
+      var p = [];
+      if (bookId)   p.push('book_id=' + encodeURIComponent(bookId));
+      if (bookName) p.push('title='   + encodeURIComponent(bookName));
+      return p.join('&');
+    }
+    function buildReaderUrl(iid) {
+      return 'reader.html?' + buildBase() + '&item_id=' + encodeURIComponent(iid);
+    }
+    function gotoDir()     { location.href = 'directory.html?' + buildBase(); }
+    function gotoAudio()   { location.href = 'audio.html?'     + buildBase() + '&item_id=' + encodeURIComponent(itemId); }
+    function gotoComment() { location.href = 'comment.html?'   + buildBase(); }
+    function setHeader(title) {
+      tbBook.textContent    = bookName;
+      tbChapter.textContent = title || '—';
+      document.title = (title ? title + ' · ' : '') + bookName;
+    }
+
+    // ============================================================
+    // 格式化（处理 <img> 等非标准标签）
+    // ============================================================
+    function formatContent(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      return raw.replace(/<img\s+([^>]*?)\s*\/?>/gi, function (match) {
+        var srcMatch   = match.match(/src\s*=\s*["']([^"']*)["']/i);
+        var altMatch   = match.match(/alt\s*=\s*["']([^"']*)["']/i);
+        var titleMatch = match.match(/title\s*=\s*["']([^"']*)["']/i);
+        var src   = srcMatch   ? srcMatch[1]   : '';
+        var alt   = altMatch   ? altMatch[1]   : '';
+        var title = titleMatch ? titleMatch[1] : '';
+        if (!src) return match;
+        var tag = '<img src="' + src + '"';
+        if (alt)   tag += ' alt="' + alt + '"';
+        if (title) tag += ' title="' + title + '"';
+        tag += ' style="max-width:100%;height:auto;display:block;margin:12px auto;border-radius:6px;" loading="lazy" />';
+        return tag;
+      });
+    }
+
+    // ============================================================
+    // 深度搜索：content / title
+    // ============================================================
+    function findContent(obj, depth) {
+      if (depth === undefined) depth = 0;
+      if (depth > 8) return '';
+      if (!obj || typeof obj !== 'object') return '';
+
+      if (typeof obj.content === 'string' && obj.content.length > 0) return obj.content;
+      if (typeof obj.text === 'string' && obj.text.length > 0) return obj.text;
+      if (typeof obj.body === 'string' && obj.body.length > 0) return obj.body;
+      if (typeof obj.html === 'string' && obj.html.length > 0) return obj.html;
+
+      for (var key in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+        if (typeof obj[key] === 'function') continue;
+        var val = obj[key];
+        if (typeof val === 'object' && val !== null && !(val instanceof Array && key === 'chapters')) {
+          // 避免把章节列表里的 title 误当正文
+          var r = findContent(val, depth + 1);
+          if (r) return r;
+        } else if (typeof val === 'string' && val.length > 20 && /^[\u4e00-\u9fa5]/.test(val)) {
+          // 以中文开头的长字符串，极可能是正文
+          return val;
+        }
+      }
+      return '';
+    }
+
+    function findTitle(obj, depth) {
+      if (depth === undefined) depth = 0;
+      if (depth > 5) return '';
+      if (!obj || typeof obj !== 'object') return '';
+
+      if (typeof obj.chapterTitle === 'string' && obj.chapterTitle) return obj.chapterTitle;
+      if (typeof obj.chapter_title === 'string' && obj.chapter_title) return obj.chapter_title;
+      if (typeof obj.title === 'string' && obj.title) return obj.title;
+      if (typeof obj.name === 'string' && obj.name) return obj.name;
+
+      for (var key in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+        if (typeof obj[key] === 'function') continue;
+        var val = obj[key];
+        if (typeof val === 'object' && val !== null && key !== 'chapters') {
+          var r = findTitle(val, depth + 1);
+          if (r) return r;
+        }
+      }
+      return '';
+    }
+
+    // ============================================================
+    // 渲染正文
+    // ============================================================
+    function renderContent(title, body) {
+      var formatted = formatContent(body || '');
+      var isHtml = /<[^>]+>/.test(formatted);
+      var pHtml;
+
+      if (isHtml) {
+        var parts = formatted.split(/\r?\n/).filter(function (l) { return l.trim().length > 0; });
+        pHtml = parts.map(function (p) { return '<div>' + p + '</div>'; }).join('');
+      } else {
+        var paras = formatted.split(/\r?\n/).filter(function (l) { return l.trim().length > 0; });
+        pHtml = paras.map(function (p) { return '<p>' + Fq.escapeHtml(p) + '</p>'; }).join('');
+      }
+
+      var total = chapterList.length;
+      var cur = currentIndex >= 0 ? currentIndex + 1 : '?';
+      var info = '共 ' + (total || '?') + ' 章  ·  第 ' + cur + ' 章';
+
+      contentEl.innerHTML =
+        '<h1>' + Fq.escapeHtml(title || '无题') + '</h1>' +
+        '<div class="chapter-info">' + Fq.escapeHtml(info) + '</div>' +
+        '<div class="content-body' + (isHtml ? ' content-html' : '') + '">' +
+          (pHtml || '<p style="text-align:center;color:var(--ink-light);padding:40px 0;">（本章无内容）</p>') +
+        '</div>';
+    }
+
+    // ============================================================
+    // 翻页导航按钮
+    // ============================================================
+    function updateNav() {
+      dirBtn.href = 'directory.html?' + buildBase();
+      if (chapterList.length === 0 || currentIndex < 0) return;
+
+      if (currentIndex > 0) {
+        prevBtn.href = buildReaderUrl(chapterList[currentIndex - 1].itemId);
+        prevBtn.style.pointerEvents = 'auto';
+        prevBtn.style.opacity = '1';
+      } else {
+        prevBtn.removeAttribute('href');
+        prevBtn.style.pointerEvents = 'none';
+        prevBtn.style.opacity = '0.4';
+      }
+
+      if (currentIndex < chapterList.length - 1) {
+        nextBtn.href = buildReaderUrl(chapterList[currentIndex + 1].itemId);
+        nextBtn.style.pointerEvents = 'auto';
+        nextBtn.style.opacity = '1';
+      } else {
+        nextBtn.removeAttribute('href');
+        nextBtn.style.pointerEvents = 'none';
+        nextBtn.style.opacity = '0.4';
+      }
+    }
+
+    // ============================================================
+    // 章节列表解析
+    // ============================================================
+    function flattenChapters(resp) {
+      var data = (resp && resp.data) || resp || {};
+      var vols = data.chapters || data.chapterListWithVolume || data.chapterList ||
+                 (data.data && (data.data.chapters || data.data.chapterListWithVolume || data.data.chapterList));
+      if (Array.isArray(vols) && vols.length) {
+        // 可能是 [[{},...], [{},...]] 也可能是 [{},...]
+        if (Array.isArray(vols[0])) {
+          var flat = [];
+          for (var i = 0; i < vols.length; i++) {
+            for (var j = 0; j < vols[i].length; j++) flat.push(vols[i][j]);
+          }
+          return flat;
+        }
+        return vols;
+      }
+      return [];
+    }
+
+    function normalizeChapter(c) {
+      if (!c) return null;
+      return {
+        itemId: c.itemId || c.item_id || c.chapterId || c.chapter_id || c.id || '',
+        title:  c.title  || c.chapterTitle || c.chapter_title || c.name || '第 ? 章'
+      };
+    }
+
+    // ============================================================
+    // 从 API 请求单章（处理后写入缓存）
+    // ============================================================
+    function fetchChapterContent(iid) {
+      return FqApi.getChapterContent(iid).then(function (resp) {
+        console.log('[reader] API resp for', iid, JSON.stringify(resp).slice(0, 800));
+        var content = findContent(resp);
+        var title   = findTitle(resp);
+        if (content && content.length > 0) {
+          ChapterCache.set(iid, { title: title || '', content: formatContent(content) });
+          return { title: title || '', content: content };
+        }
+        // 返回空：清除可能残留的老缓存
+        ChapterCache.remove(iid);
+        return { title: title || '', content: '' };
+      }).catch(function (err) {
+        console.warn('[reader] fetch fail for', iid, err);
+        return { title: '', content: '' };
+      });
+    }
+
+    // ============================================================
+    // 预加载 fromIdx ~ fromIdx+9（跳过已缓存且非空的）
+    // ============================================================
+    function preloadFrom(fromIdx) {
+      if (isPreloading) return;
+      if (!chapterList || chapterList.length === 0) return;
+      isPreloading = true;
+
+      var toLoad = [];
+      var end = Math.min(fromIdx + 10, chapterList.length);
+      for (var i = fromIdx; i < end; i++) {
+        var id = chapterList[i].itemId;
+        if (!ChapterCache.has(id)) toLoad.push(id);
+      }
+
+      if (toLoad.length === 0) {
+        isPreloading = false;
+        preloadEl.textContent = '已缓存全部章节';
+        setTimeout(function () { preloadEl.textContent = ''; }, 1500);
+        return;
+      }
+
+      var loaded = 0;
+      var total = toLoad.length;
+      function updateIndicator() {
+        preloadEl.textContent = '已预加载 ' + loaded + '/' + total + ' 章';
+      }
+      updateIndicator();
+
+      toLoad.forEach(function (iid) {
+        fetchChapterContent(iid).then(function () {
+          loaded++;
+          updateIndicator();
+          if (loaded === total) {
+            isPreloading = false;
+            preloadEl.textContent = '预加载完成（+ ' + total + '章）';
+            setTimeout(function () { preloadEl.textContent = ''; }, 2500);
+          }
+        });
+      });
+    }
+
+    // ============================================================
+    // 请求书籍详情（目录），填充 chapterList & currentIndex & bookName
+    // ============================================================
+    function fetchBook() {
+      if (!bookId) return Promise.resolve(null);
+      return FqApi.getBook(bookId).then(function (resp) {
+        var flat = flattenChapters(resp).map(normalizeChapter).filter(function (c) {
+          return c && c.itemId;
+        });
+        chapterList = flat;
+
+        var data = (resp && resp.data) || resp || {};
+        var name = data.book_name || data.bookName || data.title ||
+                   (data.data && (data.data.book_name || data.data.bookName)) ||
+                   bookName;
+        if (name) bookName = name;
+
+        if (itemId) {
+          currentIndex = chapterList.findIndex(function (c) {
+            return String(c.itemId) === String(itemId);
+          });
+        }
+        return resp;
+      }).catch(function (err) {
+        console.warn('[reader] book fetch fail:', err);
+        return null;
+      });
+    }
+
+    // ============================================================
+    // 用 chapterList 中的标题补全缓存中为空的 title
+    // ============================================================
+    function patchTitlesFromList() {
+      if (!chapterList || chapterList.length === 0) return;
+      for (var i = 0; i < chapterList.length; i++) {
+        var c = chapterList[i];
+        if (!c.itemId) continue;
+        var cached = ChapterCache.get(c.itemId);
+        if (cached && !cached.title && c.title && c.title !== '第 ? 章') {
+          cached.title = c.title;
+          ChapterCache.set(c.itemId, cached);
+        }
+      }
+    }
+
+    // ============================================================
+    // 主流程
+    //
+    // 【首次加载】（缓存为空）
+    //   ① fetchBook()        → 请求目录，填充 chapterList / currentIndex / bookName
+    //   ② fetchChapterContent → 请求本章正文并写入缓存
+    //   ③ preloadFrom()      → 预加载 n~n+9（已有本章缓存，排除）
+    //
+    // 【已预加载】（缓存存在且 content 非空）
+    //   ① 直接 renderContent  → 立刻显示（用户零等待）
+    //   ② fetchBook()        → 请求目录，填充 chapterList / currentIndex / bookName
+    //   ③ preloadFrom()      → 预加载 n~n+9（排除已有缓存）+ 自动修复会话储存
+    // ============================================================
+    function init() {
+      Fq.showLoading(contentEl, '正在加载章节内容…');
+      setHeader('加载中…');
+
+      if (!bookId) {
+        Fq.showError(contentEl, '缺少 book_id 参数，请从目录页进入');
+        return;
+      }
+
+      // 判断是否已有预加载（缓存且 content 非空）
+      var cached = itemId ? ChapterCache.get(itemId) : null;
+      var hasCached = !!(cached && cached.content && cached.content.length > 0);
+
+      if (hasCached) {
+        // ========================================================
+        // 分支 A：已预加载 → 立刻显示
+        // ========================================================
+        console.log('[reader] BRANCH A (cached) for', itemId);
+        var displayTitle = cached.title || '';
+        currentTitle = displayTitle;
+        setHeader(displayTitle);
+        renderContent(displayTitle, cached.content);
+
+        fetchBook().then(function () {
+          patchTitlesFromList();          // 补全所有缓存条目的空 title
+          updateNav();
+          preloadFrom(currentIndex);       // 预加载 n~n+9（含自动修复空缓存）
+        }).catch(function (err) {
+          console.error('[reader] branch A fetchBook fail:', err);
+        });
+
+      } else {
+        // ========================================================
+        // 分支 B：首次加载 → 先目录，再本章，再预加载
+        // ========================================================
+        console.log('[reader] BRANCH B (first load) for', itemId);
+
+        // ① 先请求目录（此时还没有 currentIndex，目录返回后才知道 itemId 对应哪一章）
+        fetchBook().then(function () {
+          if (!itemId) {
+            // 没有 item_id，取第一章
+            if (chapterList.length > 0) {
+              itemId = chapterList[0].itemId;
+              currentIndex = 0;
+            }
+          }
+          if (currentIndex < 0) {
+            currentIndex = chapterList.findIndex(function (c) {
+              return String(c.itemId) === String(itemId);
+            });
+          }
+          if (currentIndex < 0) currentIndex = 0;
+
+          // ② 再请求本章正文
+          return fetchChapterContent(itemId);
+        }).then(function (result) {
+          // 渲染本章
+          var title = result.title || '';
+          if (!title && currentIndex >= 0 && chapterList[currentIndex]) {
+            title = chapterList[currentIndex].title || '';
+          }
+          currentTitle = title;
+          setHeader(title);
+          if (result.content && result.content.length > 0) {
+            renderContent(title, result.content);
+          } else {
+            Fq.showError(contentEl, '章节内容加载失败，请稍后重试');
+          }
+
+          // ③ 预加载 n~n+9
+          preloadFrom(currentIndex);
+        }).catch(function (err) {
+          console.error('[reader] branch B fail:', err);
+          Fq.showError(contentEl, '加载失败：' + (err.message || err));
+        });
+      }
+    }
+
+    init();
+
+    // 键盘翻章
+    document.addEventListener('keydown', function (e) {
+      if (chapterList.length === 0 || currentIndex < 0) return;
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        location.href = prevBtn.href;
+      } else if (e.key === 'ArrowRight' && currentIndex < chapterList.length - 1) {
+        location.href = nextBtn.href;
+      }
+    });
+  </script>
+</body>
+</html>

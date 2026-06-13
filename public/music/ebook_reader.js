@@ -502,7 +502,7 @@ async function preloadChapters(currentIndex) {
 // 格式化内容（处理换行等和HTML标签）
 function formatContent(content) {
     // 保留原有的换行处理
-    let formattedContent = content.replace(/\n/g, '<br>');
+    let formattedContent = content.replace(/\n/g, '<br>		');
     
     // 处理API返回的特殊HTML格式，如图片标签
     // 将API返回的图片格式转换为标准HTML img标签

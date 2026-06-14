@@ -142,7 +142,8 @@
       const el = document.getElementById(gridId);
       Fq.showLoading(el, '加载中…');
       FqApi.search(keyword, tabType, 0).then(function (resp) {
-        const books = FqApi.extractBooksFromSearch(resp);
+        // 只提取对应 tab_type 的结果（避免小说区显示短剧）
+        const books = FqApi.extractBooksFromSearch(resp, tabType);
         el.innerHTML = Fq.renderBookCards(books);
       }).catch(function (err) {
         Fq.showError(el, '加载失败：' + (err && err.message ? err.message : err));

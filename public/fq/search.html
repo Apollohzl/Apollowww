@@ -82,8 +82,12 @@
     }
 
     function tabTypeFor(tab) {
-      if (tab === '推荐') return 3;
-      return tab;
+      // 返回数字 tab_type：3=小说 2=听书 8=漫画 11=短剧 1=综合
+      if (tab === '小说' || tab === '推荐') return 3;
+      if (tab === '听书') return 2;
+      if (tab === '漫画') return 8;
+      if (tab === '短剧') return 11;
+      return 1; // 综合 fallback
     }
 
     function effectiveSearchKeyword() {
@@ -147,7 +151,10 @@
       const tt = tabTypeFor(state.tab);
 
       FqApi.search(kw, tt, state.offset).then(function (resp) {
-        const books = FqApi.extractBooksFromSearch(resp);
+        // 根据当前 tab 过滤对应 tab_type 的结果
+        // "推荐" 走 tab_type=3（小说）；其它走各自的 tab_type
+        var filterTabType = (state.tab === '推荐') ? 3 : tt;
+        const books = FqApi.extractBooksFromSearch(resp, filterTabType);
         state.items = state.items.concat(books);
 
         grid.innerHTML = Fq.renderBookCards(state.items);

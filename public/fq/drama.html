@@ -7,7 +7,9 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="reader-wrap">
+  <div class="drama-page">
+
+    <!-- 顶部导航 -->
     <header class="reader-toolbar">
       <div class="toolbar-inner">
         <div class="toolbar-left">
@@ -18,20 +20,35 @@
           </div>
         </div>
         <div class="toolbar-actions">
-          <button onclick="gotoDir()" aria-label="目录" title="目录">☰</button>
-          <button onclick="gotoReader()" aria-label="阅读" title="阅读">📖</button>
+          <button onclick="location.href='index.html'" aria-label="搜索" title="搜索">🔍</button>
           <button onclick="gotoComment()" aria-label="评论" title="评论">💬</button>
         </div>
       </div>
     </header>
 
-    <section id="video-area" style="max-width: 900px; margin: 16px auto 0; padding: 0 16px;">
+    <!-- 视频播放器 -->
+    <section id="player-section" class="drama-player-section">
       <div class="loading"><div class="loading-spinner"></div><span>正在加载视频…</span></div>
     </section>
 
-    <section id="episode-area" style="max-width: 900px; margin: 0 auto; padding: 24px 16px 48px;">
-      <div class="loading"><div class="loading-spinner"></div><span>正在加载剧集列表…</span></div>
+    <!-- 短剧详情：封面 + 评分 + 简介 + 演员 -->
+    <section id="detail-section" class="drama-detail-section">
+      <!-- 由 JS 渲染 -->
     </section>
+
+    <!-- 剧集列表 -->
+    <section id="episode-section" class="drama-episode-section">
+      <div class="section-title"><h2>全部剧集</h2><span id="episode-count" class="section-meta"></span></div>
+      <div id="episode-list" class="episode-grid">
+        <div class="loading"><div class="loading-spinner"></div><span>正在加载剧集列表…</span></div>
+      </div>
+    </section>
+
+    <!-- 底部说明 -->
+    <footer class="page-footer">
+      <p>内容由第三方接口提供 · 番茄书阁聚合阅读</p>
+    </footer>
+
   </div>
 
   <script src="js/api.js"></script>
@@ -40,168 +57,535 @@
   (function () {
     'use strict';
 
-    var bookId = Fq.getQuery('book_id');
-    var itemId = Fq.getQuery('item_id');
-    var title = Fq.getQuery('title');
-    var bookDetail = null;
-    var chapterList = [];
-    var currentIndex = -1;
+    // ====== 参数解析 ======
+    var bookId = Fq.getQuery('book_id');   // series_id
+    var itemId = Fq.getQuery('item_id');   // 当前播放集 item_id
+    var title  = Fq.getQuery('title');     // 剧名（用于回退搜索）
 
-    if (title) document.getElementById('tb-book').textContent = title;
+    // ====== 状态 ======
+    var dramaMeta = null;    // /detail 详情
+    var episodes  = [];      // /book → chapterListWithVolume 展平后的剧集列表
+    var epIndex   = -1;     // 当前播放集在 episodes 中的索引
+    var videoUrls = {};      // itemId → videoUrl 缓存
 
-    function gotoDir() {
-      if (!bookId) return;
-      location.href = 'directory.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
-    }
-    function gotoReader() {
-      if (!bookId || !itemId) return;
-      var q = 'book_id=' + encodeURIComponent(bookId) + '&item_id=' + encodeURIComponent(itemId);
-      if (title) q += '&title=' + encodeURIComponent(title);
-      location.href = 'reader.html?' + q;
-    }
+    // ====== 路由辅助 ======
     function gotoComment() {
       if (!bookId) return;
-      location.href = 'comment.html?book_id=' + encodeURIComponent(bookId) + (title ? '&title=' + encodeURIComponent(title) : '');
+      location.href = 'comment.html?book_id=' + encodeURIComponent(bookId)
+        + (title ? '&title=' + encodeURIComponent(title) : '');
     }
-    window.gotoDir = gotoDir;
-    window.gotoReader = gotoReader;
     window.gotoComment = gotoComment;
 
-    function findVideoUrl(data) {
-      if (!data) return '';
-      var candidates = [
-        data.video_url, data.video, data.url, data.mp4,
-        data.videoUrl, data.video_url_hd, data.video_url_sd,
-        data.play_url, data.media_url, data.source_url, data.file_url
-      ];
-      for (var i = 0; i < candidates.length; i++) {
-        if (typeof candidates[i] === 'string' && candidates[i] && /^https?:\/\//.test(candidates[i])) {
-          return candidates[i];
+    function setTopBar(tb, tc) {
+      if (tb) document.getElementById('tb-book').textContent = tb;
+      if (tc) document.getElementById('tb-chapter').textContent = tc;
+    }
+
+    // ==================================================================
+    // 步骤 1) /detail → 元数据
+    // ==================================================================
+    function loadDetail() {
+      if (!bookId) return;
+      FqApi.getDetail(bookId).then(function (resp) {
+        console.log('[drama] /detail resp:', JSON.stringify(resp).slice(0, 1000));
+        var d = (resp && resp.data && resp.data.data) || (resp && resp.data) || {};
+        if (!d.book_name && !d.title) {
+          console.warn('[drama] /detail no data, fallback to search');
+          loadDetailFallback();
+          return;
         }
+        buildMetaFromDetail(d);
+        renderDetail();
+        // 并发请求演员列表（来自 /search 响应）
+        loadActorsFromSearch();
+      }).catch(function () {
+        loadDetailFallback();
+      });
+    }
+
+    function loadDetailFallback() {
+      if (!title) return;
+      FqApi.search(title, 11).then(function (sresp) {
+        var d = FqApi.extractDramaDetailBySeriesId(sresp, bookId);
+        if (!d) return;
+        dramaMeta = d;
+        if (d.title) setTopBar(d.title, null);
+        renderDetail();
+      });
+    }
+
+    function buildMetaFromDetail(d) {
+      // 封面：优先竖版封面 expand_thumb_url，次选 audio_thumb_url_hd
+      var cover = d.expand_thumb_url || d.thumb_url || d.audio_thumb_url_hd
+        || d.audio_thumb_uri || d.book_cover_url || d.cover || '';
+      cover = String(cover).replace(/^`|`$/g, '').trim();
+
+      var name = d.book_name || d.title || title || '未知短剧';
+      // author = 出品方（公司名）
+      var author = d.author || d.media_name || d.source || '';
+      // category = 主要分类
+      var category = d.category || '';
+      // tags = 所有标签
+      var tags = d.tags || d.pure_category_tags || '';
+      // intro = 剧情简介
+      var intro = d.book_abstract_v2 || d.abstract || d.description || '';
+      // score = 评分
+      var score = d.score || d.final_score_v3 || '';
+      // epCnt = 总集数
+      var epCnt = Number(d.chapter_number || d.serial_count || d.episode_cnt || 0);
+      // hot = 热度/在读人数
+      var hot = d.read_cnt_text || d.sub_info || '';
+      // shelfCnt = 收藏人数
+      var shelfCnt = d.all_bookshelf_count || d.add_bookshelf_count || 0;
+      // color = 主色调
+      var color = d.color_dominate || d.back_color_dominate || '#300808';
+      // copyright = 版权方
+      var copyright = d.copyright_info || d.source || '';
+      // recordNumber = 备案号
+      var recordNumber = '';
+      if (d.app_record_number) {
+        try {
+          var arn = JSON.parse(d.app_record_number);
+          recordNumber = arn['8662'] || arn['1967'] || '';
+        } catch(e) {}
       }
-      if (Array.isArray(data.videos) && data.videos.length) {
-        var f = data.videos[0];
-        if (typeof f === 'string') return f;
-        if (f && f.url) return f.url;
+      // createTime = 上线时间
+      var createTime = d.create_time ? d.create_time.slice(0, 10) : '';
+      // status = 完结状态
+      var statusText = '';
+      if (d.creation_status === '1' || d.status === '1') statusText = '已完结';
+      else if (d.creation_status === '0' || d.status === '2') statusText = '更新中';
+
+      dramaMeta = {
+        title: name,
+        cover: cover,
+        author: author,
+        category: category,
+        tags: tags,
+        intro: intro,
+        score: score,
+        episode_cnt: epCnt,
+        hot: hot,
+        shelf_cnt: Number(shelfCnt),
+        color_dominate: color,
+        copyright: copyright,
+        record_number: recordNumber,
+        create_time: createTime,
+        status_text: statusText,
+        actors: []   // 演员列表：后续从 /search 补充
+      };
+      setTopBar(name, null);
+    }
+
+    // ==================================================================
+    // 步骤 1b) /search?keyword=<title>&tab_type=11 → 演员列表
+    // ==================================================================
+    function loadActorsFromSearch() {
+      if (!title) return;
+      FqApi.search(title, 11).then(function (sresp) {
+        var tabs = (sresp && sresp.data && sresp.data.search_tabs) || [];
+        for (var ti = 0; ti < tabs.length; ti++) {
+          var tab = tabs[ti];
+          if (!tab || !Array.isArray(tab.data)) continue;
+          for (var ii = 0; ii < tab.data.length; ii++) {
+            var item = tab.data[ii];
+            if (!item || !item.video_data || !item.video_data[0]) continue;
+            var v = item.video_data[0];
+            if (!v || !v.video_detail) continue;
+            var vd = v.video_detail;
+            if (!vd || !vd.celebrities || !Array.isArray(vd.celebrities)) continue;
+
+            // 找到演员数据，填充到 dramaMeta
+            if (!dramaMeta) return;
+            var actors = vd.celebrities.map(function (c) {
+              return {
+                avatar: c.avatar ? String(c.avatar).replace(/^`|`$/g, '').trim() : '',
+                nickname: c.nickname || '',
+                role_name: c.role_name || '',
+                intro: c.intro || ''
+              };
+            }).filter(function (a) { return a.nickname; });
+
+            dramaMeta.actors = actors;
+            renderDetail(); // 演员加载完成后重新渲染详情
+            return;
+          }
+        }
+      }).catch(function () {});
+    }
+
+    function renderDetail() {
+      var el = document.getElementById('detail-section');
+      if (!dramaMeta) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><p>未找到短剧详情</p></div>';
+        return;
       }
-      if (typeof data === 'object') {
-        for (var k in data) {
-          var v = data[k];
-          if (typeof v === 'string' && /^https?:\/\//.test(v) && /\.(mp4|m3u8|flv|webm|mov)/i.test(v)) {
-            return v;
+
+      var m = dramaMeta;
+      var name = m.title || '未知短剧';
+
+      // 封面
+      var coverHtml = m.cover
+        ? '<div class="drama-cover">'
+          + '<img src="' + Fq.escapeHtml(m.cover) + '" alt="封面"'
+          + ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
+          + '<div class="drama-cover-placeholder" style="display:none;">' + Fq.escapeHtml(name.slice(0, 4)) + '</div>'
+          + '</div>'
+        : '<div class="drama-cover"><div class="drama-cover-placeholder">' + Fq.escapeHtml(name.slice(0, 4)) + '</div></div>';
+
+      // 横版封面
+      var horizCoverHtml = '';
+
+      // 标签 chip
+      var tagChips = '';
+      if (m.tags) {
+        var tags = String(m.tags).split(/[,，]/).filter(function (x) { return x && x.trim(); });
+        tagChips = '<div class="drama-tags">' +
+          tags.slice(0, 6).map(function (t) {
+            return '<span class="drama-tag-chip">' + Fq.escapeHtml(t.trim()) + '</span>';
+          }).join('') + '</div>';
+      }
+
+      // 统计栏
+      var statsHtml = '';
+      var stats = [];
+      if (m.hot) stats.push('<span class="drama-stat"><span class="drama-stat-num">' + Fq.escapeHtml(m.hot) + '</span></span>');
+      if (m.shelf_cnt) {
+        var sc = m.shelf_cnt >= 10000
+          ? (m.shelf_cnt / 10000).toFixed(1).replace(/\.0$/, '') + '万'
+          : String(m.shelf_cnt);
+        stats.push('<span class="drama-stat"><span class="drama-stat-num">' + sc + '</span> 收藏</span>');
+      }
+      if (m.episode_cnt) stats.push('<span class="drama-stat"><span class="drama-stat-num">' + m.episode_cnt + '</span> 集</span>');
+      if (stats.length) {
+        statsHtml = '<div class="drama-stats">' + stats.join('<span class="drama-stat-sep">|</span>') + '</div>';
+      }
+
+      // 评分
+      var scoreHtml = m.score
+        ? '<div class="drama-score-wrap">'
+          + '<span class="drama-score-big">' + Fq.escapeHtml(m.score) + '</span>'
+          + '<span class="drama-score-unit">分</span>'
+          + '<span class="drama-score-label">豆瓣级评分</span>'
+          + '</div>'
+        : '';
+
+      // 演员列表
+      var actorsHtml = '';
+      if (m.actors && m.actors.length) {
+        actorsHtml = '<div class="drama-actors-section">'
+          + '<h3 class="drama-section-title">演员阵容</h3>'
+          + '<div class="drama-actors-row">'
+          + m.actors.slice(0, 8).map(function (a) {
+              var avatar = a.avatar
+                ? '<img src="' + Fq.escapeHtml(a.avatar) + '" alt="' + Fq.escapeHtml(a.nickname) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
+                  + '<div class="actor-avatar-placeholder" style="display:none;">' + Fq.escapeHtml(a.nickname.slice(0, 1)) + '</div>'
+                : '<div class="actor-avatar-placeholder">' + Fq.escapeHtml(a.nickname.slice(0, 1)) + '</div>';
+              return '<div class="drama-actor">'
+                + '<div class="actor-avatar">' + avatar + '</div>'
+                + '<div class="actor-name">' + Fq.escapeHtml(a.nickname) + '</div>'
+                + (a.role_name ? '<div class="actor-role">饰 ' + Fq.escapeHtml(a.role_name) + '</div>' : '')
+                + '</div>';
+            }).join('')
+          + '</div></div>';
+      }
+
+      // 简介
+      var introHtml = m.intro
+        ? '<div class="drama-intro-section">'
+          + '<h3 class="drama-section-title">剧情简介</h3>'
+          + '<p class="drama-intro-text">' + Fq.escapeHtml(m.intro) + '</p>'
+          + '</div>'
+        : '';
+
+      // 出品信息
+      var footerInfos = [];
+      if (m.author) footerInfos.push('出品：' + m.author);
+      if (m.status_text) footerInfos.push('状态：' + m.status_text);
+      if (m.create_time) footerInfos.push('上线：' + m.create_time);
+      if (m.record_number) footerInfos.push('备案：' + m.record_number);
+
+      var footerHtml = footerInfos.length
+        ? '<div class="drama-footer-info">'
+          + footerInfos.map(function (f) { return '<p>' + Fq.escapeHtml(f) + '</p>'; }).join('')
+          + '</div>'
+        : '';
+
+      var cardStyle = m.color_dominate
+        ? ' style="border-top:3px solid ' + m.color_dominate + ';"'
+        : '';
+
+      el.innerHTML =
+        '<div class="drama-detail-card fade-in"' + cardStyle + '>'
+        + coverHtml
+        + '<div class="drama-info">'
+          + '<div class="drama-title-row">'
+            + '<h1 class="drama-title">' + Fq.escapeHtml(name) + '</h1>'
+            + scoreHtml
+          + '</div>'
+          + tagChips
+          + statsHtml
+          + actorsHtml
+          + introHtml
+          + footerHtml
+        + '</div></div>';
+    }
+
+    // ==================================================================
+    // 步骤 2) /book → 剧集列表（chapterListWithVolume）
+    // ==================================================================
+    function loadEpisodes() {
+      if (!bookId) return;
+      var listEl = document.getElementById('episode-list');
+      Fq.showLoading(listEl, '正在加载剧集…');
+
+      FqApi.getBook(bookId).then(function (resp) {
+        console.log('[drama] /book resp:', JSON.stringify(resp).slice(0, 1000));
+
+        // 尝试从 /book 提取 chapterListWithVolume
+        var flat = FqApi.extractChapterList(resp);
+
+        if (flat && flat.length) {
+          episodes = flat;
+          renderEpisodeList();
+          // 加载完剧集后，如果有 URL 中的 itemId，立刻播放
+          resolveAndPlay();
+        } else {
+          // /book 无数据，说明接口不支持短剧，显示错误
+          listEl.innerHTML = '<div class="error-box">⚠ 该短剧暂无剧集目录（接口不支持）</div>';
+        }
+      }).catch(function (err) {
+        console.error('[drama] /book error:', err);
+        listEl.innerHTML = '<div class="error-box">⚠ 剧集列表加载失败：' + Fq.escapeHtml(String(err)) + '</div>';
+      });
+    }
+
+    function resolveAndPlay() {
+      if (!episodes.length) return;
+      // 定位当前要播放的集
+      if (itemId) {
+        for (var i = 0; i < episodes.length; i++) {
+          if (String(episodes[i].item_id || episodes[i].itemId) === String(itemId)) {
+            epIndex = i; break;
           }
         }
       }
-      return '';
-    }
-
-    function renderVideo(chapterTitle, videoUrl) {
-      var area = document.getElementById('video-area');
-      if (!videoUrl) {
-        area.innerHTML = '<div class="error-box">⚠ 未找到视频资源，该剧集可能无法播放</div>';
-        return;
-      }
-      area.innerHTML =
-        '<div class="drama-player fade-in">' +
-          '<video controls playsinline preload="metadata" style="width:100%;display:block;background:#000;">' +
-            '<source src="' + Fq.escapeHtml(videoUrl) + '" type="video/mp4">' +
-            '您的浏览器不支持 video 标签。' +
-          '</video>' +
-        '</div>' +
-        (chapterTitle ? '<div style="padding:12px 4px 0;font-size:15px;font-weight:600;">' + Fq.escapeHtml(chapterTitle) + '</div>' : '');
+      if (epIndex < 0) epIndex = 0;
+      playEpisode(epIndex);
     }
 
     function renderEpisodeList() {
-      var area = document.getElementById('episode-area');
-      if (!chapterList.length) {
-        Fq.showEmpty(area, '暂无剧集');
+      var listEl = document.getElementById('episode-list');
+      var countEl = document.getElementById('episode-count');
+
+      if (!episodes.length) {
+        listEl.innerHTML = '<div class="empty-state"><div class="icon">📺</div><p>暂无剧集</p></div>';
+        countEl.textContent = '';
         return;
       }
-      var html = '<div class="section-title"><h2>剧集列表</h2></div>' +
-        '<div class="chapter-list fade-in">';
-      for (var i = 0; i < chapterList.length; i++) {
-        var ch = chapterList[i];
-        var active = (ch.item_id === itemId) || (i === currentIndex);
-        var t = ch.title || ch.chapter_title || ch.chapter_name || ('第' + (i + 1) + '集');
-        html += '<div class="chapter-item' + (active ? ' active' : '') + '" data-index="' + i + '" data-item="' + Fq.escapeHtml(ch.item_id || '') + '" style="cursor:pointer;">' +
-          '<span class="title-cell">' + Fq.escapeHtml(t) + '</span>' +
-          (active ? '<span class="chapter-meta" style="color:var(--tomato);">播放中</span>' : '') +
-        '</div>';
-      }
-      html += '</div>';
-      area.innerHTML = html;
+      countEl.textContent = '共 ' + episodes.length + ' 集';
 
-      var items = area.querySelectorAll('.chapter-item');
-      items.forEach(function (el) {
-        el.onclick = function () {
-          var idx = parseInt(el.getAttribute('data-index'), 10);
-          var iid = el.getAttribute('data-item');
-          if (iid) {
-            itemId = iid;
-            currentIndex = idx;
-            window.scrollTo(0, 0);
-            loadEpisode();
-          }
+      var html = '';
+      for (var i = 0; i < episodes.length; i++) {
+        var ep = episodes[i];
+        var iid = ep.item_id || ep.itemId || String(i);
+        var t   = ep.title || ep.chapter_title || ('第 ' + (i + 1) + ' 集');
+        var paid = ep.need_pay || ep.needPay || false;
+        var active = (i === epIndex);
+        html +=
+          '<button type="button" class="ep-card' + (active ? ' active' : '') + '" data-index="' + i + '" data-item="' + Fq.escapeHtml(String(iid)) + '">'
+          + '<span class="ep-num">' + (i + 1) + '</span>'
+          + '<span class="ep-title">' + Fq.escapeHtml(t) + '</span>'
+          + (paid ? '<span class="ep-tag">VIP</span>' : '')
+          + '</button>';
+      }
+      listEl.innerHTML = html;
+
+      var cards = listEl.querySelectorAll('.ep-card');
+      cards.forEach(function (card) {
+        card.onclick = function () {
+          var idx = parseInt(card.getAttribute('data-index'), 10);
+          playEpisode(idx);
         };
       });
     }
 
-    function loadEpisode() {
-      var area = document.getElementById('video-area');
-      Fq.showLoading(area, '正在加载视频…');
-      document.getElementById('tb-chapter').textContent = '加载中…';
+    // ==================================================================
+    // 步骤 3) /content?tab=短剧&item_id= → 视频 URL
+    // ==================================================================
+    function playEpisode(index) {
+      if (index < 0 || index >= episodes.length) return;
+      epIndex = index;
 
-      FqApi.getDrama(itemId).then(function (resp) {
-        var chapterTitle = '';
-        if (resp && resp.data) {
-          chapterTitle = resp.data.chapter_title || resp.data.title || resp.data.chapter_name || '';
-        }
-        var videoUrl = findVideoUrl(resp && resp.data);
-        document.getElementById('tb-chapter').textContent = chapterTitle || '未知剧集';
-        renderVideo(chapterTitle, videoUrl);
+      var ep  = episodes[index];
+      var iid = String(ep.item_id || ep.itemId || '');
+      var t   = ep.title || ep.chapter_title || ('第 ' + (index + 1) + ' 集');
+
+      itemId = iid;
+      setTopBar(null, t);
+
+      // 更新剧集列表高亮
+      var cards = document.querySelectorAll('.ep-card');
+      cards.forEach(function (c, i) {
+        c.classList.toggle('active', i === epIndex);
+      });
+
+      var playerEl = document.getElementById('player-section');
+      Fq.showLoading(playerEl, '正在加载视频…');
+
+      // 命中缓存则直接播放
+      if (videoUrls[iid]) {
+        renderPlayer(t, videoUrls[iid]);
+        return;
+      }
+
+      // 请求视频
+      FqApi.getDrama(iid).then(function (resp) {
+        console.log('[drama] /content resp for ' + iid + ':', JSON.stringify(resp).slice(0, 1000));
+        var url = FqApi.extractVideoUrl(resp);
+        videoUrls[iid] = url;
+        if (!url) console.warn('[drama] video_url not found in resp:', resp);
+        renderPlayer(t, url);
       }).catch(function (err) {
-        document.getElementById('video-area').innerHTML =
-          '<div class="error-box">⚠ 加载失败：' + Fq.escapeHtml((err && err.message) || String(err)) + '</div>';
+        console.error('[drama] /content error for ' + iid + ':', err);
+        renderPlayer(t, '');
       });
     }
 
-    function loadBook() {
-      if (!bookId) return;
-      FqApi.getDetail(bookId).then(function (resp) {
-        if (resp && resp.data) {
-          bookDetail = resp.data;
-          var bName = bookDetail.book_name || bookDetail.name || title || '';
-          if (bName) {
-            document.getElementById('tb-book').textContent = bName;
-            title = bName;
-          }
-        }
-      }).catch(function () {});
+    function renderPlayer(epTitle, videoUrl) {
+      var playerEl = document.getElementById('player-section');
+      if (!videoUrl) {
+        playerEl.innerHTML =
+          '<div class="drama-player-empty">'
+          + '<div class="drama-player-empty-icon">📺</div>'
+          + '<h3>' + Fq.escapeHtml(epTitle) + '</h3>'
+          + '<p>未找到该集的播放地址</p>'
+          + '</div>';
+        return;
+      }
 
-      FqApi.getBook(bookId).then(function (resp) {
-        chapterList = FqApi.extractChapterList(resp);
-        if (currentIndex < 0 && chapterList.length) {
-          for (var i = 0; i < chapterList.length; i++) {
-            if (chapterList[i].item_id === itemId) { currentIndex = i; break; }
-          }
-          if (currentIndex < 0) currentIndex = 0;
+      // 渲染占位播放器 + 加载提示
+      playerEl.innerHTML =
+        '<div class="drama-player fade-in">'
+        + '<video id="drama-video" '
+        + ' controls playsinline webkit-playsinline preload="auto" '
+        + ' x-webkit-airplay="allow" '
+        + ' disablepictureinpicture '
+        + ' style="width:100%;display:block;background:#000;"'
+        + '>'
+        + '您的浏览器不支持 HTML5 视频播放。'
+        + '</video>'
+        + '<div class="drama-player-caption">' + Fq.escapeHtml(epTitle) + '</div>'
+        + '<div id="video-status" style="padding:10px 16px;background:#000;color:#90caf9;font-size:12px;text-align:center;">正在准备视频…</div>'
+        + '</div>';
+
+      var video = document.getElementById('drama-video');
+      var statusEl = document.getElementById('video-status');
+      if (!video) return;
+
+      // 策略：视频源（qznovelvod.com 等 CDN）校验 Referer，直接播放会失败
+      // 必须通过我们的 CORS 代理中转请求
+      // 方法：fetch() 通过代理获取 → Blob → createObjectURL → video.src
+      var proxyUrl = 'https://hzliflow.ken520.top/api/cors?url=' + encodeURIComponent(videoUrl);
+      console.log('[drama-video] 通过代理加载视频:', proxyUrl);
+
+      var currentBlobUrl = null;
+
+      // 注册错误处理（fetch 成功后会被覆盖为"正常播放"的 handler）
+      video.addEventListener('error', function() {
+        var err = video.error;
+        if (!err) return;
+        var msg = '未知错误';
+        switch (err.code) {
+          case 1: msg = '视频加载被中止'; break;
+          case 2: msg = '网络错误（视频源限制/防盗链）'; break;
+          case 3: msg = '视频解码失败（数据被 CDN 截断或编码不兼容）'; break;
+          case 4: msg = '视频格式不支持'; break;
         }
-        renderEpisodeList();
-      }).catch(function () {
-        document.getElementById('episode-area').innerHTML =
-          '<div class="error-box">⚠ 剧集列表加载失败</div>';
+        console.error('[drama-video] 播放失败:', msg, err);
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = '⚠ ' + msg;
+        }
       });
+
+      video.addEventListener('loadedmetadata', function() {
+        console.log('[drama-video] 元数据成功，时长:', video.duration, '秒');
+        if (statusEl) statusEl.style.display = 'none';
+      });
+
+      // 核心：fetch 视频 → Blob → 播放
+      // 使用 ReadableStream 边下边播（支持 Range 请求）
+      fetch(proxyUrl, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'default',
+        headers: {
+          'Accept': 'video/*'
+        }
+      })
+      .then(function(resp) {
+        if (!resp.ok) throw new Error('代理返回状态码 ' + resp.status);
+
+        // 检查 Content-Type — 如果不是视频类型，可能返回的是错误信息
+        var ct = resp.headers.get('Content-Type') || '';
+        console.log('[drama-video] 代理响应 Content-Type:', ct, '大小:', resp.headers.get('Content-Length'));
+
+        if (ct.indexOf('video') === -1 && ct.indexOf('application/octet-stream') === -1) {
+          console.warn('[drama-video] Content-Type 不是视频类型，可能返回的是错误数据');
+        }
+
+        return resp.blob();
+      })
+      .then(function(blob) {
+        // 清理上一个 blob URL（如果有）
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+
+        // 创建 Blob URL 并播放
+        currentBlobUrl = URL.createObjectURL(blob);
+        console.log('[drama-video] Blob 大小:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
+
+        video.src = currentBlobUrl;
+        video.load();
+
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = '� 点击播放按钮开始观看';
+        }
+
+        // 尝试自动播放（静音以防被浏览器拦截）
+        var playPromise = video.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise.catch(function() {
+            // 自动播放被拦截是正常的，用户手动点击即可
+            console.log('[drama-video] 自动播放被拦截，请用户手动点击');
+          });
+        }
+      })
+      .catch(function(err) {
+        console.error('[drama-video] fetch 失败:', err);
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = '⚠ 视频加载失败：' + err.message + '（请检查代理或网络）';
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    if (!bookId || !itemId) {
-      document.getElementById('video-area').innerHTML =
-        '<div class="error-box">⚠ 参数错误：缺少 book_id 或 item_id</div>';
-      document.getElementById('episode-area').innerHTML = '';
+    // ==================================================================
+    // 初始化
+    // ==================================================================
+    if (!bookId) {
+      document.getElementById('player-section').innerHTML =
+        '<div class="error-box">⚠ 参数错误：缺少 book_id</div>';
       return;
     }
 
-    loadBook();
-    loadEpisode();
+    // 1) 元数据
+    loadDetail();
+    // 2) 剧集列表（完成后自动 playEpisode）
+    loadEpisodes();
   })();
   </script>
 </body>

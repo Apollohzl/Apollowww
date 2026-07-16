@@ -3,16 +3,9 @@
   'use strict';
 
   function getQuery(key, def) {
-    // 直接用正则解析 query string，兼容 file:// 和 http:// 协议
-    var qs = location.search;
-    if (!qs || qs === '?') {
-      // fallback：尝试从完整 href 提取
-      qs = location.href.split('?')[1] || '';
-    }
-    var re = new RegExp('(?:^|&)' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=(.*?)(?:&|$)');
-    var m = qs.match(re);
-    var v = (m && m[1] ? decodeURIComponent(m[1]) : null);
-    return (v === null || v === '') ? (def === undefined ? '' : def) : v;
+    const url = new URL(location.href);
+    const v = url.searchParams.get(key);
+    return (v === null || v === '' || v === undefined) ? (def === undefined ? '' : def) : v;
   }
 
   function escapeHtml(s) {
@@ -34,6 +27,15 @@
     return String(n);
   }
 
+  function buildBookUrl(book) {
+    const id = book.book_id || book.item_id || book.id || '';
+    const name = book.book_name || book.name || '';
+    const q = [];
+    if (id) q.push('book_id=' + encodeURIComponent(id));
+    if (name) q.push('title=' + encodeURIComponent(name));
+    return 'book.html?' + q.join('&');
+  }
+
   function buildReaderUrl(book, itemId) {
     const q = [];
     const bookId = book.book_id || book.id || '';
@@ -45,7 +47,7 @@
   }
 
   function buildDirUrl(book) {
-    const id = book.book_id || book.id || getQuery('book_id') || '';
+    const id = book.book_id || book.id || '';
     const q = [];
     if (id) q.push('book_id=' + encodeURIComponent(id));
     if (book.book_name) q.push('title=' + encodeURIComponent(book.book_name));
@@ -54,10 +56,9 @@
 
   function buildAudioUrl(book, itemId) {
     const q = [];
-    // 优先从 book 对象取，否则从当前 URL 参数兜底
-    const bookId = book.book_id || book.id || getQuery('book_id') || '';
+    const bookId = book.book_id || book.id || '';
     if (bookId) q.push('book_id=' + encodeURIComponent(bookId));
-    const iid = itemId || book.item_id || book.first_chapter_item_id || getQuery('item_id') || '';
+    const iid = itemId || book.item_id || book.first_chapter_item_id || '';
     if (iid) q.push('item_id=' + encodeURIComponent(iid));
     if (book.book_name) q.push('title=' + encodeURIComponent(book.book_name));
     return 'audio.html?' + q.join('&');
@@ -73,23 +74,17 @@
 
   function buildComicUrl(book, itemId) {
     const q = [];
-    const bookId = book.book_id || book.id || getQuery('book_id') || '';
-    if (bookId) q.push('book_id=' + encodeURIComponent(bookId));
-    const iid = itemId || book.item_id || book.first_chapter_item_id || getQuery('item_id') || '';
-    if (iid) q.push('item_id=' + encodeURIComponent(iid));
+    if (book.book_id) q.push('book_id=' + encodeURIComponent(book.book_id));
+    if (itemId || book.item_id) q.push('item_id=' + encodeURIComponent(itemId || book.item_id));
     if (book.book_name) q.push('title=' + encodeURIComponent(book.book_name));
     return 'comic.html?' + q.join('&');
   }
 
   function buildDramaUrl(book, itemId) {
     const q = [];
-    // 短剧：book_id = series_id，同时也作为 item_id 传给 content 接口
-    const bookId = book.book_id || book.series_id || book.id || getQuery('book_id') || '';
-    const iid = itemId || book.item_id || book.vid || book.first_vid || bookId || getQuery('item_id') || '';
-    if (bookId) q.push('book_id=' + encodeURIComponent(bookId));
-    if (iid) q.push('item_id=' + encodeURIComponent(iid));
-    const name = book.book_name || book.title || book.name || '';
-    if (name) q.push('title=' + encodeURIComponent(name));
+    if (book.book_id) q.push('book_id=' + encodeURIComponent(book.book_id));
+    if (itemId || book.item_id) q.push('item_id=' + encodeURIComponent(itemId || book.item_id));
+    if (book.book_name) q.push('title=' + encodeURIComponent(book.book_name));
     return 'drama.html?' + q.join('&');
   }
 
@@ -103,20 +98,7 @@
     const score = book.score || book.rating || '';
     const cover = book.thumb_url || book.cover_url || book.audio_thumb_uri || book.audio_thumb_url_hd || book.book_cover_url || '';
     const readCount = book.read_cnt_text || book.read_count || '';
-
-    // 根据 tab_type 路由到不同页面
-    // _tab_type: 3=小说 2=听书 8=漫画 11=短剧
-    let url;
-    const tt = Number(book._tab_type);
-    if (tt === 11) {
-      url = buildDramaUrl(book, book.item_id);
-    } else if (tt === 8) {
-      url = buildComicUrl(book, book.item_id);
-    } else if (tt === 2) {
-      url = buildAudioUrl(book, book.item_id);
-    } else {
-      url = buildDirUrl(book); // 小说 → 目录页
-    }
+    const url = buildBookUrl(book);
 
     let coverHtml;
     if (cover) {
@@ -179,8 +161,9 @@
     showError: showError,
     showEmpty: showEmpty,
     setTitle: setTitle,
-    buildDirUrl: buildDirUrl,
+    buildBookUrl: buildBookUrl,
     buildReaderUrl: buildReaderUrl,
+    buildDirUrl: buildDirUrl,
     buildAudioUrl: buildAudioUrl,
     buildCommentUrl: buildCommentUrl,
     buildComicUrl: buildComicUrl,
